@@ -23,16 +23,13 @@
                 <thead>
                     <tr class="slds-line-height_reset">
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre/Razón Social
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre
+                        </th>
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:identity" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC
                         </th>
                         <th scope="col" class="airtable-header-cell">
                             <lightning-icon icon-name="utility:groups" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Tipo
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:logic" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Proyectos Vinculados
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contacto Principal
                         </th>
                         <th scope="col" class="airtable-header-cell">
                             <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
@@ -40,24 +37,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="airtable-cell">Municipio de Solidaridad</td>
-                        <td class="airtable-cell">Gubernamental</td>
-                        <td class="airtable-cell">3</td>
-                        <td class="airtable-cell">Lic. Manuel Torres</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Activo</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="airtable-cell">Fideicomiso Turístico Maya</td>
-                        <td class="airtable-cell">Privado</td>
-                        <td class="airtable-cell">1</td>
-                        <td class="airtable-cell">Ing. Roberto Sosa</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Activo</span>
-                        </td>
-                    </tr>
+                    <template for:each={beneficiarios.data} for:item="ben">
+                        <tr key={ben.id}>
+                            <td class="airtable-cell">{ben.name}</td>
+                            <td class="airtable-cell">{ben.rfc}</td>
+                            <td class="airtable-cell">{ben.tipo}</td>
+                            <td class="airtable-cell">
+                                <span class={ben.estatusClass}>{ben.estatus}</span>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

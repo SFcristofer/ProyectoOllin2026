@@ -23,41 +23,30 @@
                 <thead>
                     <tr class="slds-line-height_reset">
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Razón Social
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre
                         </th>
                         <th scope="col" class="airtable-header-cell">
                             <lightning-icon icon-name="utility:identity" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Capacidad
+                            <lightning-icon icon-name="utility:company" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Industria
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:groups" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Grupo
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estatus
+                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="airtable-cell">Constructora Ollin S.A.</td>
-                        <td class="airtable-cell">COL050101H88</td>
-                        <td class="airtable-cell">$10,000,000.00</td>
-                        <td class="airtable-cell">Grupo Ollin</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Activo</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="airtable-cell">Transportes Especializados S.A.</td>
-                        <td class="airtable-cell">TES101010JK2</td>
-                        <td class="airtable-cell">$5,000,000.00</td>
-                        <td class="airtable-cell">Logística Nacional</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Activo</span>
-                        </td>
-                    </tr>
+                    <template for:each={afianzados.data} for:item="afi">
+                        <tr key={afi.id}>
+                            <td class="airtable-cell">{afi.name}</td>
+                            <td class="airtable-cell">{afi.rfc}</td>
+                            <td class="airtable-cell">{afi.industria}</td>
+                            <td class="airtable-cell">
+                                <span class={afi.estatusClass}>{afi.estatus}</span>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

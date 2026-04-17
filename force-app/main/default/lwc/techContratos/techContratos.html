@@ -23,41 +23,38 @@
                 <thead>
                     <tr class="slds-line-height_reset">
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Número de Contrato
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contrato
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Cliente
+                            <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contratista
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:case" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Obra/Servicio
+                            <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Vigencia
+                            <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Inicio
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estatus
+                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="airtable-cell">CONT-2026-001</td>
-                        <td class="airtable-cell">Inmobiliaria del Centro</td>
-                        <td class="airtable-cell">Construcción Torre A</td>
-                        <td class="airtable-cell">31/12/2026</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Firmado</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="airtable-cell">CONT-2026-002</td>
-                        <td class="airtable-cell">Desarrollos Habitacionales</td>
-                        <td class="airtable-cell">Mantenimiento General</td>
-                        <td class="airtable-cell">15/10/2026</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-orange">En Firma</span>
-                        </td>
-                    </tr>
+                    <template for:each={contratos.data} for:item="con">
+                        <tr key={con.id}>
+                            <td class="airtable-cell">{con.name}</td>
+                            <td class="airtable-cell">{con.contratista}</td>
+                            <td class="airtable-cell">
+                                <lightning-formatted-number value={con.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                            </td>
+                            <td class="airtable-cell">
+                                <lightning-formatted-date-time value={con.fechaInicio} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                            </td>
+                            <td class="airtable-cell">
+                                <span class={con.estatusClass}>{con.estatus}</span>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

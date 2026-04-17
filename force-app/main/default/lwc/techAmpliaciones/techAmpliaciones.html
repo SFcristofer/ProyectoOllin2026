@@ -23,13 +23,13 @@
                 <thead>
                     <tr class="slds-line-height_reset">
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio Ampliación
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:file" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza Original
+                            <lightning-icon icon-name="utility:file" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto Adicional
+                            <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto
                         </th>
                         <th scope="col" class="airtable-header-cell">
                             <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fecha
@@ -40,24 +40,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="airtable-cell">AMP-001</td>
-                        <td class="airtable-cell">FI-001245</td>
-                        <td class="airtable-cell">$250,000.00</td>
-                        <td class="airtable-cell">20/04/2026</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Aprobada</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="airtable-cell">AMP-002</td>
-                        <td class="airtable-cell">FI-001246</td>
-                        <td class="airtable-cell">$50,000.00</td>
-                        <td class="airtable-cell">21/04/2026</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-orange">En Revisión</span>
-                        </td>
-                    </tr>
+                    <template for:each={ampliaciones.data} for:item="amp">
+                        <tr key={amp.id}>
+                            <td class="airtable-cell">{amp.name}</td>
+                            <td class="airtable-cell">{amp.fianza}</td>
+                            <td class="airtable-cell">
+                                <lightning-formatted-number value={amp.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                            </td>
+                            <td class="airtable-cell">
+                                <lightning-formatted-date-time value={amp.fecha} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                            </td>
+                            <td class="airtable-cell">
+                                <span class={amp.estatusClass}>{amp.estatus}</span>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>

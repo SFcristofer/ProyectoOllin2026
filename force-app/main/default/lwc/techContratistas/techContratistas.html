@@ -23,41 +23,34 @@
                 <thead>
                     <tr class="slds-line-height_reset">
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Razón Social
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre
                         </th>
                         <th scope="col" class="airtable-header-cell">
                             <lightning-icon icon-name="utility:identity" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:knowledge_base" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Especialidad
+                            <lightning-icon icon-name="utility:email" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Email
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:favorite" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Calificación
+                            <lightning-icon icon-name="utility:call" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Teléfono
                         </th>
                         <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estatus
+                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="airtable-cell">Edificaciones Modernas S.A.</td>
-                        <td class="airtable-cell">EMO100520ABC</td>
-                        <td class="airtable-cell">Obra Civil</td>
-                        <td class="airtable-cell">9.5/10</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-green">Certificado</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="airtable-cell">Instalaciones Eléctricas Plus</td>
-                        <td class="airtable-cell">IEP120815XYZ</td>
-                        <td class="airtable-cell">Electricidad Industrial</td>
-                        <td class="airtable-cell">8.0/10</td>
-                        <td class="airtable-cell">
-                            <span class="slds-badge airtable-badge-orange">En Proceso</span>
-                        </td>
-                    </tr>
+                    <template for:each={contratistas.data} for:item="ctra">
+                        <tr key={ctra.id}>
+                            <td class="airtable-cell">{ctra.name}</td>
+                            <td class="airtable-cell">{ctra.rfc}</td>
+                            <td class="airtable-cell">{ctra.email}</td>
+                            <td class="airtable-cell">{ctra.telefono}</td>
+                            <td class="airtable-cell">
+                                <span class={ctra.estatusClass}>{ctra.estatus}</span>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
