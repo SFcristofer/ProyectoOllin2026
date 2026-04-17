@@ -1,0 +1,65 @@
+<template>
+    <div class="airtable-container slds-bg-color_neutral-1">
+        <!-- Barra de Herramientas Estilo Airtable -->
+        <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
+            <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
+                <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
+                    <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
+                    <lightning-menu-item value="kanban" label="Kanban"></lightning-menu-item>
+                </lightning-button-menu>
+                <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+                <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block"></lightning-input>
+                <lightning-button label="Nuevo Beneficiario" variant="brand" icon-name="utility:add" class="slds-m-left_small"></lightning-button>
+            </div>
+        </div>
+
+        <!-- Tabla Estilo Airtable -->
+        <div class="airtable-grid-container slds-p-around_medium">
+            <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre/Razón Social
+                        </th>
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:groups" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Tipo
+                        </th>
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:logic" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Proyectos Vinculados
+                        </th>
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contacto Principal
+                        </th>
+                        <th scope="col" class="airtable-header-cell">
+                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="airtable-cell">Municipio de Solidaridad</td>
+                        <td class="airtable-cell">Gubernamental</td>
+                        <td class="airtable-cell">3</td>
+                        <td class="airtable-cell">Lic. Manuel Torres</td>
+                        <td class="airtable-cell">
+                            <span class="slds-badge airtable-badge-green">Activo</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="airtable-cell">Fideicomiso Turístico Maya</td>
+                        <td class="airtable-cell">Privado</td>
+                        <td class="airtable-cell">1</td>
+                        <td class="airtable-cell">Ing. Roberto Sosa</td>
+                        <td class="airtable-cell">
+                            <span class="slds-badge airtable-badge-green">Activo</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>

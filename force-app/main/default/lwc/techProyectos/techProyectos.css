@@ -1,0 +1,55 @@
+:host {
+    --airtable-border: #e0e0e0;
+    --airtable-header-bg: #fbfbfb;
+    --airtable-text: #333333;
+}
+
+.airtable-container {
+    background-color: white;
+    min-height: 400px;
+    border: 1px solid var(--airtable-border);
+    border-radius: 4px;
+}
+
+.airtable-toolbar {
+    background-color: #ffffff;
+}
+
+.airtable-search-input {
+    width: 200px;
+}
+
+.airtable-table {
+    border: 1px solid var(--airtable-border);
+    border-collapse: collapse !important;
+}
+
+.airtable-header-cell {
+    background-color: var(--airtable-header-bg) !important;
+    color: #666 !important;
+    font-weight: 500 !important;
+    border: 1px solid var(--airtable-border) !important;
+    padding: 8px !important;
+    font-size: 0.75rem;
+}
+
+.airtable-cell {
+    border: 1px solid var(--airtable-border) !important;
+    padding: 8px !important;
+    color: var(--airtable-text);
+}
+
+/* Badges estilo Airtable */
+.airtable-badge-green {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: none;
+    border-radius: 12px;
+}
+
+.airtable-badge-orange {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: none;
+    border-radius: 12px;
+}

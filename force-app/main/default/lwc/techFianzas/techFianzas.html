@@ -1,0 +1,69 @@
+<template>
+    <div class="airtable-container slds-bg-color_neutral-1">
+        <!-- Barra de Herramientas Estilo Airtable -->
+        <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
+            <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
+                <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
+                    <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
+                    <lightning-menu-item value="kanban" label="Kanban"></lightning-menu-item>
+                </lightning-button-menu>
+                <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+                <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block"></lightning-input>
+                <lightning-button label="Nueva Fianza" variant="brand" icon-name="utility:add" class="slds-m-left_small"></lightning-button>
+            </div>
+        </div>
+
+        <!-- Tabla Estilo Airtable con Datos Reales -->
+        <div class="airtable-grid-container slds-p-around_medium">
+            <template if:true={fianzas}>
+                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" class="airtable-header-cell">
+                                <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio
+                            </th>
+                            <th scope="col" class="airtable-header-cell">
+                                <lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Afianzado
+                            </th>
+                            <th scope="col" class="airtable-header-cell">
+                                <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto (MXN)
+                            </th>
+                            <th scope="col" class="airtable-header-cell">
+                                <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fecha Emisión
+                            </th>
+                            <th scope="col" class="airtable-header-cell">
+                                <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={fianzas} for:item="fianza">
+                            <tr key={fianza.id}>
+                                <td class="airtable-cell">{fianza.name}</td>
+                                <td class="airtable-cell">{fianza.contratista}</td>
+                                <td class="airtable-cell">
+                                    <lightning-formatted-number value={fianza.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                </td>
+                                <td class="airtable-cell">
+                                    <lightning-formatted-date-time value={fianza.fechaEmision} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
+                                </td>
+                                <td class="airtable-cell">
+                                    <span class={fianza.estatusClass}>{fianza.estatus}</span>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+            <template if:true={error}>
+                <div class="slds-text-color_error slds-p-around_medium">
+                    Error al cargar los datos de las fianzas. Por favor, contacte al administrador.
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

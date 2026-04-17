@@ -1,0 +1,67 @@
+================================================================================
+          MAPEAMIENTO DE OBJETOS SALESFORCE - PROYECTO OLLIN (AIRTABLE UI)
+================================================================================
+Fecha de Análisis: 17 de abril de 2026
+Organización: OllinSandbox (https://computing-momentum-2488--dev.sandbox.my.salesforce.com)
+Usuario: soporte.technovalue@ollin.com.mx.dev
+
+Este documento detalla la relación entre los componentes LWC creados (prefijo 'tech') 
+y los objetos personalizados (__c) identificados mediante el análisis de metadatos 
+directamente en la organización de Salesforce.
+
+--------------------------------------------------------------------------------
+1. MAPEO DE PESTAÑAS (LWCs) A OBJETOS
+--------------------------------------------------------------------------------
+
+| Pestaña LWC            | Objeto API Name (Salesforce) | Etiqueta del Objeto |
+|------------------------|------------------------------|---------------------|
+| techFianzas            | Fianza__c                    | Fianza              |
+| techAmpliaciones       | Endoso__c                    | Endoso              |
+| techFianzasGlobales    | Fianza__c (Filtrado)         | Fianza              |
+| techContratos          | Contrato__c                  | Contrato            |
+| techProyectos          | Proyecto__c                  | Proyecto            |
+| techContratistas       | Contratista__c               | Contratista         |
+| techBeneficiarios      | Beneficiario__c              | Beneficiario        |
+| techAfianzados         | Account / Contact            | Cuenta / Contacto   |
+
+--------------------------------------------------------------------------------
+2. OBJETOS DE SOPORTE Y FINANZAS DETECTADOS
+--------------------------------------------------------------------------------
+Estos objetos son críticos para la lógica de negocio y pueden mostrarse como 
+columnas, filtros o modales dentro de la interfaz de Airtable:
+
+- Afianzadora__c: Empresa que emite la fianza.
+- Institucion__c: Institución bancaria o de seguros relacionada.
+- Vendedores__c: Agente o ejecutivo responsable.
+- Plan_de_Pagos__c / Plan_de_Cobro__c: Gestión financiera de la fianza.
+- Recibo_de_Cobro__c: Comprobantes de pago generados.
+- Pago_parcial__c: Seguimiento de abonos a la fianza.
+- Poliza__c: Póliza maestra o individual asociada.
+
+--------------------------------------------------------------------------------
+3. OBSERVACIONES TÉCNICAS (INSIGHTS)
+--------------------------------------------------------------------------------
+* Relación Fianza-Endoso: El objeto 'Endoso__c' actúa como el historial de 
+  modificaciones o ampliaciones de la 'Fianza__c'. En la UI de Airtable, 
+  podríamos permitir ver los endosos relacionados desde una fila de fianza.
+
+* Tipificación: El objeto 'Fianza__c' parece centralizar tanto las individuales 
+  como las globales. La pestaña 'techFianzasGlobales' debería usar una 
+  consulta SOQL filtrada (ej. WHERE Tipo_Fianza__c = 'Global').
+
+* Gestión de Cuentas: El término 'Afianzado' en el sector suele referirse al 
+  cliente (Account) o persona física (Contact). Estos son objetos estándar 
+  de Salesforce integrados en el flujo.
+
+--------------------------------------------------------------------------------
+4. PRÓXIMOS PASOS RECOMENDADOS
+--------------------------------------------------------------------------------
+1. Análisis de Campos (Describe): Identificar los campos específicos de 
+   'Fianza__c' (Folio, Monto, Fecha, Estado) para mapear las columnas de la Grid.
+2. Controlador Apex (techFianzaController): Crear la clase para extraer los 
+   datos y enviarlos al LWC.
+3. Wire Service: Conectar el LWC techFianzas con Apex para mostrar datos reales.
+
+================================================================================
+DOCUMENTO GENERADO AUTOMÁTICAMENTE POR GEMINI CLI - PROYECTO OLLIN
+================================================================================
