@@ -1,0 +1,33 @@
+ .lookup-container {
+    position: relative;
+}
+
+.results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dddbda;
+    border-radius: .25rem;
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.16);
+    z-index: 9999;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.result-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+.result-item:hover {
+    background-color: #f3f3f2;
+}
+
+.pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}

@@ -1,49 +1,53 @@
 <template>
     <div class="airtable-container slds-bg-color_neutral-1">
-        <!-- Barra de Herramientas Estilo Airtable -->
+        <!-- Barra de Herramientas -->
         <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
             <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
                 <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
                     <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                    <lightning-menu-item value="kanban" label="Kanban"></lightning-menu-item>
                 </lightning-button-menu>
                 <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
                 <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
             </div>
             <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block"></lightning-input>
-                <lightning-button label="Nuevo Proyecto" variant="brand" icon-name="utility:add" class="slds-m-left_small"></lightning-button>
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar Proyectos..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
+                <lightning-button label="Nuevo Proyecto" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
             </div>
         </div>
 
-        <!-- Tabla Estilo Airtable con Datos de Proyectos -->
+        <!-- Tabla Estilo Airtable -->
         <div class="airtable-grid-container slds-p-around_medium">
-            <template if:true={proyectos}>
+            <template if:true={isLoading}>
+                <div class="slds-p-around_large slds-text-align_center">
+                    <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={proyectosFiltrados}>
                 <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
                     <thead>
                         <tr class="slds-line-height_reset">
-                            <th scope="col" class="airtable-header-cell">
-                                <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre Proyecto
-                            </th>
-                            <th scope="col" class="airtable-header-cell">
-                                <lightning-icon icon-name="utility:contract" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contrato
-                            </th>
-                            <th scope="col" class="airtable-header-cell">
-                                <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fecha Registro
-                            </th>
-                            <th scope="col" class="airtable-header-cell">
-                                <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
-                            </th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre Proyecto</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Beneficiario(s)</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:contract" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contrato(s)</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={proyectos} for:item="proyecto">
+                        <template for:each={proyectosFiltrados} for:item="proyecto">
                             <tr key={proyecto.id}>
                                 <td class="airtable-cell">{proyecto.name}</td>
-                                <td class="airtable-cell">{proyecto.contrato}</td>
+                                <!-- Chips para Beneficiarios -->
                                 <td class="airtable-cell">
-                                    <lightning-formatted-date-time value={proyecto.fechaCreacion} year="numeric" month="numeric" day="numeric"></lightning-formatted-date-time>
+                                    <template for:each={proyecto.beneficiarios} for:item="ben">
+                                        <span key={ben} class="slds-badge slds-m-around_xx-small">{ben}</span>
+                                    </template>
+                                </td>
+                                <!-- Chips para Contratos -->
+                                <td class="airtable-cell">
+                                    <template for:each={proyecto.contratos} for:item="con">
+                                        <span key={con} class="slds-badge slds-m-around_xx-small">{con}</span>
+                                    </template>
                                 </td>
                                 <td class="airtable-cell">
                                     <span class={proyecto.estatusClass}>{proyecto.estatus}</span>
@@ -53,11 +57,13 @@
                     </tbody>
                 </table>
             </template>
-            <template if:true={error}>
-                <div class="slds-text-color_error slds-p-around_medium">
-                    Error al cargar los proyectos. Por favor, contacte al administrador.
-                </div>
-            </template>
         </div>
     </div>
+
+    <!-- Modal de Creación Personalizado de Proyectos -->
+    <c-tech-proyecto-create-modal 
+        show-modal={isCreateModalOpen}
+        onclose={handleCloseCreateModal}
+        onsuccess={handleCreateSuccess}>
+    </c-tech-proyecto-create-modal>
 </template>

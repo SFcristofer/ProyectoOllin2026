@@ -1,0 +1,1 @@
+<?xml version=\"1.0\" encoding=\"UTF-8\"?><CustomObject xmlns=\"http://soap.sforce.com/2006/04/metadata\"><deploymentStatus>Deployed</deploymentStatus><label>Relación Técnica</label><nameField><label>ID Relación</label><type>AutoNumber</type></nameField><pluralLabel>Relaciones Técnicas</pluralLabel><sharingModel>ReadWrite</sharingModel></CustomObject>

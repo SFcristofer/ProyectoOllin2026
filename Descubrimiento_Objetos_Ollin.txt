@@ -54,7 +54,28 @@ columnas, filtros o modales dentro de la interfaz de Airtable:
   de Salesforce integrados en el flujo.
 
 --------------------------------------------------------------------------------
-4. PRÓXIMOS PASOS RECOMENDADOS
+4. SOLUCIÓN PARA RELACIONES MÚLTIPLES (STYLE AIRTABLE)
+--------------------------------------------------------------------------------
+Se ha implementado una arquitectura de "Junction Object" (Objeto de Unión) para 
+resolver la limitación nativa de Salesforce que solo permite un ID por Lookup.
+
+OBJETO TÉCNICO: Tech_Relacion__c
+- Propósito: Actuar como un puente universal entre registros.
+- Funcionamiento: Cuando el usuario selecciona múltiples registros en la UI 
+  (ej. 3 Vendedores), el sistema guarda el principal en el campo de la Fianza 
+  y crea registros en 'Tech_Relacion__c' para los demás.
+- Beneficios:
+  1. Integridad de Datos: Las relaciones son reales en la base de datos (IDs).
+  2. Reportabilidad: Permite sacar reportes de "Fianzas con múltiples Vendedores".
+  3. Escalabilidad: Funciona para todas las pestañas del proyecto (Contratos, 
+     Proyectos, etc.) usando el mismo objeto puente.
+
+Mecanismo de Guardado:
+Al presionar "Guardar" en el modal de Airtable, un controlador Apex procesa la 
+lista de IDs y genera los registros 'puente' de forma atómica.
+
+--------------------------------------------------------------------------------
+5. PRÓXIMOS PASOS RECOMENDADOS
 --------------------------------------------------------------------------------
 1. Análisis de Campos (Describe): Identificar los campos específicos de 
    'Fianza__c' (Folio, Monto, Fecha, Estado) para mapear las columnas de la Grid.
@@ -63,5 +84,4 @@ columnas, filtros o modales dentro de la interfaz de Airtable:
 3. Wire Service: Conectar el LWC techFianzas con Apex para mostrar datos reales.
 
 ================================================================================
-DOCUMENTO GENERADO AUTOMÁTICAMENTE POR GEMINI CLI - PROYECTO OLLIN
-================================================================================
+

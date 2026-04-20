@@ -1,62 +1,62 @@
 <template>
     <div class="airtable-container slds-bg-color_neutral-1">
-        <!-- Barra de Herramientas Estilo Airtable -->
+        <!-- Barra de Herramientas -->
         <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
             <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
                 <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
                     <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                    <lightning-menu-item value="kanban" label="Kanban"></lightning-menu-item>
                 </lightning-button-menu>
                 <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
                 <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
             </div>
             <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block"></lightning-input>
-                <lightning-button label="Nueva Ampliación" variant="brand" icon-name="utility:add" class="slds-m-left_small"></lightning-button>
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar Ampliaciones..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
+                <lightning-button label="Nueva Ampliación" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
             </div>
         </div>
 
-        <!-- Tabla Estilo Airtable -->
         <div class="airtable-grid-container slds-p-around_medium">
-            <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
-                <thead>
-                    <tr class="slds-line-height_reset">
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:file" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:event" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fecha
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template for:each={ampliaciones.data} for:item="amp">
-                        <tr key={amp.id}>
-                            <td class="airtable-cell">{amp.name}</td>
-                            <td class="airtable-cell">{amp.fianza}</td>
-                            <td class="airtable-cell">
-                                <lightning-formatted-number value={amp.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
-                            </td>
-                            <td class="airtable-cell">
-                                <lightning-formatted-date-time value={amp.fecha} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
-                            </td>
-                            <td class="airtable-cell">
-                                <span class={amp.estatusClass}>{amp.estatus}</span>
-                            </td>
+            <template if:true={isLoading}>
+                <div class="slds-p-around_large slds-text-align_center">
+                    <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={filteredData}>
+                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio Endoso</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:contract" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza(s) Relacionada(s)</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredData} for:item="item">
+                            <tr key={item.id}>
+                                <td class="airtable-cell">{item.name}</td>
+                                <td class="airtable-cell">
+                                    <template for:each={item.fianzas} for:item="f">
+                                        <span key={f} class="slds-badge slds-m-around_xx-small">{f}</span>
+                                    </template>
+                                </td>
+                                <td class="airtable-cell">
+                                    <lightning-formatted-number value={item.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                </td>
+                                <td class="airtable-cell"><span class={item.estatusClass}>{item.estatus}</span></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
         </div>
     </div>
+
+    <!-- Modal de Creación Avanzada de Ampliaciones -->
+    <c-tech-ampliacion-create-modal 
+        show-modal={isCreateModalOpen}
+        onclose={handleCloseCreateModal}
+        onsuccess={handleCreateSuccess}>
+    </c-tech-ampliacion-create-modal>
 </template>

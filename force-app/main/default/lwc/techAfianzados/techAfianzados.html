@@ -1,54 +1,61 @@
 <template>
     <div class="airtable-container slds-bg-color_neutral-1">
-        <!-- Barra de Herramientas Estilo Airtable -->
         <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
             <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
                 <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
                     <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                    <lightning-menu-item value="kanban" label="Kanban"></lightning-menu-item>
                 </lightning-button-menu>
                 <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
                 <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
             </div>
             <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block"></lightning-input>
-                <lightning-button label="Nuevo Afianzado" variant="brand" icon-name="utility:add" class="slds-m-left_small"></lightning-button>
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar Afianzado..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
+                <lightning-button label="Nuevo Afianzado" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
             </div>
         </div>
 
-        <!-- Tabla Estilo Airtable -->
         <div class="airtable-grid-container slds-p-around_medium">
-            <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
-                <thead>
-                    <tr class="slds-line-height_reset">
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:identity" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:company" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Industria
-                        </th>
-                        <th scope="col" class="airtable-header-cell">
-                            <lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template for:each={afianzados.data} for:item="afi">
-                        <tr key={afi.id}>
-                            <td class="airtable-cell">{afi.name}</td>
-                            <td class="airtable-cell">{afi.rfc}</td>
-                            <td class="airtable-cell">{afi.industria}</td>
-                            <td class="airtable-cell">
-                                <span class={afi.estatusClass}>{afi.estatus}</span>
-                            </td>
+            <template if:true={isLoading}>
+                <div class="slds-p-around_large slds-text-align_center">
+                    <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:layers" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianzas</th>
+                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredData} for:item="afi">
+                            <tr key={afi.id}>
+                                <td class="airtable-cell">{afi.name}</td>
+                                <td class="airtable-cell">{afi.rfc}</td>
+                                <td class="airtable-cell">
+                                    <template for:each={afi.fianzas} for:item="fianza">
+                                        <lightning-badge key={fianza} label={fianza} class="slds-m-around_xx-small airtable-badge-orange"></lightning-badge>
+                                    </template>
+                                </td>
+                                <td class="airtable-cell"><span class={afi.estatusClass}>{afi.estatus}</span></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <template if:false={hasResults}>
+                    <div class="slds-p-around_large slds-text-align_center slds-text-color_weak">No se encontraron resultados.</div>
+                </template>
+            </template>
         </div>
     </div>
+
+    <c-tech-afianzado-create-modal 
+        show-modal={isCreateModalOpen} 
+        onclose={handleCloseCreateModal} 
+        onsuccess={handleCreateSuccess}>
+    </c-tech-afianzado-create-modal>
 </template>

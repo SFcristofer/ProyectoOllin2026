@@ -1,0 +1,17 @@
+.slds-modal {
+    z-index: 9002 !important;
+}
+
+.slds-backdrop {
+    z-index: 9001 !important;
+}
+
+/* Asegurar que el modal se vea bien en diferentes tamaños */
+@media (min-width: 48em) {
+    .slds-modal__container {
+        margin: 0 auto;
+        width: 70%;
+        max-width: 800px;
+        min-width: 20rem;
+    }
+}

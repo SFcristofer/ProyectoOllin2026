@@ -1,0 +1,68 @@
+<template>
+    <div class="slds-form-element">
+        <label class="slds-form-element__label">{label}</label>
+        <div class="slds-form-element__control">
+            <!-- Contenedor de Pills (Chips) -->
+            <div class="slds-combobox_container">
+                <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+                    <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                        <lightning-input 
+                            type="search" 
+                            variant="label-hidden" 
+                            placeholder={placeholder} 
+                            value={searchTerm}
+                            onchange={handleSearch}
+                            onblur={handleBlur}>
+                        </lightning-input>
+                    </div>
+
+                    <!-- Lista de Resultados -->
+                    <template if:true={showDropdown}>
+                        <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox">
+                            <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                <!-- Resultados encontrados -->
+                                <template for:each={results} for:item="res">
+                                    <li key={res.value} role="presentation" class="slds-listbox__item" data-id={res.value} data-label={res.label} onclick={handleSelect}>
+                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option">
+                                            <span class="slds-media__figure slds-listbox__option-icon">
+                                                <lightning-icon icon-name="utility:record" size="xx-small"></lightning-icon>
+                                            </span>
+                                            <span class="slds-media__body">
+                                                <span class="slds-truncate" title={res.label}>{res.label}</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                </template>
+
+                                <!-- Opción CREAR NUEVO -->
+                                <li role="presentation" class="slds-listbox__item" onclick={handleCreateNew}>
+                                    <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small slds-text-color_weak" role="option">
+                                        <span class="slds-media__figure slds-listbox__option-icon">
+                                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                        </span>
+                                        <span class="slds-media__body">
+                                            <span class="slds-truncate">Crear nuevo "{searchTerm}"...</span>
+                                        </span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Chips Seleccionados -->
+            <div class="slds-m-top_x-small">
+                <template for:each={selectedRecords} for:item="rec">
+                    <lightning-pill 
+                        key={rec.value} 
+                        label={rec.label} 
+                        name={rec.value} 
+                        onremove={handleRemove}
+                        class="slds-m-around_xx-small">
+                    </lightning-pill>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

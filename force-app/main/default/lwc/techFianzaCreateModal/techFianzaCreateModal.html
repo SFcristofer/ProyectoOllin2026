@@ -1,0 +1,94 @@
+<template>
+    <template if:true={showModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open slds-modal_large">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Cerrar</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Creación de Fianza - Guardado Masivo Real</h2>
+                </header>
+                
+                <div class="slds-modal__content slds-p-around_medium">
+                    <!-- Spinner para el guardado -->
+                    <template if:true={isLoading}>
+                        <lightning-spinner alternative-text="Guardando datos..." size="medium"></lightning-spinner>
+                    </template>
+
+                    <lightning-record-edit-form object-api-name="Fianza__c" onsubmit={handleSubmit}>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <template for:each={fields} for:item="f">
+                                <div key={f.apiName} class="slds-col slds-size_1-of-2">
+                                    
+                                    <!-- Contrato (Multi-Lookup) -->
+                                    <template if:true={f.isContrato}>
+                                        <div class="slds-m-bottom_small">
+                                            <c-tech-multi-lookup 
+                                                label={f.label} 
+                                                object-api-name="Contrato__c" 
+                                                placeholder="Buscar o crear contrato..."
+                                                onselectionchange={handleContratoChange}
+                                                oncreatenew={handleQuickCreate}>
+                                            </c-tech-multi-lookup>
+                                        </div>
+                                    </template>
+
+                                    <!-- Endoso (Multi-Lookup) -->
+                                    <template if:true={f.isEndoso}>
+                                        <div class="slds-m-bottom_small">
+                                            <c-tech-multi-lookup 
+                                                label={f.label} 
+                                                object-api-name="Endoso__c" 
+                                                placeholder="Buscar o crear endoso..."
+                                                onselectionchange={handleEndosoChange}
+                                                oncreatenew={handleQuickCreate}>
+                                            </c-tech-multi-lookup>
+                                        </div>
+                                    </template>
+
+                                    <!-- Contratista (Multi-Lookup) -->
+                                    <template if:true={f.isContratista}>
+                                        <div class="slds-m-bottom_small">
+                                            <c-tech-multi-lookup 
+                                                label={f.label} 
+                                                object-api-name="Account" 
+                                                placeholder="Buscar o crear contratista..."
+                                                onselectionchange={handleContratistaChange}
+                                                oncreatenew={handleQuickCreate}>
+                                            </c-tech-multi-lookup>
+                                        </div>
+                                    </template>
+
+                                    <!-- Vendedor (Multi-Lookup) -->
+                                    <template if:true={f.isVendedor}>
+                                        <div class="slds-m-bottom_small">
+                                            <c-tech-multi-lookup 
+                                                label={f.label} 
+                                                object-api-name="Vendedores__c" 
+                                                placeholder="Buscar o crear vendedor..."
+                                                onselectionchange={handleVendedorChange}
+                                                oncreatenew={handleQuickCreate}>
+                                            </c-tech-multi-lookup>
+                                        </div>
+                                    </template>
+
+                                    <!-- Campos estándar del objeto -->
+                                    <template if:false={f.isSpecial}>
+                                        <lightning-input-field field-name={f.apiName}></lightning-input-field>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="slds-m-top_medium slds-text-align_right">
+                            <lightning-button label="Cancelar" onclick={closeModal} class="slds-m-right_small" disabled={isLoading}></lightning-button>
+                            <lightning-button type="submit" label="Guardar Todo" variant="brand" disabled={isLoading}></lightning-button>
+                        </div>
+                    </lightning-record-edit-form>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>
