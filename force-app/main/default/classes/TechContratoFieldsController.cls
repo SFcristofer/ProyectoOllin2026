@@ -2,7 +2,7 @@ public with sharing class TechContratoFieldsController {
     @AuraEnabled(cacheable=true)
     public static List<FieldInfo> getContratoFields() {
         List<FieldInfo> fieldList = new List<FieldInfo>();
-        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Contrato__c.fields.getMap();
+        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Contract.fields.getMap();
         for (Schema.SObjectField field : fieldsMap.values()) {
             Schema.DescribeFieldResult descField = field.getDescribe();
             if (descField.isCreateable() || descField.getName() == 'Name') {

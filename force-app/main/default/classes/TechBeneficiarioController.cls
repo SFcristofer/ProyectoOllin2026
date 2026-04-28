@@ -2,30 +2,29 @@ public with sharing class TechBeneficiarioController {
     @AuraEnabled(cacheable=true)
     public static List<TechBeneficiarioWrapper> getBeneficiarioList() {
         List<TechBeneficiarioWrapper> wrappers = new List<TechBeneficiarioWrapper>();
-        for (Beneficiario__c b : TechBeneficiarioSelector.getRecentBeneficiarios()) {
-            wrappers.add(new TechBeneficiarioWrapper(b));
+        for (Account a : TechBeneficiarioSelector.getRecentBeneficiarios()) {
+            wrappers.add(new TechBeneficiarioWrapper(a));
         }
         return wrappers;
     }
 
     @AuraEnabled
-    public static String saveBeneficiarioWithRelations(Beneficiario__c beneficiario, Map<String, List<String>> relationsMap) {
+    public static String saveBeneficiarioWithRelations(Account beneficiario, Map<String, List<String>> relationsMap) {
         try {
             upsert beneficiario;
-            List<Tech_Relacion__c> newRelations = new List<Tech_Relacion__c>();
             if (relationsMap != null) {
-                for (String type : relationsMap.keySet()) {
-                    for (String relatedId : relationsMap.get(type)) {
-                        Tech_Relacion__c rel = new Tech_Relacion__c();
-                        rel.Account__c = beneficiario.Id; // Usamos Account__c genérico
-                        rel.Tipo__c = type;
-                        if (type == 'Fianza') rel.Fianza__c = (Id)relatedId;
-                        else if (type == 'Contrato') rel.Contrato__c = (Id)relatedId;
-                        newRelations.add(rel);
+                for (String tipo : relationsMap.keySet()) {
+                    List<String> ids = relationsMap.get(tipo);
+                    if (ids == null || ids.isEmpty()) continue;
+                    if (tipo == 'Fianza') {
+                        List<Tech_Fianza__c> toUpdate = new List<Tech_Fianza__c>();
+                        for (String fId : ids) {
+                            toUpdate.add(new Tech_Fianza__c(Id = (Id)fId, Beneficiarios__c = beneficiario.Id));
+                        }
+                        update toUpdate;
                     }
                 }
             }
-            if (!newRelations.isEmpty()) insert newRelations;
             return beneficiario.Id;
         } catch (Exception e) {
             throw new AuraHandledException('Error al guardar beneficiario: ' + e.getMessage());

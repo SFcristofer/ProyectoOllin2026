@@ -2,7 +2,7 @@ public with sharing class TechBeneficiarioFieldsController {
     @AuraEnabled(cacheable=true)
     public static List<FieldInfo> getBeneficiarioFields() {
         List<FieldInfo> fieldList = new List<FieldInfo>();
-        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Beneficiario__c.fields.getMap();
+        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Account.fields.getMap();
         for (Schema.SObjectField field : fieldsMap.values()) {
             Schema.DescribeFieldResult descField = field.getDescribe();
             if (descField.isCreateable() || descField.getName() == 'Name') {
