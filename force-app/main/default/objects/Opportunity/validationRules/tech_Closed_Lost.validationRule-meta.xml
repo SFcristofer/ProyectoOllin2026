@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>tech_Closed_Lost</fullName>
+    <active>true</active>
+    <description>Todo cierre perdido debe tener motivo.</description>
+    <errorConditionFormula>IF(ISPICKVAL (StageName, &apos;Cierre perdido&apos;),
+   IF( ISPICKVAL (Motivo_Perdida__c, &apos;&apos;),true,false
+   ),false)</errorConditionFormula>
+    <errorDisplayField>StageName</errorDisplayField>
+    <errorMessage>Todo cierre perdido debe tener motivo.</errorMessage>
+</ValidationRule>

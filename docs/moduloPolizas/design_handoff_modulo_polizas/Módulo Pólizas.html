@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulo Pólizas — Ollin Protección</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; overflow: hidden; }
+    body { font-family: 'Inter', sans-serif; background: #111; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+  </style>
+</head>
+<body>
+<div id="root" style="width:100%;height:100%;"></div>
+
+<!-- Data -->
+<script src="polizas-data.js"></script>
+
+<!-- Components -->
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="polizas-variacion-a.jsx"></script>
+<script type="text/babel" src="polizas-variacion-b.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "variant": "a",
+  "artboardWidth": 1100,
+  "artboardHeight": 700
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  const w = tweaks.artboardWidth;
+  const h = tweaks.artboardHeight;
+  const showA = tweaks.variant === "both" || tweaks.variant === "a";
+  const showB = tweaks.variant === "both" || tweaks.variant === "b";
+
+  return (
+    <>
+      <DesignCanvas>
+        {/* Row 1: Título */}
+        <DCSection id="intro" title="Módulo Pólizas — Pestaña nueva en LWC existente">
+
+          {showA && (
+            <DCArtboard id="varA" label="A — Conservador: Tabla con árbol expandible" width={w} height={h}>
+              <VariacionA />
+            </DCArtboard>
+          )}
+
+          {showB && (
+            <DCArtboard id="varB" label="B — Innovador: Cards con panel deslizante" width={w} height={h}>
+              <VariacionB />
+            </DCArtboard>
+          )}
+
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection title="Vista">
+          <TweakRadio
+            id="variant"
+            label="Mostrar variación"
+            value={tweaks.variant}
+            options={[
+              { value: "both", label: "Ambas" },
+              { value: "a", label: "Solo A" },
+              { value: "b", label: "Solo B" },
+            ]}
+            onChange={v => setTweak("variant", v)}
+          />
+        </TweakSection>
+        <TweakSection title="Tamaño del artboard">
+          <TweakSlider
+            id="artboardWidth"
+            label="Ancho"
+            value={tweaks.artboardWidth}
+            min={600} max={1280} step={20}
+            onChange={v => setTweak("artboardWidth", v)}
+          />
+          <TweakSlider
+            id="artboardHeight"
+            label="Alto"
+            value={tweaks.artboardHeight}
+            min={400} max={900} step={20}
+            onChange={v => setTweak("artboardHeight", v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<template>
+    <div class="vb-wrap">
+
+        <!-- ── Toolbar ── -->
+        <div class="vb-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+            <div class="vb-toolbar-spacer"></div>
+        </div>
+
+        <!-- ── Filter panel ── -->
+        <template if:true={showFilters}>
+            <div class="vb-filter-panel">
+                <div class="vb-filter-hdr">
+                    <span class="vb-filter-title">Filtros avanzados</span>
+                    <div class="vb-filter-actions">
+                        <button class="vb-flt-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vb-flt-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vb-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vb-filter-rule">
+                                <select class="vb-flt-campo" data-id={rule.id} onchange={handleFilterField}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vb-flt-op" data-id={rule.id} onchange={handleFilterOp}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vb-flt-value" type="text" data-id={rule.id}
+                                        value={rule.value} oninput={handleFilterValue} placeholder="Valor..." />
+                                </template>
+                                <button class="vb-flt-remove" data-id={rule.id} onclick={handleRemoveRule}>×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vb-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Content: tabla + panel ── -->
+        <div class="vb-content">
+
+            <template if:true={isLoading}>
+                <div class="vb-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="vb-error-msg">{error}</div>
+            </template>
+
+            <template if:true={isEmpty}>
+                <div class="vb-empty-msg">No hay beneficiarios para mostrar.</div>
+            </template>
+
+            <!-- Tabla -->
+            <template if:true={showTable}>
+                <div class="vb-table-scroll">
+                    <table class="vb-table">
+                        <thead>
+                            <tr>
+                                <template for:each={headers} for:item="h">
+                                    <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="vb-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredRows} for:item="row">
+                                <tr key={row.id} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+                                    <td class="vb-td-name">{row.name}</td>
+                                    <td>{row.rfc}</td>
+                                    <td><span class="vb-chip vb-chip-teal">{row.fianzasCount}</span></td>
+                                    <td><span class={row.estatusClass}>{row.estatus}</span></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- Panel lateral -->
+            <template if:true={showPanel}>
+                <div class="vb-panel">
+                    <div class="vb-panel-hdr">
+                        <span class="vb-panel-title">{panelRecord.name}</span>
+                        <div class="vb-panel-hdr-actions">
+                            <template if:false={isEditing}>
+                                <button class="vb-panel-edit" onclick={handleEditPanel} title="Editar">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                </button>
+                            </template>
+                            <button class="vb-panel-prev" onclick={handlePanelPrev} title="Anterior">
+                                <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vb-panel-next" onclick={handlePanelNext} title="Siguiente">
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vb-panel-close" onclick={handleClosePanel}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="vb-panel-tabbar">
+                        <button class={ptClassDetalles} data-ptab="detalles" onclick={handlePanelTab}>Detalles</button>
+                        <button class={ptClassFianzas}  data-ptab="fianzas"  onclick={handlePanelTab}>Fianzas</button>
+                    </div>
+
+                    <!-- Detalles -->
+                    <template if:true={showPtDetalles}>
+                        <template if:false={isEditing}>
+                            <div class="vb-panel-body">
+                                <template for:each={panelFields} for:item="f">
+                                    <div key={f.key} class="vb-detail-row">
+                                        <span class="vb-detail-label">{f.label}</span>
+                                        <template if:true={f.isBadge}>
+                                            <span class={f.badgeClass}>{f.value}</span>
+                                        </template>
+                                        <template if:false={f.isBadge}>
+                                            <span>{f.value}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:true={isEditing}>
+                            <div class="vb-panel-body vb-edit-body">
+                                <template for:each={editFields} for:item="f">
+                                    <div key={f.key} class="vb-edit-field">
+                                        <label class="vb-edit-label">{f.label}</label>
+                                        <template if:true={f.isInput}>
+                                            <input class="vb-edit-input" type={f.type} value={f.val}
+                                                data-key={f.key} oninput={handleEditInput} />
+                                        </template>
+                                        <template if:true={f.isSelect}>
+                                            <select class="vb-edit-select" data-key={f.key} onchange={handleEditInput}>
+                                                <template for:each={f.options} for:item="opt">
+                                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                                </template>
+                                            </select>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="vb-edit-footer">
+                                    <button class="vb-btn-cancel-edit" onclick={handleCancelEdit} disabled={isSavingEdit}>Cancelar</button>
+                                    <button class="vb-btn-save-edit"   onclick={handleSaveEdit}   disabled={isSavingEdit}>
+                                        <template if:true={isSavingEdit}>Guardando...</template>
+                                        <template if:false={isSavingEdit}>Guardar</template>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Fianzas relacionadas -->
+                    <template if:true={showPtFianzas}>
+                        <div class="vb-panel-body">
+                            <template if:true={panelFianzas.length}>
+                                <template for:each={panelFianzas} for:item="f">
+                                    <div key={f.id} class="vb-mini-card">
+                                        <div class="vb-mini-card-hdr">
+                                            <span class="vb-mini-card-name">{f.name}</span>
+                                            <span class={f.estatusClass}>{f.estatus}</span>
+                                        </div>
+                                        <div class="vb-mini-card-row">
+                                            <span class="vb-mini-label">Tipo</span>
+                                            <span>{f.tipoRiesgo}</span>
+                                        </div>
+                                        <div class="vb-mini-card-row">
+                                            <span class="vb-mini-label">Monto vigente</span>
+                                            <span class="vb-detail-money">{f.montoVigenteFmt}</span>
+                                        </div>
+                                        <div class="vb-mini-card-row">
+                                            <span class="vb-mini-label">Vencimiento</span>
+                                            <span>{f.fechaVencimiento}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={panelFianzas.length}>
+                                <div class="vb-panel-empty">Sin fianzas vinculadas</div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

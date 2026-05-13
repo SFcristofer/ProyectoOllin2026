@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Estado__c</fullName>
+    <description>Estado de cobro del recibo. Se actualiza por trigger: Pendiente a Pagado cuando Monto_pagado&gt;=Monto_programado; Pendiente a Vencido cuando Fecha_programada&lt;TODAY y no pagado.</description>
+    <label>Estado</label>
+    <required>true</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Pendiente</fullName>
+                <default>true</default>
+                <label>Pendiente</label>
+            </value>
+            <value>
+                <fullName>Vencido</fullName>
+                <default>false</default>
+                <label>Vencido</label>
+            </value>
+            <value>
+                <fullName>Parcial</fullName>
+                <default>false</default>
+                <label>Pago parcial</label>
+            </value>
+            <value>
+                <fullName>Pagado</fullName>
+                <default>false</default>
+                <label>Pagado</label>
+            </value>
+            <value>
+                <fullName>Cancelado</fullName>
+                <default>false</default>
+                <label>Cancelado</label>
+            </value>
+            <value>
+                <fullName>Reembolsado</fullName>
+                <default>false</default>
+                <label>Reembolsado</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

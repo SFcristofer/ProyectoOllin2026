@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fecha_vigencia_inicio__c</fullName>
+    <description>Fecha a partir de la cual esta tarifa de comision aplica. Permite versionar tarifas historicamente.</description>
+    <label>Vigencia inicio</label>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

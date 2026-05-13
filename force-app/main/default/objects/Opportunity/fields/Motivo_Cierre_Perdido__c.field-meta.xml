@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Motivo_Cierre_Perdido__c</fullName>
+    <label>Motivo cierre perdido</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Precio</fullName>
+                <default>false</default>
+                <label>Precio</label>
+            </value>
+            <value>
+                <fullName>Competencia</fullName>
+                <default>false</default>
+                <label>Competencia</label>
+            </value>
+            <value>
+                <fullName>No calificó</fullName>
+                <default>false</default>
+                <label>No calificó</label>
+            </value>
+            <value>
+                <fullName>No interesado</fullName>
+                <default>false</default>
+                <label>No interesado</label>
+            </value>
+            <value>
+                <fullName>Sin respuesta</fullName>
+                <default>false</default>
+                <label>Sin respuesta</label>
+            </value>
+            <value>
+                <fullName>Otro</fullName>
+                <default>false</default>
+                <label>Otro</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

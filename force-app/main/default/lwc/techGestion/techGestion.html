@@ -1,0 +1,322 @@
+<template>
+    <div class="tg-wrap">
+
+        <!-- ── Loading ── -->
+        <template if:true={loading}>
+            <div class="tg-loading">
+                <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- ── Error ── -->
+        <template if:true={error}>
+            <div class="tg-error">{error}</div>
+        </template>
+
+        <!-- ── Banner atrasadas (siempre total, sin filtro) ── -->
+        <template if:true={hasAtrasadas}>
+            <div class="tg-banner" role="alert">
+                <span class="tg-banner-icon">⚠</span>
+                <span class="tg-banner-text">{bannerText}</span>
+                <button class="tg-banner-btn" onclick={scrollToAtrasadas}>Ver atrasadas</button>
+            </div>
+        </template>
+
+        <!-- ── KPI Cards ── -->
+        <div class="tg-kpi-grid">
+
+            <div class={kpiCardVencidos} onclick={handleKpiVencidos} role="button" tabindex="0">
+                <div class="tg-kpi-label">
+                    Vencidos
+                    <span class="tg-help" data-tip="Recibos cuya fecha de pago ya venció y no han sido cobrados. Haz clic para ver el detalle.">?</span>
+                </div>
+                <div class="tg-kpi-count">{kpis.vencidosCount}</div>
+                <div class="tg-kpi-amount">{kpis.vencidosAmountFmt}</div>
+            </div>
+
+            <div class={kpiCardPorCobrar} onclick={handleKpiPorCobrar} role="button" tabindex="0">
+                <div class="tg-kpi-label">
+                    Por cobrar
+                    <span class="tg-help" data-tip="Recibos activos pendientes de pago con fecha futura. Haz clic para ver el detalle.">?</span>
+                </div>
+                <div class="tg-kpi-count">{kpis.porCobrarCount}</div>
+                <div class="tg-kpi-amount">{kpis.porCobrarAmountFmt}</div>
+            </div>
+
+            <div class={kpiCardCobradoMes} onclick={handleKpiCobradoMes} role="button" tabindex="0">
+                <div class="tg-kpi-label">
+                    Cobrado este mes
+                    <span class="tg-help" data-tip="Monto total cobrado durante el mes en curso. Haz clic para ver el detalle.">?</span>
+                </div>
+                <div class="tg-kpi-count">{kpis.cobradoMesCount}</div>
+                <div class="tg-kpi-amount">{kpis.cobradoMesAmountFmt}</div>
+            </div>
+
+            <div class={kpiCardPendiente} onclick={handleKpiPendienteMes} role="button" tabindex="0">
+                <div class="tg-kpi-label">
+                    Pendiente del mes
+                    <span class="tg-help" data-tip="Recibos programados para este mes que aún no han sido cobrados. Haz clic para ver el detalle.">?</span>
+                </div>
+                <div class="tg-kpi-count">{kpis.pendienteMesCount}</div>
+                <div class="tg-kpi-amount">{kpis.pendienteMesAmountFmt}</div>
+            </div>
+
+            <div class={kpiCardRenovaciones} onclick={handleKpiRenovaciones} role="button" tabindex="0">
+                <div class="tg-kpi-label">
+                    Renovaciones {mesActualLabel}
+                    <span class="tg-help" data-tip="Seguros y fianzas con vigencia que vence este mes. Haz clic para ir a la sección de renovaciones.">?</span>
+                </div>
+                <div class="tg-kpi-count">{kpis.renovMesActualCount}</div>
+                <div class="tg-kpi-amount">{kpis.renovMesActualAmountFmt}</div>
+                <div class="tg-kpi-sub">Próx. mes: {kpis.renovMesSigCount}</div>
+            </div>
+
+        </div>
+
+        <!-- ── Drawer KPI ── -->
+        <template if:true={showKpiDrawer}>
+            <div class="tg-kpi-drawer">
+                <div class="tg-drawer-header">
+                    <span class="tg-drawer-title">{kpiDrawerTitle}</span>
+                    <span class="tg-drawer-count">{kpiDrawerCount} registros</span>
+                    <button class="tg-drawer-close" onclick={closeKpiDrawer} aria-label="Cerrar">✕</button>
+                </div>
+                <div class="tg-grid-wrap">
+                    <!-- Header -->
+                    <div class={kpiDrawerHeadClass}>
+                        <div class="tg-cell tg-cell-num">#</div>
+                        <div class="tg-cell">Recibo</div>
+                        <div class="tg-cell">Póliza / Fianza</div>
+                        <div class="tg-cell">Cliente</div>
+                        <div class="tg-cell">{kpiDrawerFechaLabel}</div>
+                        <div class="tg-cell tg-cell-right">Monto</div>
+                        <template if:true={kpiDrawerUsaMora}>
+                            <div class="tg-cell tg-cell-center">Días mora</div>
+                        </template>
+                    </div>
+                    <!-- Vacío -->
+                    <template if:true={kpiDrawerEmpty}>
+                        <div class="tg-empty">Sin registros</div>
+                    </template>
+                    <!-- Filas -->
+                    <template for:each={kpiDrawerRows} for:item="r">
+                        <div key={r.id} class={kpiDrawerRowClass}>
+                            <div class="tg-cell tg-cell-num">{r.rowNum}</div>
+                            <div class="tg-cell tg-cell-name">{r.numero}</div>
+                            <div class="tg-cell">{r.poliza}</div>
+                            <div class="tg-cell">{r.cliente}</div>
+                            <div class="tg-cell tg-cell-date">{r.fechaFmt}</div>
+                            <div class="tg-cell tg-cell-right tg-cell-money">{r.montoFmt}</div>
+                            <template if:true={kpiDrawerUsaMora}>
+                                <div class="tg-cell tg-cell-center tg-cell-dias">{r.diasMora}</div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ── Barra de filtros ── -->
+        <div class="tg-filter-bar">
+            <span class="tg-filter-label">Filtrar tablas:</span>
+            <div class="tg-filter-controls">
+                <select class="tg-filter-select" onchange={handleFilterTipo}>
+                    <template for:each={tipoOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                    </template>
+                </select>
+                <select class="tg-filter-select" onchange={handleFilterRamo}>
+                    <option value="">Todos los ramos</option>
+                    <template for:each={ramosOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                    </template>
+                </select>
+                <template if:true={isFiltered}>
+                    <button class="tg-filter-clear" onclick={handleClearFilters}>✕ Limpiar</button>
+                </template>
+            </div>
+            <span class="tg-filter-note">
+                <span class="tg-help" data-tip="Los indicadores (KPIs) siempre muestran el total global. Los filtros aplican solo a las tablas de abajo.">?</span>
+                Los indicadores muestran totales globales
+            </span>
+        </div>
+
+        <!-- ── Recibos Vencidos ── -->
+        <div class="tg-section">
+            <div class="tg-section-title">
+                Recibos vencidos
+                <span class="tg-help" data-tip="Recibos de seguros y fianzas cuya fecha de pago ya venció. El color izquierdo indica urgencia: rojo (+30 días de mora), naranja (8–30 días), amarillo (≤7 días).">?</span>
+            </div>
+            <div class="tg-grid-wrap">
+                <div class="tg-grid-row tg-grid-header">
+                    <div class="tg-cell tg-cell-num">#</div>
+                    <div class="tg-cell">Recibo</div>
+                    <div class="tg-cell">Póliza / Fianza</div>
+                    <div class="tg-cell">Cliente</div>
+                    <div class="tg-cell">Fecha programada</div>
+                    <div class="tg-cell tg-cell-right">Monto</div>
+                    <div class="tg-cell tg-cell-center">Días mora</div>
+                </div>
+                <template if:true={hasFilteredRecibos}>
+                    <template for:each={filteredRecibos} for:item="r">
+                        <div key={r.id} class={r.rowClass} data-id={r.id} onclick={handleRowNav}>
+                            <div class="tg-cell tg-cell-num">{r.rowNum}</div>
+                            <div class="tg-cell tg-cell-name">{r.numero}</div>
+                            <div class="tg-cell">{r.poliza}</div>
+                            <div class="tg-cell">{r.cliente}</div>
+                            <div class="tg-cell tg-cell-date">{r.fechaFmt}</div>
+                            <div class="tg-cell tg-cell-right tg-cell-money">{r.montoFmt}</div>
+                            <div class="tg-cell tg-cell-center tg-cell-dias">{r.diasMora}</div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasFilteredRecibos}>
+                    <div class="tg-empty">{emptyRecibosMsg}</div>
+                </template>
+            </div>
+        </div>
+
+        <!-- ── Renovaciones ── -->
+        <div class="tg-section">
+            <div class="tg-section-title">
+                Renovaciones
+                <span class="tg-help" data-tip="Seguros y fianzas con vigencia próxima a vencer, agrupados por urgencia. 'Atrasadas' ya vencieron sin renovarse. 'Mes actual' vencen este mes. 'Próximo mes' vencen el mes siguiente.">?</span>
+            </div>
+
+            <!-- Bucket: Atrasadas -->
+            <template if:true={hasFilteredAtrasadas}>
+                <div class="tg-bucket-header tg-bucket-rojo" data-bucket="atrasadas">
+                    Atrasadas ({filteredAtrasadas.length})
+                    &nbsp;·&nbsp; {kpis.atrasadasAmountFmt}
+                </div>
+                <div class="tg-grid-wrap">
+                    <div class="tg-grid-row tg-grid-header tg-row-atrasada">
+                        <div class="tg-cell tg-cell-num">#</div>
+                        <div class="tg-cell">Póliza / Fianza</div>
+                        <div class="tg-cell">Cliente</div>
+                        <div class="tg-cell">Ramo</div>
+                        <div class="tg-cell">Fin vigencia</div>
+                        <div class="tg-cell tg-cell-center">Atraso</div>
+                        <div class="tg-cell tg-cell-right">Prima neta</div>
+                        <div class="tg-cell tg-cell-center">Acción</div>
+                    </div>
+                    <template for:each={filteredAtrasadas} for:item="s">
+                        <div key={s.id} class="tg-grid-row tg-grid-data tg-row-atrasada">
+                            <div class="tg-cell tg-cell-num">{s.rowNum}</div>
+                            <div class="tg-cell tg-cell-name" data-id={s.id} data-tipo={s.tipo} data-numero={s.numeroPoliza} onclick={handleRowNav}>{s.numeroPoliza}</div>
+                            <div class="tg-cell">{s.cliente}</div>
+                            <div class="tg-cell">
+                                <span class="tg-badge-tipo tg-badge-{s.tipo}">{s.tipoLabel}</span>
+                                {s.ramo}
+                            </div>
+                            <div class="tg-cell tg-cell-date">{s.finVigencia}</div>
+                            <div class="tg-cell tg-cell-center tg-cell-atraso">{s.diasTexto}</div>
+                            <div class="tg-cell tg-cell-right tg-cell-money">{s.primaFmt}</div>
+                            <div class="tg-cell tg-cell-center">
+                                <button class="tg-btn-accion tg-btn-danger"
+                                        data-id={s.id} data-poliza={s.numeroPoliza} data-cliente={s.cliente}
+                                        onclick={openModal}>
+                                    No renovar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Bucket: Mes actual -->
+            <template if:true={hasFilteredMesActual}>
+                <div class="tg-bucket-header tg-bucket-azul">
+                    Mes actual — {mesActualLabel} ({filteredMesActual.length})
+                    &nbsp;·&nbsp; {kpis.renovMesActualAmountFmt}
+                </div>
+                <div class="tg-grid-wrap">
+                    <div class="tg-grid-row tg-grid-header">
+                        <div class="tg-cell tg-cell-num">#</div>
+                        <div class="tg-cell">Póliza / Fianza</div>
+                        <div class="tg-cell">Cliente</div>
+                        <div class="tg-cell">Ramo</div>
+                        <div class="tg-cell">Fin vigencia</div>
+                        <div class="tg-cell tg-cell-center">Días</div>
+                        <div class="tg-cell tg-cell-right">Prima neta</div>
+                    </div>
+                    <template for:each={filteredMesActual} for:item="s">
+                        <div key={s.id} class="tg-grid-row tg-grid-data">
+                            <div class="tg-cell tg-cell-num">{s.rowNum}</div>
+                            <div class="tg-cell tg-cell-name" data-id={s.id} data-tipo={s.tipo} data-numero={s.numeroPoliza} onclick={handleRowNav}>{s.numeroPoliza}</div>
+                            <div class="tg-cell">{s.cliente}</div>
+                            <div class="tg-cell">
+                                <span class="tg-badge-tipo tg-badge-{s.tipo}">{s.tipoLabel}</span>
+                                {s.ramo}
+                            </div>
+                            <div class="tg-cell tg-cell-date">{s.finVigencia}</div>
+                            <div class="tg-cell tg-cell-center">{s.diasTexto}</div>
+                            <div class="tg-cell tg-cell-right tg-cell-money">{s.primaFmt}</div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Bucket: Mes siguiente -->
+            <template if:true={hasFilteredMesSiguiente}>
+                <div class="tg-bucket-header tg-bucket-gris">
+                    Próximo mes — {mesSiguienteLabel} ({filteredMesSiguiente.length})
+                </div>
+                <div class="tg-grid-wrap">
+                    <div class="tg-grid-row tg-grid-header">
+                        <div class="tg-cell tg-cell-num">#</div>
+                        <div class="tg-cell">Póliza / Fianza</div>
+                        <div class="tg-cell">Cliente</div>
+                        <div class="tg-cell">Ramo</div>
+                        <div class="tg-cell">Fin vigencia</div>
+                        <div class="tg-cell tg-cell-center">Días</div>
+                        <div class="tg-cell tg-cell-right">Prima neta</div>
+                    </div>
+                    <template for:each={filteredMesSiguiente} for:item="s">
+                        <div key={s.id} class="tg-grid-row tg-grid-data">
+                            <div class="tg-cell tg-cell-num">{s.rowNum}</div>
+                            <div class="tg-cell tg-cell-name" data-id={s.id} data-tipo={s.tipo} data-numero={s.numeroPoliza} onclick={handleRowNav}>{s.numeroPoliza}</div>
+                            <div class="tg-cell">{s.cliente}</div>
+                            <div class="tg-cell">
+                                <span class="tg-badge-tipo tg-badge-{s.tipo}">{s.tipoLabel}</span>
+                                {s.ramo}
+                            </div>
+                            <div class="tg-cell tg-cell-date">{s.finVigencia}</div>
+                            <div class="tg-cell tg-cell-center">{s.diasTexto}</div>
+                            <div class="tg-cell tg-cell-right tg-cell-money">{s.primaFmt}</div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template if:false={hasFilteredRenovaciones}>
+                <div class="tg-empty">{emptyRenovMsg}</div>
+            </template>
+        </div>
+
+        <!-- ── Modal: Marcar no renovada ── -->
+        <template if:true={showModal}>
+            <div class="tg-overlay" onclick={closeModal}></div>
+            <div class="tg-modal" role="dialog" aria-modal="true">
+                <div class="tg-modal-header">
+                    <span class="tg-modal-title">Marcar como no renovada</span>
+                    <button class="tg-modal-close" onclick={closeModal} aria-label="Cerrar">✕</button>
+                </div>
+                <div class="tg-modal-body">
+                    <p class="tg-modal-info"><strong>{modalPoliza}</strong> · {modalCliente}</p>
+                    <p class="tg-modal-warn">
+                        Esta acción cambiará el estatus a <strong>Cancelada</strong>.
+                        No se puede deshacer desde aquí.
+                    </p>
+                </div>
+                <div class="tg-modal-footer">
+                    <button class="tg-btn tg-btn-secondary" onclick={closeModal} disabled={saving}>Cancelar</button>
+                    <button class="tg-btn tg-btn-danger" onclick={handleConfirmarNoRenovada} disabled={saving}>
+                        {saveLabel}
+                    </button>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Es_Agente_AI__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Marca si este registro de Vendedores__c representa a un agente AI (Oli, SDR Agent, Camila, Renata, Ana, Ollin Digital) en lugar de un vendedor humano. Evita crear Users adicionales y permite que los agentes AI sean &quot;ownable&quot; sin consumir licencias.</description>
+    <label>Es Agente AI</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Bucket_Cobranza__c</fullName>
+    <description>Clasifica el recibo por grado de vencimiento. Calculado sobre Fecha_programada__c. Driver de las cadencias de Camila (Agente de Cobranza).</description>
+    <externalId>false</externalId>
+    <formula>IF( ISBLANK(Fecha_programada__c), &quot;Sin fecha&quot;,
+IF( (Fecha_programada__c - TODAY()) &gt; 3, &quot;Programado&quot;,
+IF( (Fecha_programada__c - TODAY()) &gt;= 0, &quot;Por cobrar&quot;,
+IF( (TODAY() - Fecha_programada__c) &lt;= 7, &quot;Vencido 0-7&quot;,
+IF( (TODAY() - Fecha_programada__c) &lt;= 30, &quot;Vencido 8-30&quot;,
+&quot;Vencido 30+&quot;)))))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Bucket Cobranza</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

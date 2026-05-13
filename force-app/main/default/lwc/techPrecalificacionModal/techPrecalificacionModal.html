@@ -1,0 +1,86 @@
+<template>
+    <div class="pm-overlay"></div>
+    <div class="pm-wrap">
+        <div class="pm-modal">
+
+            <div class="pm-header">
+                <div class="pm-header-info">
+                    <span class="pm-title">{modalTitle}</span>
+                    <template if:true={contextLabel}>
+                        <span class="pm-subtitle">{contextLabel}</span>
+                    </template>
+                </div>
+                <button class="pm-close" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                </button>
+            </div>
+
+            <div class="pm-body">
+                <lightning-record-edit-form
+                    object-api-name="Precalificacion__c"
+                    record-id={recordId}
+                    onsubmit={handleSubmit}
+                    onsuccess={handleSuccess}
+                    onerror={handleError}>
+
+                    <!-- Identificación -->
+                    <lightning-input-field field-name="Name"></lightning-input-field>
+
+                    <!-- Balance General -->
+                    <div class="pm-section-hdr">Balance General</div>
+                    <div class="pm-grid">
+                        <lightning-input-field field-name="Fecha_Estados_Financieros__c"></lightning-input-field>
+                        <lightning-input-field field-name="Capital_Contable__c"></lightning-input-field>
+                        <lightning-input-field field-name="Capital_Social__c"></lightning-input-field>
+                        <lightning-input-field field-name="Utilidades_Retenidas__c"></lightning-input-field>
+                        <lightning-input-field field-name="Resultados_anteriores__c"></lightning-input-field>
+                        <lightning-input-field field-name="Activo_Circulante__c"></lightning-input-field>
+                        <lightning-input-field field-name="Activo_Fijo_Neto__c"></lightning-input-field>
+                        <lightning-input-field field-name="Activo_total__c"></lightning-input-field>
+                        <lightning-input-field field-name="Inventarios__c"></lightning-input-field>
+                        <lightning-input-field field-name="Pasivo_Circulante__c"></lightning-input-field>
+                        <lightning-input-field field-name="Pasivo_Corto_Plazo__c"></lightning-input-field>
+                        <lightning-input-field field-name="Pasivo_Total__c"></lightning-input-field>
+                    </div>
+
+                    <!-- Estado de Resultados -->
+                    <div class="pm-section-hdr">Estado de Resultados</div>
+                    <div class="pm-grid">
+                        <lightning-input-field field-name="Ventas_Netas__c"></lightning-input-field>
+                        <lightning-input-field field-name="Utilidad_del_Ejercicio__c"></lightning-input-field>
+                    </div>
+
+                    <!-- Fianzas / Contrato -->
+                    <div class="pm-section-hdr">Fianzas / Contrato</div>
+                    <div class="pm-grid">
+                        <lightning-input-field field-name="Importe_Total_Contrato__c"></lightning-input-field>
+                        <lightning-input-field field-name="Datos_de_Presupuesto_Base__c"></lightning-input-field>
+                        <lightning-input-field field-name="Porcentaje_Anticipo__c"></lightning-input-field>
+                        <lightning-input-field field-name="Porcentaje_Cumplimiento__c"></lightning-input-field>
+                        <lightning-input-field field-name="Porcentaje_Pasivos_Cont__c"></lightning-input-field>
+                        <lightning-input-field field-name="L_nea_de_Afianzamiento_Estimada__c"></lightning-input-field>
+                    </div>
+
+                    <!-- Evaluación -->
+                    <div class="pm-section-hdr">Evaluación</div>
+                    <div class="pm-grid">
+                        <lightning-input-field field-name="Capacidad_de_Afianzamiento__c"></lightning-input-field>
+                        <lightning-input-field field-name="Score_ICP__c"></lightning-input-field>
+                        <lightning-input-field field-name="Estado__c"></lightning-input-field>
+                        <lightning-input-field field-name="Comentarios__c"></lightning-input-field>
+                    </div>
+                    <lightning-input-field field-name="Motivo_Score__c"></lightning-input-field>
+
+                    <div class="pm-footer">
+                        <template if:true={isSaving}>
+                            <lightning-spinner size="small" alternative-text="Guardando..."></lightning-spinner>
+                        </template>
+                        <button type="button" class="pm-btn-cancel" onclick={handleClose} disabled={isSaving}>Cancelar</button>
+                        <lightning-button type="submit" label={saveLabel} disabled={isSaving} variant="brand"></lightning-button>
+                    </div>
+                </lightning-record-edit-form>
+            </div>
+
+        </div>
+    </div>
+</template>

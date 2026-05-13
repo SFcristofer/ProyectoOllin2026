@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Motivo_No_Pago__c</fullName>
+    <description>Obligatorio cuando el recibo pasa a Vencido. Capturado por Camila o por operaciones tras llamada.</description>
+    <label>Motivo No Pago</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cliente decide cancelar</fullName>
+                <default>false</default>
+                <label>Cliente decide cancelar</label>
+            </value>
+            <value>
+                <fullName>Disputa de monto</fullName>
+                <default>false</default>
+                <label>Disputa de monto</label>
+            </value>
+            <value>
+                <fullName>Falta de liquidez</fullName>
+                <default>false</default>
+                <label>Falta de liquidez</label>
+            </value>
+            <value>
+                <fullName>Inconformidad con poliza</fullName>
+                <default>false</default>
+                <label>Inconformidad con poliza</label>
+            </value>
+            <value>
+                <fullName>No contactable</fullName>
+                <default>false</default>
+                <label>No contactable</label>
+            </value>
+            <value>
+                <fullName>Olvido</fullName>
+                <default>false</default>
+                <label>Olvido</label>
+            </value>
+            <value>
+                <fullName>Otro</fullName>
+                <default>false</default>
+                <label>Otro</label>
+            </value>
+            <value>
+                <fullName>Problema con metodo de pago</fullName>
+                <default>false</default>
+                <label>Problema con metodo de pago</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

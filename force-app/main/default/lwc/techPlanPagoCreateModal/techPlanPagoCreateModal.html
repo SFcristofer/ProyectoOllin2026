@@ -1,0 +1,31 @@
+<template>
+    <template if:true={showModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close" onclick={handleClose} title="Cerrar"><lightning-icon icon-name="utility:close" alternative-text="Cerrar" size="small"></lightning-icon></button>
+                    <h2 class="slds-modal__title">Nuevo Plan de Pago</h2>
+                </header>
+                <lightning-record-edit-form object-api-name="Tech_Plan_de_Pago__c" onsuccess={handleSuccess} onerror={handleError}>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-messages></lightning-messages>
+                        <lightning-input-field field-name="Fianzas__c"></lightning-input-field>
+                        <lightning-input-field field-name="Seguros__c"></lightning-input-field>
+                        <lightning-input-field field-name="Estado__c"></lightning-input-field>
+                        <lightning-input-field field-name="Monto_total__c"></lightning-input-field>
+                        <lightning-input-field field-name="Num_recibos__c"></lightning-input-field>
+                        <lightning-input-field field-name="Periodo_Pago__c"></lightning-input-field>
+                        <lightning-input-field field-name="Fecha_inicio__c"></lightning-input-field>
+                        <lightning-input-field field-name="Metodo_Pago__c"></lightning-input-field>
+                        <lightning-input-field field-name="Domiciliacion_activa__c"></lightning-input-field>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <button class="slds-button slds-button_neutral" onclick={handleClose}>Cancelar</button>
+                        <lightning-button type="submit" variant="brand" label="Guardar"></lightning-button>
+                    </footer>
+                </lightning-record-edit-form>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

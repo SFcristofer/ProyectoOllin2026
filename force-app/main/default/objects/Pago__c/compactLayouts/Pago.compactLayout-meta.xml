@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pago</fullName>
+    <fields>Name</fields>
+    <fields>Estatus_de_pago__c</fields>
+    <fields>Fecha_de_fin__c</fields>
+    <fields>Fecha_de_inicio__c</fields>
+    <fields>Metodo_de_pago__c</fields>
+    <fields>Modalidad_de_pago__c</fields>
+    <label>Pago</label>
+</CompactLayout>

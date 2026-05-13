@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/- DESARROLLOS/SALESFORCE/ProyectoOllin2026\" checkout -b implement-airtable-ProyectoOllin2026)",
+      "Bash(sed -i 's/    @track isDetailPanelOpen = false;/    @track isDetailPanelOpen = false;\\\\n    @track isEditingPanel    = false;/' 'c:/- DESARROLLOS/SALESFORCE/ProyectoOllin2026/force-app/main/default/lwc/techContratistas/techContratistas.js')",
+      "Bash(sed -i 's/    handleCloseDetailPanel\\(\\){ this.isDetailPanelOpen = false; this.selectedItem = null; }/    handleCloseDetailPanel\\(\\){ this.isDetailPanelOpen = false; this.selectedItem = null; this.isEditingPanel = false; }/' 'c:/- DESARROLLOS/SALESFORCE/ProyectoOllin2026/force-app/main/default/lwc/techContratistas/techContratistas.js')",
+      "Bash(sed -i 's/    handlePrevRecord\\(\\) { const i = this.currentDetailIndex; if \\(i > 0\\) this.selectedItem = { ...this.filteredData\\\\[i - 1\\\\] }; }/    handlePrevRecord\\(\\) { const i = this.currentDetailIndex; if \\(i > 0\\) { this.selectedItem = { ...this.filteredData[i - 1] }; this.isEditingPanel = false; } }/' 'c:/- DESARROLLOS/SALESFORCE/ProyectoOllin2026/force-app/main/default/lwc/techContratistas/techContratistas.js')",
+      "Bash(sed -i 's/    handleNextRecord\\(\\) { const i = this.currentDetailIndex; if \\(i < this.filteredData.length - 1\\) this.selectedItem = { ...this.filteredData\\\\[i \\\\+ 1\\\\] }; }/    handleNextRecord\\(\\) { const i = this.currentDetailIndex; if \\(i < this.filteredData.length - 1\\) { this.selectedItem = { ...this.filteredData[i + 1] }; this.isEditingPanel = false; } }/' 'c:/- DESARROLLOS/SALESFORCE/ProyectoOllin2026/force-app/main/default/lwc/techContratistas/techContratistas.js')",
+      "Bash(sf project *)",
+      "Bash(python -c \"import sys,json; orgs=json.load\\(sys.stdin\\); [print\\(o.get\\('alias',''\\),'|',o.get\\('username',''\\),'|',o.get\\('isDefaultDevHub',''\\),'|',o.get\\('connectedStatus',''\\)\\) for o in orgs.get\\('result',{}\\).get\\('nonScratchOrgs',[]\\)+orgs.get\\('result',{}\\).get\\('scratchOrgs',[]\\)]\")",
+      "Bash(sf data *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['QualifiedApiName'],'|',r['Label']\\) for r in d.get\\('result',{}\\).get\\('records',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['QualifiedApiName'],'|',r['Label'],'|',r['DataType']\\) for r in d.get\\('result',{}\\).get\\('records',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['Id'],'|',r['Name']\\) for r in d.get\\('result',{}\\).get\\('records',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r.get\\('Tipo__c'\\),'| Fianza:',r.get\\('Fianza__c'\\),'| FianzaName:',r.get\\('Fianza__r',{}\\).get\\('Name'\\) if r.get\\('Fianza__r'\\) else None,'| Contrato:',r.get\\('Contrato__c'\\),'| ContratoName:',r.get\\('Contrato__r',{}\\).get\\('Name'\\) if r.get\\('Contrato__r'\\) else None\\) for r in d.get\\('result',{}\\).get\\('records',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(r['QualifiedApiName'],'|',r['Label'],'|',r['DataType'],'|',r.get\\('ReferenceTo','?'\\)\\) for r in d.get\\('result',{}\\).get\\('records',[]\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); r=d.get\\('result',{}\\); print\\('User:', r.get\\('username'\\)\\); print\\('URL:', r.get\\('instanceUrl'\\)\\)\")",
+      "Bash(sf apex *)",
+      "Bash(2>&1)"
+    ]
+  }
+}

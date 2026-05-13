@@ -1,0 +1,75 @@
+:host { display: contents; }
+
+.em-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 9000;
+}
+
+.em-wrap {
+    position: fixed; inset: 0; z-index: 9001;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    pointer-events: none;
+}
+
+.em-modal {
+    pointer-events: all;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    width: 600px; max-width: 96vw;
+    max-height: 88vh;
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Header ── */
+.em-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: #1e293b; flex-shrink: 0; gap: 12px;
+}
+.em-header-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.em-title    { font-size: 14px; font-weight: 700; color: #fff; }
+.em-subtitle { font-size: 11px; color: rgba(255,255,255,.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.em-close {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border: none; border-radius: 6px; flex-shrink: 0;
+    background: rgba(255,255,255,.15); cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.em-close:hover { background: rgba(255,255,255,.28); }
+
+/* ── Body ── */
+.em-body { flex: 1; overflow-y: auto; padding: 20px; }
+.em-body::-webkit-scrollbar { width: 4px; }
+.em-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+/* ── Section headers ── */
+.em-section-hdr {
+    font-size: 10px; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 12px 0 4px; border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 0;
+}
+
+/* ── Field grid ── */
+.em-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0 20px;
+}
+.em-full { grid-column: 1 / -1; }
+
+/* ── Footer ── */
+.em-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    gap: 10px; padding: 14px 20px;
+    border-top: 1px solid #e5e7eb; flex-shrink: 0;
+}
+
+.em-btn-cancel {
+    height: 32px; padding: 0 18px;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    background: #fff; color: #374151; font-size: 12px; cursor: pointer;
+}
+.em-btn-cancel:hover:not(:disabled) { background: #f3f4f6; }
+.em-btn-cancel:disabled { opacity: .5; cursor: not-allowed; }

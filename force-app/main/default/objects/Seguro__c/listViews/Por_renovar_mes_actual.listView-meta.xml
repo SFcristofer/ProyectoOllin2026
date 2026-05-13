@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Por_renovar_mes_actual</fullName>
+    <columns>Numero_poliza__c</columns>
+    <columns>Cliente__c</columns>
+    <columns>Ramo__c</columns>
+    <columns>Estatus__c</columns>
+    <columns>Fin_del_seguro__c</columns>
+    <columns>Prima_neta__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Estatus__c</field>
+        <operation>equals</operation>
+        <value>Vigente,Por renovar</value>
+    </filters>
+    <filters>
+        <field>Fin_del_seguro__c</field>
+        <operation>equals</operation>
+        <value>THIS_MONTH</value>
+    </filters>
+    <label>Por renovar - mes actual</label>
+</ListView>

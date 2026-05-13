@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan de Trabajo · Admin Sandbox · Ollin Protección · Technovalue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tv-blue:    #1e73be;
+    --tv-navy:    #222F39;
+    --tv-dark:    #222222;
+    --tv-mid:     #575760;
+    --tv-light:   #b2b2be;
+    --tv-bg:      #f0f0f0;
+    --tv-bg2:     #f7f8f9;
+    --tv-white:   #ffffff;
+    --tv-blue-soft: #dbeafe;
+    --ok:         #16a34a;
+    --ok-soft:    #dcfce7;
+    --warn:       #d97706;
+    --warn-soft:  #fef3c7;
+    --bad:        #dc2626;
+    --bad-soft:   #fee2e2;
+    --missing:    #7c3aed;
+    --missing-soft:#ede9fe;
+    --neu:        #475569;
+    --neu-soft:   #f1f5f9;
+    --del:        #be123c;
+    --del-soft:   #ffe4e6;
+    --line:       #e2e8f0;
+    --radius:     10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 13px; line-height: 1.6; color: var(--tv-dark); background: var(--tv-bg); }
+  .page { max-width: 1200px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  /* HEADER */
+  .doc-header { background: linear-gradient(135deg, #0f1e2c 0%, #1a3a52 60%, var(--tv-blue) 100%); border-radius: 14px; padding: 36px 40px; color: white; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .doc-header::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+  .doc-header .brand { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: .65; text-transform: uppercase; margin-bottom: 10px; }
+  .doc-header h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+  .doc-header .sub { font-size: 13px; opacity: .82; max-width: 900px; }
+  .doc-header .meta { margin-top: 18px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .doc-header .meta-item { font-size: 11px; opacity: .7; }
+  .doc-header .meta-item strong { opacity: 1; font-weight: 600; }
+
+  /* TOC */
+  .toc { background: white; border-left: 5px solid var(--tv-blue); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(34,47,57,.06); }
+  .toc h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--tv-mid); margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; columns: 2; gap: 24px; }
+  .toc li { margin-bottom: 5px; font-size: 12.5px; }
+  .toc a { color: var(--tv-blue); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* SECTIONS */
+  .section { background: white; border-radius: 14px; padding: 28px 32px; margin-bottom: 26px; box-shadow: 0 2px 10px rgba(34,47,57,.06); }
+  .section-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .section-head h2 { font-size: 18px; font-weight: 700; color: var(--tv-navy); }
+  .pill { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; }
+  .pill-blue   { background: var(--tv-blue-soft); color: var(--tv-blue); }
+  .pill-green  { background: var(--ok-soft);      color: var(--ok); }
+  .pill-orange { background: var(--warn-soft);     color: var(--warn); }
+  .pill-red    { background: var(--bad-soft);      color: var(--bad); }
+  .pill-purple { background: var(--missing-soft);  color: var(--missing); }
+  .pill-gray   { background: var(--neu-soft);      color: var(--neu); }
+  .pill-del    { background: var(--del-soft);      color: var(--del); }
+  .lead { color: var(--tv-mid); font-size: 13px; margin-bottom: 18px; line-height: 1.7; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  th { background: var(--tv-bg2); padding: 8px 11px; text-align: left; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .7px; color: var(--tv-mid); border-bottom: 2px solid var(--line); border-right: 1px solid var(--line); }
+  td { padding: 7px 11px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; }
+  th:last-child, td:last-child { border-right: none; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  code { font-family: 'Courier New', monospace; font-size: 11px; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; color: var(--tv-navy); }
+
+  /* BADGES */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .badge-ok     { background: var(--ok-soft);      color: var(--ok);      } .badge-ok::before     { background: var(--ok); }
+  .badge-warn   { background: var(--warn-soft);    color: var(--warn);    } .badge-warn::before   { background: var(--warn); }
+  .badge-bad    { background: var(--bad-soft);      color: var(--bad);     } .badge-bad::before    { background: var(--bad); }
+  .badge-purple { background: var(--missing-soft); color: var(--missing); } .badge-purple::before { background: var(--missing); }
+  .badge-del    { background: var(--del-soft);     color: var(--del);     } .badge-del::before    { background: var(--del); }
+  .badge-gray   { background: var(--neu-soft);     color: var(--neu);     } .badge-gray::before   { background: var(--neu); }
+
+  /* ALERTS */
+  .alert { border-radius: 8px; padding: 14px 16px; margin: 14px 0; font-size: 12.5px; line-height: 1.7; }
+  .alert-warn  { background: var(--warn-soft);     border-left: 4px solid var(--warn); }
+  .alert-bad   { background: var(--bad-soft);      border-left: 4px solid var(--bad);  }
+  .alert-ok    { background: var(--ok-soft);       border-left: 4px solid var(--ok);   }
+  .alert-blue  { background: var(--tv-blue-soft);  border-left: 4px solid var(--tv-blue); }
+  .alert-del   { background: var(--del-soft);      border-left: 4px solid var(--del); }
+  .alert strong { font-weight: 700; display: block; margin-bottom: 4px; }
+
+  /* MODULE CARDS */
+  .mod-header { border-radius: 10px 10px 0 0; padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
+  .mod-body { border: 1.5px solid var(--line); border-top: none; border-radius: 0 0 10px 10px; padding: 20px 22px; margin-bottom: 28px; }
+  .mod-num { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
+  .mod-title { font-size: 15px; font-weight: 700; color: white; flex: 1; }
+  .mod-risk { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,.18); color: white; margin-left: auto; }
+
+  /* STEPS */
+  .steps { counter-reset: step; margin: 10px 0; }
+  .step { counter-increment: step; display: flex; gap: 14px; align-items: flex-start; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .step:last-child { border-bottom: none; }
+  .step::before { content: counter(step); min-width: 26px; height: 26px; background: var(--tv-navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .step-body { flex: 1; font-size: 12.5px; }
+  .step-body strong { display: block; font-weight: 700; color: var(--tv-navy); margin-bottom: 3px; }
+  .step-body p { color: var(--tv-mid); line-height: 1.65; }
+
+  /* TWO-COL GRID */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+
+  /* DEL / ADD blocks */
+  .change-block { border-radius: 8px; padding: 14px 16px; }
+  .change-del  { background: var(--del-soft);     border-left: 4px solid var(--del); }
+  .change-add  { background: var(--ok-soft);       border-left: 4px solid var(--ok); }
+  .change-mod  { background: var(--warn-soft);     border-left: 4px solid var(--warn); }
+  .change-block h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .change-del h4   { color: var(--del); }
+  .change-add h4   { color: var(--ok); }
+  .change-mod h4   { color: var(--warn); }
+  .change-block ul { padding-left: 16px; font-size: 12px; line-height: 2; }
+
+  /* FOOTER */
+  .doc-footer { background: linear-gradient(135deg, var(--tv-navy), #1a3a52); color: white; border-radius: 12px; padding: 24px 32px; margin-top: 32px; font-size: 12.5px; }
+  .doc-footer h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .doc-footer p { opacity: .8; line-height: 1.7; }
+
+  /* PRINT */
+  @media print {
+    body { background: white; font-size: 11px; }
+    .page { padding: 0; max-width: 100%; }
+    .section { page-break-inside: avoid; box-shadow: none; border: 1px solid var(--line); margin-bottom: 16px; padding: 18px 20px; }
+    .mod-body { page-break-inside: avoid; }
+    .doc-header { border-radius: 0; margin-bottom: 16px; }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    @page { size: A4 portrait; margin: 1.5cm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="brand">Technovalue · Salesforce Consulting · Ollin Protección</div>
+    <h1>Plan de Trabajo · Reestructura del Sandbox<br>Guía para Salesforce Admin</h1>
+    <p class="sub">Instrucciones paso a paso para modificar el org existente sin crear un sandbox nuevo. Incluye qué campos eliminar, qué relaciones cambiar, qué objetos crear y en qué orden exacto ejecutar cada cambio para evitar errores de dependencia.</p>
+    <div class="meta">
+      <div class="meta-item"><strong>Proyecto:</strong> Ollin Protección</div>
+      <div class="meta-item"><strong>Fecha:</strong> 25 de abril de 2026</div>
+      <div class="meta-item"><strong>Org:</strong> soporte.technovalue@ollin.com.mx.dev</div>
+      <div class="meta-item"><strong>Audiencia:</strong> Salesforce Admin</div>
+      <div class="meta-item"><strong>Riesgo:</strong> <span style="color:#fbbf24;font-weight:700">ALTO — leer todo antes de ejecutar</span></div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Índice de módulos</h3>
+    <ol>
+      <li><a href="#pre">Prerrequisitos y respaldos</a></li>
+      <li><a href="#m1">Módulo 1 · Crear Institucion__c</a></li>
+      <li><a href="#m2">Módulo 2 · Ampliar Contrato__c</a></li>
+      <li><a href="#m3">Módulo 3 · Reestructurar Fianza__c ⚠️ crítico</a></li>
+      <li><a href="#m4">Módulo 4 · Crear Convenio_Modificatorio__c</a></li>
+      <li><a href="#m5">Módulo 5 · Crear Endoso_de_Fianza__c</a></li>
+      <li><a href="#m6">Módulo 6 · Crear Plan_de_Pagos__c y Recibo__c</a></li>
+      <li><a href="#m7">Módulo 7 · Crear Tabla_de_Comisiones__c y Comision__c</a></li>
+      <li><a href="#m8">Módulo 8 · Crear Seguro__c</a></li>
+      <li><a href="#m9">Módulo 9 · Vendedores__c → Vendedor__c</a></li>
+      <li><a href="#m10">Módulo 10 · Limpiar Tech_Relacion__c</a></li>
+      <li><a href="#m11">Módulo 11 · Flows y automatizaciones</a></li>
+      <li><a href="#m12">Módulo 12 · Actualizar Apex y LWC</a></li>
+      <li><a href="#resumen">Tabla resumen de cambios</a></li>
+    </ol>
+  </div>
+
+  <!-- PRERREQUISITOS -->
+  <section class="section" id="pre">
+    <div class="section-head">
+      <h2>0. Prerrequisitos y Respaldos</h2>
+      <span class="pill pill-red">Obligatorio antes de empezar</span>
+    </div>
+    <div class="alert alert-bad">
+      <strong>⛔ DETENTE — Lee esto primero</strong>
+      Varios de los cambios siguientes son irreversibles en Salesforce. Un campo borrado con datos no se recupera sin soporte de Salesforce. Sigue el checklist en orden.
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-body">
+          <strong>Exportar TODOS los datos con DataLoader o Workbench</strong>
+          <p>Exportar en CSV los siguientes objetos completos (todos los campos, sin filtros): <code>Fianza__c</code>, <code>Contrato__c</code>, <code>Contratista__c</code>, <code>Beneficiario__c</code>, <code>Endoso__c</code>, <code>Vendedores__c</code>, <code>Tech_Relacion__c</code>, <code>Proyecto__c</code>, <code>Precalificacion__c</code>. Guardar los CSV en una carpeta con fecha y no tocarlos.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-body">
+          <strong>Documentar los Page Layouts y Perfiles activos</strong>
+          <p>Captura de pantalla de: <em>Setup → Object Manager → [cada objeto] → Page Layouts</em>. Anota qué perfiles tienen acceso a qué objetos. Esto facilita recrear los layouts en los objetos nuevos.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-body">
+          <strong>Desactivar todos los Flows activos del org</strong>
+          <p><em>Setup → Flows</em> → desactivar cualquier Flow que tenga estado "Active". Re-activarlos al final. Evita disparadores inesperados durante la migración.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-body">
+          <strong>Desactivar Reglas de Validación en todos los objetos involucrados</strong>
+          <p><em>Setup → Object Manager → [objeto] → Validation Rules</em> → desactivar. Las reglas pueden bloquear la carga masiva de datos durante la migración.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-body">
+          <strong>Crear un Conjunto de Cambios de respaldo (Change Set)</strong>
+          <p>En el org: <em>Setup → Deployment → Outbound Change Sets</em>. Crear un change set que incluya todos los metadatos actuales como snapshot. No es deploy, es archivo histórico.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-body">
+          <strong>Avisar a todos los usuarios que el org estará en mantenimiento</strong>
+          <p>Enviar comunicado a los usuarios activos. Considerar activar "System Maintenance" o simplemente coordinarlo fuera de horario laboral. Algunos módulos requieren que no haya registros creándose en paralelo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- M1: INSTITUCION__C -->
+  <div id="m1">
+    <div class="mod-header" style="background:linear-gradient(90deg,#222F39,#1e73be)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 1</span>
+      <span class="mod-title">Crear objeto Institucion__c</span>
+      <span class="mod-risk">Riesgo: BAJO — solo crea</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Catálogo de instituciones afianzadoras/aseguradoras. No tiene dependencias hacia atrás; se puede crear primero sin afectar nada.</p>
+      <div class="alert alert-ok"><strong>Empieza aquí.</strong> Este módulo no toca objetos existentes.</div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:16px 0 8px">Pasos en Setup → Object Manager</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-body">
+            <strong>Crear el objeto personalizado</strong>
+            <p>New Custom Object: Label = <em>Institución</em> · Plural = <em>Instituciones</em> · API Name = <code>Institucion__c</code> · Record Name = <em>Nombre</em> (tipo Text) · Allow Reports ✓ · Allow Activities ✓ · Track Field History ✓ · Sharing = <em>Read/Write</em>. OWD = <em>Private</em>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Crear los campos del objeto</strong>
+            <p>Ir a <em>Object Manager → Institucion__c → Fields &amp; Relationships → New</em> y crear cada campo de la tabla siguiente.</p>
+          </div>
+        </div>
+      </div>
+
+      <table style="margin-top:12px">
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>RFC__c</code></td><td>RFC</td><td>Text(13)</td><td>✓</td><td>Unique + External ID</td></tr>
+          <tr><td><code>Clave_CNBV__c</code></td><td>Clave CNBV</td><td>Text(10)</td><td></td><td></td></tr>
+          <tr><td><code>Tipo_Institucion__c</code></td><td>Tipo</td><td>Picklist</td><td>✓</td><td>Valores: Afianzadora · Aseguradora · Afianzadora y Aseguradora</td></tr>
+          <tr><td><code>Razon_Social__c</code></td><td>Razón Social</td><td>Text(120)</td><td></td><td></td></tr>
+          <tr><td><code>Activa__c</code></td><td>Activa</td><td>Checkbox</td><td>✓</td><td>Default = true</td></tr>
+          <tr><td><code>Email_Oficial__c</code></td><td>Email Oficial</td><td>Email</td><td></td><td></td></tr>
+          <tr><td><code>Telefono_Oficial__c</code></td><td>Teléfono</td><td>Phone</td><td></td><td></td></tr>
+          <tr><td><code>Sitio_Web__c</code></td><td>Sitio Web</td><td>URL</td><td></td><td></td></tr>
+          <tr><td><code>Porcentaje_Reserva__c</code></td><td>% Reserva Técnica</td><td>Percent(5,2)</td><td></td><td></td></tr>
+          <tr><td><code>Notas__c</code></td><td>Notas</td><td>Long Text Area(32768)</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="step" style="margin-top:16px;padding:10px 0;border-bottom:none">
+        <div class="step-body">
+          <strong>Cargar los registros de instituciones vía DataLoader</strong>
+          <p>Preparar CSV con las instituciones conocidas (GNP, Chubb, Mapfre, etc.) e importar. Guardar los IDs resultantes; se necesitan para poblar los lookups en Fianza__c y Seguro__c.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- M2: CONTRATO__C -->
+  <div id="m2">
+    <div class="mod-header" style="background:linear-gradient(90deg,#1e3a52,#1e73be)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 2</span>
+      <span class="mod-title">Ampliar Contrato__c — agregar campos faltantes</span>
+      <span class="mod-risk">Riesgo: BAJO — solo agrega</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">El objeto <code>Contrato__c</code> ya existe en el org pero solo tiene el campo <code>Name</code>. Aquí se agregan todos los campos del modelo de datos del cliente. <strong>No se elimina nada en este módulo.</strong></p>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:8px 0 10px">Campos a AGREGAR en Contrato__c</h4>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>No_Contrato__c</code></td><td>No. Contrato (Institución)</td><td>Text(40)</td><td></td><td>Número asignado por la afianzadora; diferente al autonumérico</td></tr>
+          <tr><td><code>Fecha_Firma__c</code></td><td>Fecha de Firma</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Fecha_Inicio_Vigencia__c</code></td><td>Inicio de Vigencia</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Fecha_Fin_Vigencia__c</code></td><td>Fin de Vigencia</td><td>Date</td><td></td><td></td></tr>
+          <tr><td><code>Tipo_Contrato__c</code></td><td>Tipo de Contrato</td><td>Picklist</td><td>✓</td><td>Fianzas · Seguros · Mixto · Marco</td></tr>
+          <tr><td><code>Monto_Total__c</code></td><td>Monto Total</td><td>Currency(16,2)</td><td></td><td>Puede poblarse manualmente o con Roll-Up desde Fianza__c</td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Borrador · Activo · Vencido · Cancelado · Default=Borrador</td></tr>
+          <tr><td><code>Contratista__c</code></td><td>Contratista</td><td>Lookup(Contratista__c)</td><td>✓</td><td>RelName: <code>Contratos_Contratista</code></td></tr>
+          <tr><td><code>Beneficiario__c</code></td><td>Beneficiario</td><td>Lookup(Beneficiario__c)</td><td></td><td>RelName: <code>Contratos_Beneficiario</code></td></tr>
+          <tr><td><code>Proyecto__c</code></td><td>Proyecto</td><td>Lookup(Proyecto__c)</td><td></td><td>RelName: <code>Contratos_Proyecto</code></td></tr>
+          <tr><td><code>Vendedor__c</code></td><td>Vendedor</td><td>Lookup(Vendedores__c)</td><td></td><td>RelName: <code>Contratos_Vendedor</code>. Apunta a Vendedores__c hasta que se renombre</td></tr>
+          <tr><td><code>Institucion__c</code></td><td>Institución Principal</td><td>Lookup(Institucion__c)</td><td></td><td>RelName: <code>Contratos_Institucion</code></td></tr>
+          <tr><td><code>Notas_Internas__c</code></td><td>Notas Internas</td><td>Long Text Area(32768)</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-blue" style="margin-top:14px">
+        <strong>Datos históricos</strong>
+        Después de crear el campo <code>Contratista__c</code>, usar DataLoader para poblar los contratos existentes con el contratista correspondiente, usando el CSV de respaldo exportado en el paso 0.
+      </div>
+    </div>
+  </div>
+
+  <!-- M3: FIANZA__C — CRÍTICO -->
+  <div id="m3">
+    <div class="mod-header" style="background:linear-gradient(90deg,#7c1010,#dc2626)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 3</span>
+      <span class="mod-title">Reestructurar Fianza__c — cambio de relación padre ⚠️</span>
+      <span class="mod-risk" style="background:rgba(0,0,0,.25)">Riesgo: CRÍTICO</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Este es el cambio más importante y de mayor riesgo. Actualmente <code>Fianza__c</code> se vincula a contratos a través de la junction <code>Tech_Relacion__c</code> (campo <code>Tipo__c = 'Contrato'</code>). El objetivo es que <strong>Fianza__c sea hijo Master-Detail directo de Contrato__c</strong>.</p>
+
+      <div class="alert alert-bad">
+        <strong>⚠️ Restricción de Salesforce: no se puede cambiar Lookup a M-D si ya hay registros</strong>
+        El proceso es: (1) crear campo M-D nuevo, (2) poblar todos los registros con el valor del padre, (3) el campo queda como M-D desde el inicio si se crea como tal y todos los registros tienen valor.
+        <br><strong>Solución:</strong> crear el campo como Lookup primero, poblar datos, después de verificar que todos tienen valor puede dejarse como Lookup (con el comportamiento de M-D logrado por permisos) o recrearse como M-D. Ver paso 4.
+      </div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:16px 0 10px">Estado actual de Fianza__c — campos identificados en el código</h4>
+      <table>
+        <thead><tr><th>Campo API actual</th><th>Tipo</th><th>Acción</th><th>Razón</th></tr></thead>
+        <tbody>
+          <tr><td><code>No_Contrato__c</code></td><td>Text (campo de texto libre)</td><td><span class="badge badge-warn">Mantener temporalmente</span></td><td>Referencia histórica; limpiar una vez migrados los datos al nuevo campo</td></tr>
+          <tr><td><code>ContratistaFianza__c</code></td><td>Lookup(Contratista__c)</td><td><span class="badge badge-warn">Renombrar etiqueta</span></td><td>Cambiar label a "Contratista Principal" para claridad</td></tr>
+          <tr><td><code>Vendedor__c</code></td><td>Lookup(Vendedores__c)</td><td><span class="badge badge-ok">Conservar</span></td><td>Relación directa correcta</td></tr>
+          <tr><td><code>Estatus__c</code></td><td>Picklist</td><td><span class="badge badge-ok">Conservar</span></td><td>Agregar valores: "Por Vencer" si no existe</td></tr>
+          <tr><td><code>Monto_Afianzado__c</code></td><td>Currency</td><td><span class="badge badge-ok">Conservar</span></td><td>Coincide con modelo objetivo</td></tr>
+          <tr><td><code>Fecha_de_Emisi_n__c</code></td><td>Date</td><td><span class="badge badge-ok">Conservar</span></td><td>Nota: API name tiene caracter especial (ñ). Funciona pero es poco ortodoxo</td></tr>
+          <tr><td><code>Afianzadora__c</code></td><td>Text o Picklist (no lookup)</td><td><span class="badge badge-del">Reemplazar</span></td><td>Reemplazar con Lookup a <code>Institucion__c</code> (ver abajo)</td></tr>
+          <tr><td><code>Beneficiario__c</code></td><td>Lookup(Beneficiario__c)</td><td><span class="badge badge-ok">Conservar</span></td><td></td></tr>
+          <tr><td><code>Fecha_de_Vencimiento__c</code></td><td>Date</td><td><span class="badge badge-ok">Conservar</span></td><td></td></tr>
+          <tr><td><code>PlazoReclamaci_n__c</code></td><td>Date</td><td><span class="badge badge-ok">Conservar</span></td><td></td></tr>
+          <tr><td><code>DiasReclamaci_n__c</code></td><td>Number/Formula</td><td><span class="badge badge-ok">Conservar</span></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:20px 0 10px">Campos a AGREGAR en Fianza__c</h4>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Contrato__c</code></td><td>Contrato</td><td><strong>Master-Detail(Contrato__c)</strong></td><td>✓</td><td>⚠️ Ver proceso de creación abajo. RelName: <code>Fianzas</code>. On-delete: <em>Don't allow</em></td></tr>
+          <tr><td><code>Institucion__c</code></td><td>Institución Afianzadora</td><td>Lookup(Institucion__c)</td><td>✓</td><td>RelName: <code>Fianzas_Emitidas</code>. Reemplaza a Afianzadora__c texto</td></tr>
+          <tr><td><code>Tipo_Fianza__c</code></td><td>Tipo de Fianza</td><td>Picklist</td><td>✓</td><td>Cumplimiento · Anticipo · Oculto · Vicios · Fidelidad · Otro</td></tr>
+          <tr><td><code>Porcentaje__c</code></td><td>% del Contrato</td><td>Percent(5,2)</td><td></td><td></td></tr>
+          <tr><td><code>Dias_Para_Vencer__c</code></td><td>Días para Vencer</td><td>Formula(Number)</td><td></td><td>Fórmula: <code>Fecha_de_Vencimiento__c - TODAY()</code></td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:20px 0 10px">Proceso de creación del campo M-D <code>Contrato__c</code> en Fianza__c</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-body">
+            <strong>Verificar que todos los registros de Fianza__c tienen un Contrato__c relacionado</strong>
+            <p>Ejecutar en Workbench / Dev Console: <code>SELECT Id, Name, No_Contrato__c FROM Fianza__c WHERE No_Contrato__c = null OR No_Contrato__c = ''</code>. Si hay fianzas sin contrato, asignarles uno antes de continuar (crear un contrato "Sin Asignar" como placeholder).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Verificar que todos los Contrato__c necesarios ya existen como registros</strong>
+            <p>Los números en <code>Fianza__c.No_Contrato__c</code> deben corresponder a registros existentes en <code>Contrato__c</code>. Ejecutar: <code>SELECT Id, Name FROM Contrato__c</code> y comparar con los valores únicos de <code>No_Contrato__c</code> en Fianza__c.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Crear el campo: Object Manager → Fianza__c → Fields → New → Master-Detail</strong>
+            <p>Related Object: <code>Contrato__c</code> · Field Label: <em>Contrato</em> · Field Name: <code>Contrato__c</code> · Child RelationshipName: <code>Fianzas</code> · Reparenting: NO. <br><strong>Salesforce advertirá que los registros existentes necesitan un valor.</strong> Aceptar y continuar.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Poblar el campo Contrato__c en todos los registros de Fianza__c con DataLoader</strong>
+            <p>Preparar un CSV con columnas <code>Id</code> (ID de Fianza__c) y <code>Contrato__c</code> (ID del registro Contrato__c correspondiente). Hacer el mapeo usando el campo texto <code>No_Contrato__c</code> como referencia. Hacer un UPSERT sobre Fianza__c.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Verificar que TODOS los registros de Fianza__c tienen el campo Contrato__c poblado</strong>
+            <p>Ejecutar: <code>SELECT COUNT() FROM Fianza__c WHERE Contrato__c = null</code>. El resultado debe ser 0. Si no, resolver los registros huérfanos antes de continuar.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Crear el campo Institucion__c en Fianza__c y poblar datos</strong>
+            <p>Lookup a <code>Institucion__c</code>. Poblar usando el valor actual de <code>Afianzadora__c</code> como referencia para mapear al ID de Institucion__c. Usar DataLoader con el CSV de instituciones creado en el Módulo 1.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>[DIFERIR] Eliminar o archivar el campo Afianzadora__c de texto</strong>
+            <p>Solo después de verificar que <code>Institucion__c</code> está correctamente poblado en todos los registros. Antes de borrar: desactivar cualquier código Apex / Flow que haga referencia a <code>Afianzadora__c</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-top:14px">
+        <strong>Sobre Tech_Relacion__c y los Contratos</strong>
+        Una vez que el campo M-D <code>Contrato__c</code> esté poblado en todas las fianzas, el vínculo <code>Tech_Relacion__c</code> con <code>Tipo__c = 'Contrato'</code> es redundante. <strong>No borrar todavía</strong> — se limpia en el Módulo 10 después de actualizar el código Apex.
+      </div>
+    </div>
+  </div>
+
+  <!-- M4: CONVENIO_MODIFICATORIO__C -->
+  <div id="m4">
+    <div class="mod-header" style="background:linear-gradient(90deg,#3730a3,#6366f1)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 4</span>
+      <span class="mod-title">Crear Convenio_Modificatorio__c</span>
+      <span class="mod-risk">Riesgo: BAJO — nuevo objeto</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Nuevo objeto hijo M-D de <code>Fianza__c</code>. Reemplaza el uso incorrecto de <code>Endoso__c</code> como "Ampliación".</p>
+      <div class="alert alert-warn"><strong>Prerequisito:</strong> El Módulo 3 debe estar completo antes de crear este objeto (necesita que Fianza__c sea estable).</div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:12px 0 8px">Crear el objeto en Setup</h4>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px">Label = <em>Convenio Modificatorio</em> · Plural = <em>Convenios Modificatorios</em> · API = <code>Convenio_Modificatorio__c</code> · Record Name = Autonumérico formato <code>CONV-{0000}</code> · Track History ✓ · OWD: Private.</p>
+
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Fianza__c</code></td><td>Fianza</td><td><strong>Master-Detail(Fianza__c)</strong></td><td>✓</td><td>RelName: <code>Convenios_Modificatorios</code> · On-delete: Don't allow</td></tr>
+          <tr><td><code>Fecha__c</code></td><td>Fecha del Convenio</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Tipo__c</code></td><td>Tipo de Modificación</td><td>Picklist</td><td>✓</td><td>Ampliación de Monto · Prórroga · Reducción · Cancelación Parcial · Otro</td></tr>
+          <tr><td><code>Monto_Anterior__c</code></td><td>Monto Anterior</td><td>Currency(16,2)</td><td></td><td></td></tr>
+          <tr><td><code>Monto_Nuevo__c</code></td><td>Monto Nuevo</td><td>Currency(16,2)</td><td></td><td></td></tr>
+          <tr><td><code>Nueva_Fecha_Vigencia__c</code></td><td>Nueva Fecha Vigencia</td><td>Date</td><td></td><td>Solo aplica si Tipo = Prórroga</td></tr>
+          <tr><td><code>Descripcion__c</code></td><td>Descripción</td><td>Long Text Area(32768)</td><td></td><td></td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Borrador · Pendiente Aprobación · Aprobado · Rechazado</td></tr>
+          <tr><td><code>Aprobado_Por__c</code></td><td>Aprobado Por</td><td>Lookup(User)</td><td></td><td>RelName: <code>Convenios_Aprobados</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-blue" style="margin-top:12px">
+        <strong>Migración de datos desde Endoso__c</strong>
+        Los registros actuales de <code>Endoso__c</code> que correspondan a "Ampliaciones" deben migrarse a este nuevo objeto. Exportar <code>Endoso__c</code>, filtrar los que sean ampliaciones, y hacer INSERT en <code>Convenio_Modificatorio__c</code> mapeando los campos equivalentes.
+      </div>
+    </div>
+  </div>
+
+  <!-- M5: ENDOSO_DE_FIANZA__C -->
+  <div id="m5">
+    <div class="mod-header" style="background:linear-gradient(90deg,#4c1d95,#8b5cf6)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 5</span>
+      <span class="mod-title">Crear Endoso_de_Fianza__c</span>
+      <span class="mod-risk">Riesgo: BAJO — nuevo objeto</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Nuevo objeto para endosos formales emitidos por la institución (diferente al Convenio Modificatorio interno). El objeto <code>Endoso__c</code> actual mezcla ambos conceptos y deberá limpiarse una vez migrados los datos.</p>
+
+      <p style="font-size:12px;color:#475569;margin-bottom:10px">Label = <em>Endoso de Fianza</em> · Plural = <em>Endosos de Fianza</em> · API = <code>Endoso_de_Fianza__c</code> · Record Name = Autonumérico <code>END-{00000}</code> · OWD: Private.</p>
+
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Fianza__c</code></td><td>Fianza</td><td><strong>Master-Detail(Fianza__c)</strong></td><td>✓</td><td>RelName: <code>Endosos_Fianza</code> · On-delete: Don't allow</td></tr>
+          <tr><td><code>No_Endoso_Institucion__c</code></td><td>No. Endoso (Institución)</td><td>Text(40)</td><td></td><td>Folio asignado por la afianzadora</td></tr>
+          <tr><td><code>Tipo_Endoso__c</code></td><td>Tipo</td><td>Picklist</td><td>✓</td><td>Aumento · Reducción · Prórroga · Cancelación · Sustitución · Otro</td></tr>
+          <tr><td><code>Fecha_Endoso__c</code></td><td>Fecha del Endoso</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Monto__c</code></td><td>Monto del Endoso</td><td>Currency(16,2)</td><td></td><td>Diferencia aplicada (+/-)</td></tr>
+          <tr><td><code>Nueva_Fecha_Vigencia__c</code></td><td>Nueva Fecha Vigencia</td><td>Date</td><td></td><td></td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Emitido · Aplicado · Rechazado · Cancelado</td></tr>
+          <tr><td><code>Convenio_Relacionado__c</code></td><td>Convenio Modificatorio</td><td>Lookup(Convenio_Modificatorio__c)</td><td></td><td>RelName: <code>Endosos_de_Convenio</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-blue" style="margin-top:12px">
+        <strong>¿Qué hacer con el objeto Endoso__c existente?</strong>
+        Por ahora mantenerlo. Después de migrar los datos a <code>Convenio_Modificatorio__c</code> y <code>Endoso_de_Fianza__c</code>, evaluar si tiene registros huérfanos. Eliminar en el Módulo 10.
+      </div>
+    </div>
+  </div>
+
+  <!-- M6: PLAN_DE_PAGOS + RECIBO -->
+  <div id="m6">
+    <div class="mod-header" style="background:linear-gradient(90deg,#78350f,#d97706)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 6</span>
+      <span class="mod-title">Crear Plan_de_Pagos__c y Recibo__c</span>
+      <span class="mod-risk">Riesgo: BAJO — objetos nuevos</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Módulo de cobranza de primas. <code>Plan_de_Pagos__c</code> es hijo de <code>Fianza__c</code>; <code>Recibo__c</code> es hijo de <code>Plan_de_Pagos__c</code>. Crear en ese orden.</p>
+      <div class="alert alert-warn"><strong>Prerequisito:</strong> El Módulo 3 (Fianza__c reestructurada) debe estar completo.</div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:12px 0 8px">Plan_de_Pagos__c — campos</h4>
+      <p style="font-size:12px;color:#475569;margin-bottom:8px">Label = <em>Plan de Pagos</em> · API = <code>Plan_de_Pagos__c</code> · Record Name = Autonumérico <code>PLAN-{0000}</code> · OWD: Private.</p>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Fianza__c</code></td><td>Fianza</td><td><strong>Master-Detail(Fianza__c)</strong></td><td>✓</td><td>RelName: <code>Planes_de_Pago</code> · On-delete: Don't allow</td></tr>
+          <tr><td><code>Periodicidad__c</code></td><td>Periodicidad</td><td>Picklist</td><td>✓</td><td>Mensual · Bimestral · Trimestral · Semestral · Anual · Único</td></tr>
+          <tr><td><code>No_Pagos__c</code></td><td>Número de Pagos</td><td>Number(2,0)</td><td>✓</td><td></td></tr>
+          <tr><td><code>Fecha_Primer_Pago__c</code></td><td>Fecha Primer Pago</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Monto_Total__c</code></td><td>Monto Total</td><td>Currency(16,2)</td><td>✓</td><td></td></tr>
+          <tr><td><code>Monto_Por_Pago__c</code></td><td>Monto por Pago</td><td>Formula(Currency)</td><td></td><td><code>Monto_Total__c / No_Pagos__c</code></td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Activo · Completado · Cancelado</td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:18px 0 8px">Recibo__c — campos</h4>
+      <p style="font-size:12px;color:#475569;margin-bottom:8px">Label = <em>Recibo</em> · API = <code>Recibo__c</code> · Record Name = Autonumérico <code>REC-{000000}</code> · OWD: Private. Crear <strong>después</strong> de Plan_de_Pagos__c.</p>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Plan_de_Pagos__c</code></td><td>Plan de Pagos</td><td><strong>Master-Detail(Plan_de_Pagos__c)</strong></td><td>✓</td><td>RelName: <code>Recibos</code> · On-delete: Cascade</td></tr>
+          <tr><td><code>No_Pago__c</code></td><td>No. de Pago</td><td>Number(2,0)</td><td>✓</td><td>Secuencial dentro del plan: 1, 2, 3…</td></tr>
+          <tr><td><code>Fecha_Vencimiento__c</code></td><td>Fecha de Vencimiento</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Fecha_Pago__c</code></td><td>Fecha de Pago</td><td>Date</td><td></td><td>Vacío = no pagado aún</td></tr>
+          <tr><td><code>Monto__c</code></td><td>Monto</td><td>Currency(16,2)</td><td>✓</td><td>Default = Monto_Por_Pago del plan</td></tr>
+          <tr><td><code>Forma_Pago__c</code></td><td>Forma de Pago</td><td>Picklist</td><td></td><td>Transferencia · Cheque · Efectivo · SPEI · Cargo Automático · OXXO Pay</td></tr>
+          <tr><td><code>Referencia__c</code></td><td>Referencia / Folio</td><td>Text(60)</td><td></td><td>Número de operación bancaria</td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Pendiente · Pagado · Vencido · Cancelado · En Mora · Default=Pendiente</td></tr>
+          <tr><td><code>Dias_Mora__c</code></td><td>Días en Mora</td><td>Formula(Number)</td><td></td><td><code>IF(Status__c = 'Pagado', 0, MAX(TODAY() - Fecha_Vencimiento__c, 0))</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- M7: COMISIONES -->
+  <div id="m7">
+    <div class="mod-header" style="background:linear-gradient(90deg,#1e1b4b,#4f46e5)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 7</span>
+      <span class="mod-title">Crear Tabla_de_Comisiones__c y Comision__c</span>
+      <span class="mod-risk">Riesgo: BAJO — objetos nuevos</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Módulo de comisiones para vendedores/agentes. La tabla de comisiones es el catálogo; el objeto comisión es el registro transaccional generado por cada pago.</p>
+      <div class="alert alert-warn"><strong>Prerequisito:</strong> Módulo 6 completo (Recibo__c debe existir antes de crear Comision__c).</div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:12px 0 8px">Tabla_de_Comisiones__c — campos</h4>
+      <p style="font-size:12px;color:#475569;margin-bottom:8px">Label = <em>Tabla de Comisiones</em> · API = <code>Tabla_de_Comisiones__c</code> · Record Name = Text "Nombre" · OWD: Public Read Only.</p>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Tipo_Agente__c</code></td><td>Tipo de Agente</td><td>Picklist</td><td>✓</td><td>Agente Independiente · Promotor · Subagente · Broker</td></tr>
+          <tr><td><code>Tipo_Producto__c</code></td><td>Tipo de Producto</td><td>Picklist</td><td>✓</td><td>Fianza · Seguro · Todos</td></tr>
+          <tr><td><code>Tipo_Fianza__c</code></td><td>Tipo de Fianza</td><td>Picklist</td><td></td><td>Mismo catálogo que Fianza__c.Tipo_Fianza__c</td></tr>
+          <tr><td><code>Institucion__c</code></td><td>Institución</td><td>Lookup(Institucion__c)</td><td></td><td>Vacío = aplica a todas</td></tr>
+          <tr><td><code>Porcentaje_Comision__c</code></td><td>% Comisión</td><td>Percent(5,2)</td><td>✓</td><td></td></tr>
+          <tr><td><code>Vigencia_Inicio__c</code></td><td>Vigencia Inicio</td><td>Date</td><td></td><td>Para versionar tarifas por fecha</td></tr>
+          <tr><td><code>Activa__c</code></td><td>Activa</td><td>Checkbox</td><td>✓</td><td>Default: true</td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:18px 0 8px">Comision__c — campos</h4>
+      <p style="font-size:12px;color:#475569;margin-bottom:8px">Label = <em>Comisión</em> · API = <code>Comision__c</code> · Record Name = Autonumérico <code>COM-{000000}</code> · OWD: Private.</p>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>Recibo__c</code></td><td>Recibo</td><td>Lookup(Recibo__c)</td><td>✓</td><td>RelName: <code>Comisiones</code></td></tr>
+          <tr><td><code>Vendedor__c</code></td><td>Vendedor</td><td>Lookup(Vendedores__c)</td><td>✓</td><td>RelName: <code>Comisiones_Vendedor</code>. Actualizar API name si se renombra el objeto</td></tr>
+          <tr><td><code>Tabla_Comisiones__c</code></td><td>Tabla Aplicada</td><td>Lookup(Tabla_de_Comisiones__c)</td><td></td><td></td></tr>
+          <tr><td><code>Monto_Prima__c</code></td><td>Monto Prima Cobrada</td><td>Currency(16,2)</td><td>✓</td><td>Copia del Recibo.Monto al momento del cálculo</td></tr>
+          <tr><td><code>Porcentaje_Comision__c</code></td><td>% Comisión Aplicado</td><td>Percent(5,2)</td><td>✓</td><td></td></tr>
+          <tr><td><code>Monto_Comision__c</code></td><td>Monto Comisión</td><td>Formula(Currency)</td><td></td><td><code>Monto_Prima__c * Porcentaje_Comision__c / 100</code></td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Calculada · Aprobada · Pagada · Retenida · Reversada</td></tr>
+          <tr><td><code>Fecha_Pago__c</code></td><td>Fecha de Pago al Agente</td><td>Date</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- M8: SEGURO -->
+  <div id="m8">
+    <div class="mod-header" style="background:linear-gradient(90deg,#065f46,#059669)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 8</span>
+      <span class="mod-title">Crear Seguro__c</span>
+      <span class="mod-risk">Riesgo: BAJO — objeto nuevo</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Módulo paralelo a Fianzas para gestión de pólizas de seguro. Prerequisito: Módulo 1 (Institucion__c) y Módulo 2 (Contrato__c ampliado).</p>
+      <p style="font-size:12px;color:#475569;margin-bottom:10px">Label = <em>Seguro</em> · Plural = <em>Seguros</em> · API = <code>Seguro__c</code> · Record Name = Autonumérico <code>POL-{00000}</code> · Track History ✓ · OWD: Private.</p>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>No_Poliza__c</code></td><td>No. Póliza (Institución)</td><td>Text(40)</td><td></td><td></td></tr>
+          <tr><td><code>Contrato__c</code></td><td>Contrato</td><td>Lookup(Contrato__c)</td><td>✓</td><td>RelName: <code>Seguros</code></td></tr>
+          <tr><td><code>Institucion__c</code></td><td>Institución</td><td>Lookup(Institucion__c)</td><td>✓</td><td>RelName: <code>Seguros_Emitidos</code></td></tr>
+          <tr><td><code>Tipo_Seguro__c</code></td><td>Tipo de Seguro</td><td>Picklist</td><td>✓</td><td>Vida · Gastos Médicos · RC · Daños · Robo · Transporte · Fianza · Otro</td></tr>
+          <tr><td><code>Suma_Asegurada__c</code></td><td>Suma Asegurada</td><td>Currency(16,2)</td><td>✓</td><td></td></tr>
+          <tr><td><code>Prima__c</code></td><td>Prima Anual</td><td>Currency(16,2)</td><td></td><td></td></tr>
+          <tr><td><code>Fecha_Inicio__c</code></td><td>Inicio de Vigencia</td><td>Date</td><td>✓</td><td></td></tr>
+          <tr><td><code>Fecha_Fin__c</code></td><td>Fin de Vigencia</td><td>Date</td><td>✓</td><td>Validation Rule: mayor que Fecha_Inicio__c</td></tr>
+          <tr><td><code>Status__c</code></td><td>Estatus</td><td>Picklist</td><td>✓</td><td>Vigente · Por Vencer · Vencida · Cancelada · Siniestrada</td></tr>
+          <tr><td><code>Asegurado__c</code></td><td>Asegurado</td><td>Lookup(Contratista__c)</td><td>✓</td><td>RelName: <code>Seguros_Asegurado</code></td></tr>
+          <tr><td><code>Beneficiario_Seguro__c</code></td><td>Beneficiario</td><td>Lookup(Beneficiario__c)</td><td></td><td>RelName: <code>Seguros_Beneficiario</code></td></tr>
+          <tr><td><code>Vendedor__c</code></td><td>Vendedor</td><td>Lookup(Vendedores__c)</td><td></td><td>RelName: <code>Seguros_Vendedor</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- M9: VENDEDOR -->
+  <div id="m9">
+    <div class="mod-header" style="background:linear-gradient(90deg,#134e4a,#0d9488)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 9</span>
+      <span class="mod-title">Vendedores__c — ampliar campos (no se puede renombrar API)</span>
+      <span class="mod-risk">Riesgo: BAJO</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">En Salesforce <strong>el API name de un objeto personalizado no puede cambiarse</strong> una vez creado. La solución es cambiar la etiqueta (Label) del objeto de "Vendedores" a "Vendedor" y agregar los campos que faltan.</p>
+
+      <div class="alert alert-blue">
+        <strong>Acción en Setup → Object Manager → Vendedores__c → Edit</strong>
+        Cambiar: Object Label = <em>Vendedor</em> · Plural Label = <em>Vendedores</em>. El API name <code>Vendedores__c</code> permanece igual, el código Apex no requiere cambios.
+      </div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:12px 0 8px">Campos a AGREGAR en Vendedores__c (etiqueta: Vendedor)</h4>
+      <table>
+        <thead><tr><th>Nombre API</th><th>Etiqueta</th><th>Tipo SF</th><th>Req.</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td><code>RFC__c</code></td><td>RFC</td><td>Text(13)</td><td>✓</td><td>Unique. Verificar si ya existe antes de crear</td></tr>
+          <tr><td><code>Tipo_Agente__c</code></td><td>Tipo de Agente</td><td>Picklist</td><td>✓</td><td>Agente Independiente · Promotor · Subagente · Broker</td></tr>
+          <tr><td><code>Clave_Agente__c</code></td><td>Clave de Agente</td><td>Text(20)</td><td></td><td>Clave CNSF o interna</td></tr>
+          <tr><td><code>Email__c</code></td><td>Email</td><td>Email</td><td>✓</td><td>Unique</td></tr>
+          <tr><td><code>Telefono__c</code></td><td>Teléfono</td><td>Phone</td><td></td><td>Verificar si ya existe</td></tr>
+          <tr><td><code>Activo__c</code></td><td>Activo</td><td>Checkbox</td><td>✓</td><td>Default: true</td></tr>
+          <tr><td><code>Porcentaje_Comision_Base__c</code></td><td>% Comisión Base Override</td><td>Percent(5,2)</td><td></td><td>Si vacío, usa Tabla_de_Comisiones__c</td></tr>
+          <tr><td><code>Usuario_SF__c</code></td><td>Usuario Salesforce</td><td>Lookup(User)</td><td></td><td>Para portal de agentes / Experience Cloud</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11.5px;color:#7c3aed;margin-top:10px;font-weight:600">⚠️ Antes de crear cada campo, verificar en Object Manager que no exista ya con distinto nombre para no duplicar.</p>
+    </div>
+  </div>
+
+  <!-- M10: LIMPIAR TECH_RELACION -->
+  <div id="m10">
+    <div class="mod-header" style="background:linear-gradient(90deg,#7c1010,#be123c)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 10</span>
+      <span class="mod-title">Limpiar Tech_Relacion__c y Endoso__c obsoleto</span>
+      <span class="mod-risk" style="background:rgba(0,0,0,.25)">Riesgo: ALTO — datos permanentes</span>
+    </div>
+    <div class="mod-body">
+      <div class="alert alert-bad">
+        <strong>⛔ Solo ejecutar después de que el Módulo 12 (Apex/LWC) esté completo y probado.</strong>
+        Si el código Apex todavía referencia <code>Tech_Relacion__c</code> y se borra el objeto, el deploy de producción fallará. Confirmar que las clases desplegadas ya no usan estas referencias.
+      </div>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:12px 0 10px">Decisión por tipo de registro en Tech_Relacion__c</h4>
+      <table>
+        <thead><tr><th>Tipo__c</th><th>Reemplazado por</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td><code>Contrato</code></td><td>Campo M-D <code>Fianza__c.Contrato__c</code></td><td><span class="badge badge-del">Eliminar registros con este Tipo</span></td></tr>
+          <tr><td><code>Contratista</code></td><td>Campo <code>Fianza__c.ContratistaFianza__c</code> (ya existe)</td><td><span class="badge badge-warn">Verificar si hay datos adicionales no en el campo directo</span></td></tr>
+          <tr><td><code>Vendedor</code></td><td>Campo <code>Fianza__c.Vendedor__c</code> (ya existe)</td><td><span class="badge badge-warn">Verificar duplicados</span></td></tr>
+          <tr><td><code>Beneficiario</code></td><td>Campo <code>Fianza__c.Beneficiario__c</code> (ya existe)</td><td><span class="badge badge-warn">Verificar duplicados</span></td></tr>
+          <tr><td>Otros tipos</td><td>Evaluar caso por caso</td><td><span class="badge badge-gray">Evaluar antes de borrar</span></td></tr>
+        </tbody>
+      </table>
+
+      <h4 style="font-size:13px;font-weight:700;color:#222F39;margin:16px 0 8px">Proceso de limpieza</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-body">
+            <strong>Exportar todos los registros de Tech_Relacion__c como backup final</strong>
+            <p>SELECT * FROM Tech_Relacion__c. Guardar en CSV antes de tocar nada.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Verificar en Developer Console que ninguna clase Apex activa referencia Tech_Relacion__c</strong>
+            <p>Buscar en el org: <em>Setup → Apex Classes</em> → buscar el texto <code>Tech_Relacion__c</code> y <code>Relaciones_Tecnicas</code>. También revisar Flows activos.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Eliminar los registros con Tipo__c = 'Contrato' (ya reemplazados)</strong>
+            <p>En Developer Console → Execute Anonymous: <code>delete [SELECT Id FROM Tech_Relacion__c WHERE Tipo__c = 'Contrato'];</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>Evaluar si Tech_Relacion__c aún se necesita para otros tipos</strong>
+            <p>Si todos los tipos están reemplazados por campos directos en los objetos, proceder a eliminar el objeto completo. Si algún tipo no tiene reemplazo, mantener el objeto y solo eliminar los campos obsoletos.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-body">
+            <strong>[Condicional] Evaluar el objeto Endoso__c</strong>
+            <p>Una vez migrados los datos a <code>Convenio_Modificatorio__c</code> y <code>Endoso_de_Fianza__c</code>: verificar que no queden registros activos. Ejecutar: <code>SELECT COUNT() FROM Endoso__c</code>. Si hay registros y todos están migrados, se puede etiquetar como "Obsoleto" en el label y dejarlo en modo lectura, o eliminar después de confirmar con el equipo de negocio.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-top:12px">
+        <strong>Campos a eliminar en Fianza__c (diferido — solo después de verificar data migrada)</strong>
+        <ul style="padding-left:20px;margin-top:6px;font-size:12px;line-height:2">
+          <li><code>Afianzadora__c</code> (texto) → reemplazado por Lookup a <code>Institucion__c</code></li>
+          <li><code>No_Contrato__c</code> (texto libre) → reemplazado por M-D <code>Contrato__c</code></li>
+        </ul>
+        Para eliminar un campo: <em>Object Manager → Fianza__c → Fields → [campo] → Delete</em>. Salesforce pide confirmación y lo mueve a una "papelera" de campos por 15 días antes de borrar definitivamente.
+      </div>
+    </div>
+  </div>
+
+  <!-- M11: FLOWS -->
+  <div id="m11">
+    <div class="mod-header" style="background:linear-gradient(90deg,#1e3a52,#0ea5e9)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 11</span>
+      <span class="mod-title">Crear Flows de automatización</span>
+      <span class="mod-risk">Riesgo: MEDIO</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Flows prioritarios una vez que los objetos base estén en su lugar. Crear en <em>Setup → Flows → New Flow</em>.</p>
+
+      <table>
+        <thead><tr><th>#</th><th>Nombre</th><th>Tipo de Flow</th><th>Objeto Trigger</th><th>Condición</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Alerta Fianza Por Vencer</td>
+            <td>Scheduled-Triggered</td>
+            <td>Fianza__c</td>
+            <td>Se ejecuta diariamente. Filtro: <code>Dias_Para_Vencer__c &lt;= 30</code> AND <code>Status__c = 'Vigente'</code></td>
+            <td>Cambiar <code>Status__c</code> → "Por Vencer" + Enviar Email al Vendedor y al propietario del Contrato</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Generar Recibos desde Plan</td>
+            <td>Record-Triggered (After Save — Create)</td>
+            <td>Plan_de_Pagos__c</td>
+            <td>Status__c = 'Activo'</td>
+            <td>Loop N veces: crear Recibo__c con fecha calculada según Periodicidad y No_Pago secuencial</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Vencer Recibos Pendientes</td>
+            <td>Scheduled-Triggered</td>
+            <td>Recibo__c</td>
+            <td>Diario. Filtro: <code>Status__c = 'Pendiente'</code> AND <code>Fecha_Vencimiento__c &lt; TODAY()</code></td>
+            <td>Cambiar <code>Status__c</code> → "Vencido" + Notificación in-app al vendedor</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Calcular Comisión al Pago</td>
+            <td>Record-Triggered (After Save — Update)</td>
+            <td>Recibo__c</td>
+            <td>Status__c cambió a "Pagado"</td>
+            <td>Lookup Tabla_de_Comisiones vigente → crear Comision__c con monto calculado</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Aplicar Convenio a Fianza</td>
+            <td>Record-Triggered (After Save — Update)</td>
+            <td>Convenio_Modificatorio__c</td>
+            <td>Status__c cambió a "Aprobado"</td>
+            <td>Actualizar Monto y/o Fecha_Vigencia en Fianza__c padre según Tipo del convenio</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-blue" style="margin-top:14px">
+        <strong>Tip para el Flow de Generar Recibos</strong>
+        En el Flow de "Generar Recibos" (Flow 2), el cálculo de fecha por periodicidad requiere una Variable de tipo Date y un Loop con ADDMONTHS(). Usar una variable de iteración que incremente la fecha: Mensual = +1 mes, Trimestral = +3 meses, etc. Salesforce Flow soporta el elemento "Loop" con colecciones; crear una Colección de Recibos y al final hacer "Create Records" con toda la colección para reducir transacciones DML.
+      </div>
+    </div>
+  </div>
+
+  <!-- M12: APEX Y LWC -->
+  <div id="m12">
+    <div class="mod-header" style="background:linear-gradient(90deg,#1e293b,#334155)">
+      <span class="mod-num" style="color:rgba(255,255,255,.6)">MÓDULO 12</span>
+      <span class="mod-title">Actualizar Apex y LWC (coordinar con Desarrollador)</span>
+      <span class="mod-risk">Riesgo: MEDIO — requiere deploy</span>
+    </div>
+    <div class="mod-body">
+      <p class="lead">Una vez que los metadatos del org estén actualizados, el desarrollador debe actualizar los Selectors y Wrappers en Apex para usar los nuevos campos y relaciones directas en lugar de <code>Tech_Relacion__c</code>.</p>
+
+      <table>
+        <thead><tr><th>Clase</th><th>Cambio requerido</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>TechFianzaSelector.cls</code></td>
+            <td>Reemplazar subquery <code>Relaciones_Tecnicas_Fianza__r</code> por campos directos: <code>Contrato__r.Name</code>, <code>Institucion__r.Name</code>. La relación M-D Contrato__c ya es campo directo en Fianza__c.</td>
+          </tr>
+          <tr>
+            <td><code>TechFianzaWrapper.cls</code></td>
+            <td>Eliminar el loop sobre <code>Relaciones_Tecnicas_Fianza__r</code>. Acceder directamente a <code>f.Contrato__r.Name</code>, <code>f.Institucion__r.Name</code>. Actualizar propiedades del wrapper.</td>
+          </tr>
+          <tr>
+            <td><code>TechContratoSelector.cls</code></td>
+            <td>Ampliar el SELECT para incluir todos los nuevos campos: Contratista__r.Name, Status__c, Fecha_Inicio_Vigencia__c, etc.</td>
+          </tr>
+          <tr>
+            <td><code>TechAmpliacionSelector.cls</code></td>
+            <td>Después de migrar datos: apuntar a <code>Convenio_Modificatorio__c</code> en lugar de <code>Endoso__c</code>. Renombrar la clase a TechConvenioSelector.</td>
+          </tr>
+          <tr>
+            <td><code>TechContratistaSelector.cls</code></td>
+            <td>Subquery <code>Relaciones_Tecnicas_Contratista__r</code> puede simplificarse usando el campo <code>Contratista__c</code> en Contrato__c (inversa). Evaluar y simplificar.</td>
+          </tr>
+          <tr>
+            <td>Nuevos: <code>TechPlanPagosSelector.cls</code></td>
+            <td>Crear Selector para Plan_de_Pagos__c con sus Recibos hijos.</td>
+          </tr>
+          <tr>
+            <td>Nuevos: <code>TechComisionSelector.cls</code></td>
+            <td>Crear Selector para Comision__c con Vendedor y Recibo relacionados.</td>
+          </tr>
+          <tr>
+            <td>Nuevos: <code>TechSeguroSelector.cls</code></td>
+            <td>Crear Selector para Seguro__c.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alert alert-warn" style="margin-top:14px">
+        <strong>Orden de operaciones para el desarrollador</strong>
+        <ol style="padding-left:20px;margin-top:6px;font-size:12px;line-height:2">
+          <li>Hacer pull del org después de que el Admin complete los módulos 1-9</li>
+          <li>Actualizar los Selectors para usar los nuevos campos/objetos</li>
+          <li>Ejecutar los tests existentes y agregar nuevos para los objetos creados</li>
+          <li>Desplegar con <code>sf project deploy start --source-dir force-app/main/default/classes --target-org Ollin</code></li>
+          <li>Probar en UI que los LWCs cargan correctamente</li>
+          <li>Solo después de que los tests pasen: ejecutar el Módulo 10 (limpieza de Tech_Relacion__c)</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA RESUMEN -->
+  <section class="section" id="resumen">
+    <div class="section-head">
+      <h2>Tabla Resumen de Todos los Cambios</h2>
+      <span class="pill pill-blue">Vista rápida</span>
+    </div>
+
+    <h3 style="font-size:13px;font-weight:700;color:#222F39;margin:10px 0 8px">Objetos: estado y acción</h3>
+    <table>
+      <thead><tr><th>Objeto API</th><th>Estado Actual</th><th>Acción</th><th>Módulo</th></tr></thead>
+      <tbody>
+        <tr><td><code>Institucion__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>1</td></tr>
+        <tr><td><code>Contrato__c</code></td><td><span class="badge badge-warn">Solo Name</span></td><td>Agregar 13 campos</td><td>2</td></tr>
+        <tr><td><code>Fianza__c</code></td><td><span class="badge badge-warn">Incompleto — sin padre M-D</span></td><td>Agregar campo M-D Contrato__c + 4 campos + reemplazar Afianzadora__c</td><td>3</td></tr>
+        <tr><td><code>Convenio_Modificatorio__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear + migrar datos de Endoso__c</td><td>4</td></tr>
+        <tr><td><code>Endoso_de_Fianza__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>5</td></tr>
+        <tr><td><code>Plan_de_Pagos__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>6</td></tr>
+        <tr><td><code>Recibo__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo (hijo de Plan)</td><td>6</td></tr>
+        <tr><td><code>Tabla_de_Comisiones__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>7</td></tr>
+        <tr><td><code>Comision__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>7</td></tr>
+        <tr><td><code>Seguro__c</code></td><td><span class="badge badge-del">No existe</span></td><td>Crear completo</td><td>8</td></tr>
+        <tr><td><code>Vendedores__c</code></td><td><span class="badge badge-warn">Incompleto</span></td><td>Cambiar label + agregar 7 campos</td><td>9</td></tr>
+        <tr><td><code>Tech_Relacion__c</code></td><td><span class="badge badge-bad">Redundante post-migración</span></td><td>Limpiar registros Tipo=Contrato; evaluar eliminar objeto</td><td>10</td></tr>
+        <tr><td><code>Endoso__c</code></td><td><span class="badge badge-bad">Mal usado (mezcla conceptos)</span></td><td>Migrar datos, etiquetar obsoleto o eliminar</td><td>10</td></tr>
+        <tr><td><code>Contratista__c</code></td><td><span class="badge badge-ok">Funcional</span></td><td>Sin cambios en esta fase</td><td>—</td></tr>
+        <tr><td><code>Beneficiario__c</code></td><td><span class="badge badge-ok">Funcional</span></td><td>Sin cambios en esta fase</td><td>—</td></tr>
+        <tr><td><code>Proyecto__c</code></td><td><span class="badge badge-ok">Funcional</span></td><td>Sin cambios en esta fase</td><td>—</td></tr>
+        <tr><td><code>Precalificacion__c</code></td><td><span class="badge badge-ok">Funcional</span></td><td>Sin cambios en esta fase</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:13px;font-weight:700;color:#222F39;margin:24px 0 8px">Campos a eliminar (solo después de verificar datos migrados)</h3>
+    <table>
+      <thead><tr><th>Objeto</th><th>Campo API</th><th>Tipo Actual</th><th>Reemplazado por</th><th>Cuándo</th></tr></thead>
+      <tbody>
+        <tr><td><code>Fianza__c</code></td><td><code>Afianzadora__c</code></td><td>Text / Picklist</td><td>Lookup <code>Institucion__c</code></td><td>Módulo 3 — después de verificar todos los registros tienen Institucion__c</td></tr>
+        <tr><td><code>Fianza__c</code></td><td><code>No_Contrato__c</code></td><td>Text libre</td><td>M-D <code>Contrato__c</code></td><td>Módulo 3 — después de verificar el campo M-D está poblado al 100%</td></tr>
+        <tr><td><code>Tech_Relacion__c</code></td><td><code>Contrato__c</code> (campo)</td><td>Lookup</td><td>Campo directo en Fianza__c</td><td>Módulo 10 — después de completar el Módulo 12</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:13px;font-weight:700;color:#222F39;margin:24px 0 8px">Estimado de esfuerzo por módulo</h3>
+    <table>
+      <thead><tr><th>Módulo</th><th>Quien</th><th>Tiempo estimado</th><th>Riesgo</th></tr></thead>
+      <tbody>
+        <tr><td>0 · Prerrequisitos</td><td>Admin</td><td>2–3 hrs</td><td><span class="badge badge-bad">Alto</span></td></tr>
+        <tr><td>1 · Institucion__c</td><td>Admin</td><td>1 hr</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>2 · Ampliar Contrato__c</td><td>Admin</td><td>1 hr</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>3 · Reestructurar Fianza__c</td><td>Admin + Dev</td><td>3–4 hrs (incluye migración de datos)</td><td><span class="badge badge-bad">Crítico</span></td></tr>
+        <tr><td>4 · Convenio_Modificatorio__c</td><td>Admin</td><td>1 hr + migración</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>5 · Endoso_de_Fianza__c</td><td>Admin</td><td>1 hr</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>6 · Plan_de_Pagos + Recibo</td><td>Admin</td><td>1.5 hrs</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>7 · Comisiones</td><td>Admin</td><td>1.5 hrs</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>8 · Seguro__c</td><td>Admin</td><td>1 hr</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>9 · Vendedores__c</td><td>Admin</td><td>0.5 hr</td><td><span class="badge badge-ok">Bajo</span></td></tr>
+        <tr><td>10 · Limpieza Tech_Relacion</td><td>Admin + Dev</td><td>2 hrs</td><td><span class="badge badge-warn">Medio</span></td></tr>
+        <tr><td>11 · Flows</td><td>Admin / Dev</td><td>4–6 hrs</td><td><span class="badge badge-warn">Medio</span></td></tr>
+        <tr><td>12 · Apex y LWC</td><td>Dev</td><td>8–12 hrs</td><td><span class="badge badge-warn">Medio</span></td></tr>
+        <tr><td><strong>TOTAL</strong></td><td></td><td><strong>~28–38 hrs de trabajo neto</strong></td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <h3>Technovalue.</h3>
+    <p>Este plan de trabajo es propiedad de Technovalue y fue preparado para el equipo de implementación del proyecto Ollin Protección. El orden de los módulos no es arbitrario — está diseñado para minimizar el riesgo de pérdida de datos y evitar bloqueos por dependencias en Salesforce. No omitir los pasos de verificación ni los respaldos. Para dudas técnicas, contactar al arquitecto de solución asignado.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>URL_requerida_con_Usuario</fullName>
+    <active>true</active>
+    <description>Si se especifica un usuario, la URL del portal es obligatoria.</description>
+    <errorConditionFormula>AND(NOT(ISBLANK(Usuario__c)), ISBLANK(URL_del_portal__c))</errorConditionFormula>
+    <errorDisplayField>URL_del_portal__c</errorDisplayField>
+    <errorMessage>La URL del portal es obligatoria cuando se especifica un usuario.</errorMessage>
+</ValidationRule>

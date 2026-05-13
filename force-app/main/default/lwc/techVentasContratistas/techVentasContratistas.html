@@ -1,0 +1,434 @@
+<template>
+    <div class="vct-container">
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="vct-loading">
+                <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Toolbar -->
+        <div class="vct-toolbar">
+            <div class="vct-toolbar-left">
+                <span class="vct-title">Contratistas · Cartera</span>
+                <input class="vct-search" type="search" placeholder="Buscar contratista..."
+                    value={searchTerm} oninput={handleSearch} />
+            </div>
+            <div class="vct-toolbar-right">
+                <button class={filterBtnClass} onclick={handleToggleFilters}>
+                    <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                    {filterBtnLabel}
+                </button>
+                <button class="vct-btn-new" onclick={handleNuevo}>
+                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                    + Nuevo Contratista
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <template if:true={showFilters}>
+            <div class="vct-filter-panel">
+                <div class="vct-filter-panel-hdr">
+                    <span class="vct-filter-panel-title">Filtros avanzados</span>
+                    <div class="vct-filter-panel-actions">
+                        <button class="vct-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vct-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vct-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vct-filter-rule">
+                                <select class="vct-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vct-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vct-flt-value" type="text" data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vct-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="vct-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vct-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={hasError}>
+            <div class="vct-error">{errorMsg}</div>
+        </template>
+
+        <!-- Empty -->
+        <template if:true={isEmpty}>
+            <div class="vct-empty">No hay contratistas registrados.</div>
+        </template>
+
+        <!-- Grid -->
+        <template if:true={showGrid}>
+            <div class="vct-grid-wrap">
+
+                <!-- Header -->
+                <div class="vct-grid-row vct-grid-header">
+                    <template for:each={gridHeaders} for:item="hdr">
+                        <div key={hdr.key} class={hdr.cellClass}
+                             data-field={hdr.field} onclick={handleSort}>
+                            {hdr.label}
+                            <template if:true={hdr.icon}>
+                                <span class="vct-sort-icon">{hdr.icon}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Rows -->
+                <template for:each={rows} for:item="row">
+                    <div key={row.id} class="vct-grid-row vct-grid-data"
+                        data-id={row.id} onclick={handleRowClick}>
+
+                        <div class="vct-grid-cell vct-cell-num">
+                            {row.rowNum}
+                            <button class="vct-row-if-btn" data-id={row.id} data-name={row.name}
+                                    onclick={handleOpenInterfaces} title="Ver Interfaces">
+                                <lightning-icon icon-name="utility:metrics" size="xx-small"
+                                               alternative-text="Interfaces"></lightning-icon>
+                            </button>
+                        </div>
+
+                        <div class="vct-grid-cell vct-cell-name">{row.name}</div>
+
+                        <div class="vct-grid-cell">{row.rfc}</div>
+
+                        <div class="vct-grid-cell">{row.cliente}</div>
+
+                        <!-- Fianzas chips -->
+                        <div class="vct-grid-cell vct-cell-chips">
+                            <template for:each={row.fianzasChips} for:item="f">
+                                <span key={f} class="vct-chip vct-chip-blue">{f}</span>
+                            </template>
+                            <template if:true={row.fianzasExtra}>
+                                <span class="vct-chip vct-chip-gray">+{row.fianzasExtra}</span>
+                            </template>
+                        </div>
+
+                        <!-- Contratos chips -->
+                        <div class="vct-grid-cell vct-cell-chips">
+                            <template for:each={row.contratosChips} for:item="c">
+                                <span key={c} class="vct-chip vct-chip-teal">{c}</span>
+                            </template>
+                            <template if:true={row.contratosExtra}>
+                                <span class="vct-chip vct-chip-gray">+{row.contratosExtra}</span>
+                            </template>
+                        </div>
+
+                        <!-- Precalificaciones -->
+                        <div class="vct-grid-cell vct-cell-chips">
+                            <template for:each={row.precalChips} for:item="p">
+                                <span key={p.id} class="vct-chip vct-chip-purple">{p.name}</span>
+                            </template>
+                            <template if:true={row.precalExtra}>
+                                <span class="vct-chip vct-chip-gray">+{row.precalExtra}</span>
+                            </template>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="vct-grid-cell">
+                            <span class={row.estatusClass}>{row.estatus}</span>
+                        </div>
+
+                    </div>
+                </template>
+
+                <!-- Add row -->
+                <div class="vct-grid-row vct-addrow" onclick={handleNuevo}>
+                    <div class="vct-addrow-cell" style="grid-column: 1 / -1;">
+                        <span class="vct-addrow-label">+ Agregar registro</span>
+                    </div>
+                </div>
+
+            </div>
+        </template>
+
+    </div>
+
+    <!-- Detail / Edit panel -->
+    <template if:true={selectedContratista}>
+        <div class="vct-overlay" onclick={handleClosePanel}></div>
+        <div class="vct-detail-panel">
+            <div class="vct-detail-header">
+                <span class="vct-detail-title">{selectedContratista.name}</span>
+                <div class="vct-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <button class="vct-detail-edit-btn" onclick={handleEditPanel} title="Editar">
+                            <lightning-icon icon-name="utility:edit" size="x-small"
+                                           alternative-text="Editar"></lightning-icon>
+                            Editar
+                        </button>
+                        <button class="vct-detail-if-btn" data-id={selectedContratista.id}
+                                data-name={selectedContratista.name} onclick={handleOpenInterfaces}
+                                title="Ver Interfaces">
+                            <lightning-icon icon-name="utility:metrics" size="x-small"
+                                           alternative-text="Interfaces"></lightning-icon>
+                        </button>
+                    </template>
+                    <button class="vct-detail-close" onclick={handleClosePanel}>
+                        <lightning-icon icon-name="utility:close" size="small"
+                                       alternative-text="Cerrar"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="vct-detail-body">
+                <template if:false={isEditingPanel}>
+                    <lightning-record-view-form record-id={selectedContratista.id} object-api-name="Account">
+                        <div class="vct-detail-fields">
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Nombre</span>
+                                <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">RFC</span>
+                                <lightning-output-field field-name="RFC__c" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Teléfono</span>
+                                <lightning-output-field field-name="Phone" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Ciudad</span>
+                                <lightning-output-field field-name="BillingCity" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Estado</span>
+                                <lightning-output-field field-name="BillingState" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">País</span>
+                                <lightning-output-field field-name="BillingCountry" variant="label-hidden"></lightning-output-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Sitio Web</span>
+                                <lightning-output-field field-name="Website" variant="label-hidden"></lightning-output-field>
+                            </div>
+                        </div>
+                    </lightning-record-view-form>
+
+                    <!-- FIANZAS VINCULADAS -->
+                    <div class="vct-panel-section">
+                        <div class="vct-panel-section-title">Fianzas vinculadas</div>
+                        <table class="vct-linked-table">
+                            <template if:true={hasPanelFianzas}>
+                                <thead>
+                                    <tr>
+                                        <th class="vct-linked-th">Folio</th>
+                                        <th class="vct-linked-th">Estatus</th>
+                                        <th class="vct-linked-th vct-th-num">Monto</th>
+                                        <th class="vct-linked-th">Vencimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={panelFianzasData} for:item="f">
+                                        <tr key={f.id} class="vct-linked-row">
+                                            <td class="vct-linked-cell"><span class="vct-chip vct-chip-blue">{f.name}</span></td>
+                                            <td class="vct-linked-cell"><span class={f.badgeClass}>{f.estatus}</span></td>
+                                            <td class="vct-linked-cell vct-td-num">{f.montoFmt}</td>
+                                            <td class="vct-linked-cell vct-td-date">{f.vencimiento}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </template>
+                            <template if:false={hasPanelFianzas}>
+                                <tr><td colspan="4" class="vct-linked-empty">Sin fianzas vinculadas</td></tr>
+                            </template>
+                        </table>
+                    </div>
+
+                    <!-- CONTRATOS VINCULADOS -->
+                    <div class="vct-panel-section">
+                        <div class="vct-panel-section-title">Contratos vinculados</div>
+                        <table class="vct-linked-table">
+                            <template if:true={hasPanelContratos}>
+                                <thead>
+                                    <tr>
+                                        <th class="vct-linked-th">Número</th>
+                                        <th class="vct-linked-th">Estatus</th>
+                                        <th class="vct-linked-th vct-th-num">Suma Fianzas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={panelContratosData} for:item="c">
+                                        <tr key={c.id} class="vct-linked-row">
+                                            <td class="vct-linked-cell"><span class="vct-chip vct-chip-teal">{c.name}</span></td>
+                                            <td class="vct-linked-cell"><span class={c.badgeClass}>{c.estatus}</span></td>
+                                            <td class="vct-linked-cell vct-td-num">{c.montoFmt}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </template>
+                            <template if:false={hasPanelContratos}>
+                                <tr><td colspan="3" class="vct-linked-empty">Sin contratos vinculados</td></tr>
+                            </template>
+                        </table>
+                    </div>
+
+                    <!-- PRECALIFICACIONES -->
+                    <div class="vct-panel-section">
+                        <div class="vct-panel-section-title">
+                            Precalificaciones
+                            <template if:true={isLoadingPrecal}>
+                                <lightning-spinner size="xx-small" alternative-text="Cargando..."></lightning-spinner>
+                            </template>
+                            <button class="vct-precal-add-btn" onclick={handleAddPrecal}
+                                    title="Nueva precalificación">+ Nueva</button>
+                        </div>
+
+                        <table class="vct-linked-table">
+                            <template if:true={hasPanelPrecalificaciones}>
+                                <thead>
+                                    <tr>
+                                        <th class="vct-linked-th">Nombre</th>
+                                        <th class="vct-linked-th">Estado</th>
+                                        <th class="vct-linked-th vct-th-num">Línea Afianz.</th>
+                                        <th class="vct-linked-th vct-td-pdf"></th>
+                                        <th class="vct-linked-th vct-td-edit"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={panelPrecalificaciones} for:item="p">
+                                        <tr key={p.id} class="vct-linked-row">
+                                            <td class="vct-linked-cell vct-prec-name">{p.name}</td>
+                                            <td class="vct-linked-cell"><span class={p.badgeClass}>{p.estadoLabel}</span></td>
+                                            <td class="vct-linked-cell vct-td-num">{p.lineaFmt}</td>
+                                            <td class="vct-linked-cell vct-td-pdf">
+                                                <button class="vct-precal-pdf-btn" data-id={p.id} onclick={handleViewPdf} title="Ver PDF">
+                                                    <lightning-icon icon-name="doctype:pdf" size="xx-small" alternative-text="PDF"></lightning-icon>
+                                                    Ver PDF
+                                                </button>
+                                            </td>
+                                            <td class="vct-linked-cell vct-td-edit">
+                                                <button class="vct-precal-edit-btn" data-id={p.id} onclick={handleEditPrecal} title="Editar">
+                                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </template>
+                            <template if:false={hasPanelPrecalificaciones}>
+                                <template if:false={isLoadingPrecal}>
+                                    <tr><td colspan="5" class="vct-linked-empty">Sin precalificaciones vinculadas</td></tr>
+                                </template>
+                            </template>
+                        </table>
+                    </div>
+
+                </template>
+                <template if:true={isEditingPanel}>
+                    <lightning-record-edit-form record-id={selectedContratista.id} object-api-name="Account"
+                                               onsuccess={handlePanelSaveSuccess}>
+                        <div class="vct-detail-fields">
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Nombre</span>
+                                <lightning-input-field field-name="Name" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">RFC</span>
+                                <lightning-input-field field-name="RFC__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Teléfono</span>
+                                <lightning-input-field field-name="Phone" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Ciudad</span>
+                                <lightning-input-field field-name="BillingCity" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Estado</span>
+                                <lightning-input-field field-name="BillingState" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">País</span>
+                                <lightning-input-field field-name="BillingCountry" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vct-detail-row">
+                                <span class="vct-detail-label">Sitio Web</span>
+                                <lightning-input-field field-name="Website" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                        <div class="vct-panel-edit-actions">
+                            <button class="vct-panel-btn-cancel" type="button" onclick={handleCancelEdit}>Cancelar</button>
+                            <button class="vct-panel-btn-save"   type="submit">Guardar cambios</button>
+                        </div>
+                    </lightning-record-edit-form>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal nueva / editar precalificación -->
+    <template if:true={showPrecalModal}>
+        <c-tech-precalificacion-modal
+            record-id={editingPrecalId}
+            contratista-id={selectedContratista.id}
+            context-label={selectedContratista.name}
+            onclose={handlePrecalModalClose}
+            onsuccess={handlePrecalModalSuccess}>
+        </c-tech-precalificacion-modal>
+    </template>
+
+    <!-- Modal PDF Precalificación -->
+    <template if:true={showPdfModal}>
+        <div class="vct-pdf-overlay" onclick={handleClosePdfModal}></div>
+        <div class="vct-pdf-modal">
+            <div class="vct-pdf-modal-header">
+                <div class="vct-pdf-modal-title">
+                    <lightning-icon icon-name="doctype:pdf" size="small" alternative-text="PDF"></lightning-icon>
+                    <span>{pdfModalTitle}</span>
+                </div>
+                <button class="vct-pdf-modal-close" onclick={handleClosePdfModal} title="Cerrar">
+                    <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                </button>
+            </div>
+            <div class="vct-pdf-modal-body">
+                <iframe src={pdfModalUrl} class="vct-pdf-iframe" title="Precalificación PDF" frameborder="0"></iframe>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal de creación -->
+    <c-tech-contratista-create-modal
+        show-modal={isModalOpen}
+        onclose={handleModalClose}
+        onsuccess={handleModalSuccess}>
+    </c-tech-contratista-create-modal>
+
+    <!-- Interfaces panel -->
+    <template if:true={isInterfacesOpen}>
+        <c-tech-contratista-interfaces
+            contratista-id={interfacesId}
+            contratista-name={interfacesName}
+            onclose={handleCloseInterfaces}>
+        </c-tech-contratista-interfaces>
+    </template>
+
+</template>

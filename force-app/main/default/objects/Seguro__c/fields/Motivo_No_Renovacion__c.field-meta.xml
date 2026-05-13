@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Motivo_No_Renovacion__c</fullName>
+    <description>Obligatorio cuando el seguro pasa a estatus &quot;No renovada&quot;. Reemplaza Encuesta_Salida__c capturando la razón directamente en el Seguro.</description>
+    <label>Motivo de No Renovación</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cambio a otra aseguradora</fullName>
+                <default>false</default>
+                <label>Cambio a otra aseguradora</label>
+            </value>
+            <value>
+                <fullName>Mal servicio reclamo</fullName>
+                <default>false</default>
+                <label>Mal servicio reclamo</label>
+            </value>
+            <value>
+                <fullName>No contactable</fullName>
+                <default>false</default>
+                <label>No contactable</label>
+            </value>
+            <value>
+                <fullName>Otro</fullName>
+                <default>false</default>
+                <label>Otro</label>
+            </value>
+            <value>
+                <fullName>Precio</fullName>
+                <default>false</default>
+                <label>Precio</label>
+            </value>
+            <value>
+                <fullName>Vehiculo vendido o baja</fullName>
+                <default>false</default>
+                <label>Vehiculo vendido o baja</label>
+            </value>
+            <value>
+                <fullName>Ya no necesita cobertura</fullName>
+                <default>false</default>
+                <label>Ya no necesita cobertura</label>
+            </value>
+            <value>
+                <fullName>Cambió de aseguradora</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Cambió de aseguradora</label>
+            </value>
+            <value>
+                <fullName>No contactado</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>No contactado</label>
+            </value>
+            <value>
+                <fullName>Venta del activo</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Venta del activo</label>
+            </value>
+            <value>
+                <fullName>Ya no necesita el producto</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Ya no necesita el producto</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

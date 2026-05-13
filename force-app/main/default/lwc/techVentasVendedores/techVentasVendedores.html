@@ -1,0 +1,235 @@
+<template>
+    <div class="vv-wrap">
+
+        <!-- ── Toolbar ── -->
+        <div class="vv-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+            <div class="vv-toolbar-spacer"></div>
+        </div>
+
+        <!-- ── Filter panel ── -->
+        <template if:true={showFilters}>
+            <div class="vv-filter-panel">
+                <div class="vv-filter-hdr">
+                    <span class="vv-filter-title">Filtros avanzados</span>
+                    <div class="vv-filter-actions">
+                        <button class="vv-flt-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vv-flt-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vv-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vv-filter-rule">
+                                <select class="vv-flt-campo" data-id={rule.id} onchange={handleFilterField}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vv-flt-op" data-id={rule.id} onchange={handleFilterOp}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vv-flt-value" type="text" data-id={rule.id}
+                                        value={rule.value} oninput={handleFilterValue} placeholder="Valor..." />
+                                </template>
+                                <button class="vv-flt-remove" data-id={rule.id} onclick={handleRemoveRule}>×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vv-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Content ── -->
+        <div class="vv-content">
+
+            <template if:true={isLoading}>
+                <div class="vv-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="vv-error-msg">{error}</div>
+            </template>
+
+            <template if:true={isEmpty}>
+                <div class="vv-empty-msg">No hay vendedores para mostrar.</div>
+            </template>
+
+            <!-- Tabla -->
+            <template if:true={showTable}>
+                <div class="vv-table-scroll">
+                    <table class="vv-table">
+                        <thead>
+                            <tr>
+                                <template for:each={headers} for:item="h">
+                                    <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="vv-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredRows} for:item="row">
+                                <tr key={row.id} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+                                    <td class="vv-td-name">{row.name}</td>
+                                    <td>{row.email}</td>
+                                    <td><span class="vv-chip vv-chip-blue">{row.fianzasCount}</span></td>
+                                    <td class="vv-td-num">{row.montoVigenteFmt}</td>
+                                    <td class="vv-td-num">{row.comisionDevenga}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- Panel lateral -->
+            <template if:true={showPanel}>
+                <div class="vv-panel">
+                    <div class="vv-panel-hdr">
+                        <span class="vv-panel-title">{panelRecord.name}</span>
+                        <div class="vv-panel-hdr-actions">
+                            <template if:false={isEditing}>
+                                <button class="vv-panel-edit" onclick={handleEditPanel} title="Editar">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                </button>
+                            </template>
+                            <button class="vv-panel-prev" onclick={handlePanelPrev} title="Anterior">
+                                <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vv-panel-next" onclick={handlePanelNext} title="Siguiente">
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vv-panel-close" onclick={handleClosePanel}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="vv-panel-tabbar">
+                        <button class={ptClassDetalles}   data-ptab="detalles"   onclick={handlePanelTab}>Detalles</button>
+                        <button class={ptClassFianzas}    data-ptab="fianzas"    onclick={handlePanelTab}>Fianzas</button>
+                        <button class={ptClassComisiones} data-ptab="comisiones" onclick={handlePanelTab}>Comisiones</button>
+                    </div>
+
+                    <!-- Detalles -->
+                    <template if:true={showPtDetalles}>
+                        <template if:false={isEditing}>
+                            <div class="vv-panel-body">
+                                <template for:each={panelFields} for:item="f">
+                                    <div key={f.key} class="vv-detail-row">
+                                        <span class="vv-detail-label">{f.label}</span>
+                                        <span>{f.value}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:true={isEditing}>
+                            <div class="vv-panel-body vv-edit-body">
+                                <template for:each={editFields} for:item="f">
+                                    <div key={f.key} class="vv-edit-field">
+                                        <label class="vv-edit-label">{f.label}</label>
+                                        <template if:true={f.isInput}>
+                                            <input class="vv-edit-input" type={f.type} value={f.val}
+                                                data-key={f.key} oninput={handleEditInput} />
+                                        </template>
+                                        <template if:true={f.isSelect}>
+                                            <select class="vv-edit-select" data-key={f.key} onchange={handleEditInput}>
+                                                <template for:each={f.options} for:item="opt">
+                                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                                </template>
+                                            </select>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="vv-edit-footer">
+                                    <button class="vv-btn-cancel-edit" onclick={handleCancelEdit} disabled={isSavingEdit}>Cancelar</button>
+                                    <button class="vv-btn-save-edit"   onclick={handleSaveEdit}   disabled={isSavingEdit}>
+                                        <template if:true={isSavingEdit}>Guardando...</template>
+                                        <template if:false={isSavingEdit}>Guardar</template>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Fianzas -->
+                    <template if:true={showPtFianzas}>
+                        <div class="vv-panel-body">
+                            <template if:true={panelFianzas.length}>
+                                <template for:each={panelFianzas} for:item="f">
+                                    <div key={f.id} class="vv-mini-card">
+                                        <div class="vv-mini-card-hdr">
+                                            <span class="vv-mini-card-name">{f.name}</span>
+                                            <span class={f.estatusClass}>{f.estatus}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">Tipo</span>
+                                            <span>{f.tipoRiesgo}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">Monto vigente</span>
+                                            <span class="vv-detail-money">{f.montoVigenteFmt}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">Vencimiento</span>
+                                            <span>{f.fechaVencimiento}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={panelFianzas.length}>
+                                <div class="vv-panel-empty">Sin fianzas vinculadas</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Comisiones -->
+                    <template if:true={showPtComisiones}>
+                        <div class="vv-panel-body">
+                            <template if:true={panelComisiones.length}>
+                                <template for:each={panelComisiones} for:item="c">
+                                    <div key={c.id} class="vv-mini-card">
+                                        <div class="vv-mini-card-hdr">
+                                            <span class="vv-mini-card-name">{c.vendedor}</span>
+                                            <span class={c.estatusClass}>{c.estatus}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">% Aplicado</span>
+                                            <span>{c.pct}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">Monto Ollin</span>
+                                            <span class="vv-detail-money">{c.montoOllin}</span>
+                                        </div>
+                                        <div class="vv-mini-card-row">
+                                            <span class="vv-mini-label">Monto Vendedor</span>
+                                            <span class="vv-detail-money">{c.montoVendedor}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={panelComisiones.length}>
+                                <div class="vv-panel-empty">Sin comisiones registradas</div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

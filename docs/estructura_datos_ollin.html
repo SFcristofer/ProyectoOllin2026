@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Estructura de Datos — Ollin Protección</title>
+<style>
+  :root { --ink: #0f172a; --slate: #475569; --slate-soft: #f1f5f9; --line: #e2e8f0; --bg: #f8fafc; --ventas: #8b5cf6; --ventas-soft: #f3e8ff; --seguros: #6366f1; --seguros-soft: #eef2ff; --fianzas: #10b981; --fianzas-soft: #d1fae5; --instituciones: #f59e0b; --instituciones-soft: #fef3c7; --gestion-cob: #3b82f6; --gestion-com: #ec4899; --gestion-ren: #14b8a6; --integraciones: #64748b; --integraciones-soft: #f1f5f9; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+  header.top { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 40px 32px; border-radius: 16px; margin-bottom: 28px; box-shadow: 0 10px 30px rgba(15,23,42,0.2); }
+  header.top .eyebrow { text-transform: uppercase; letter-spacing: 2px; font-size: 12px; opacity: 0.7; margin-bottom: 8px; }
+  header.top h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.2; }
+  header.top p { margin: 0; opacity: 0.9; font-size: 15px; max-width: 850px; }
+  .toc { background: white; border-radius: 12px; padding: 22px 26px; margin-bottom: 28px; border-left: 5px solid #64748b; box-shadow: 0 2px 6px rgba(15,23,42,0.04); }
+  .toc h3 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; gap: 24px; font-size: 14px; }
+  .toc ol li { margin-bottom: 6px; }
+  .toc a { color: var(--ink); text-decoration: none; border-bottom: 1px dashed #cbd5e1; }
+  .toc a:hover { border-bottom-color: var(--seguros); color: var(--seguros); }
+  .module { background: white; border-radius: 14px; padding: 28px 30px; margin-bottom: 26px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); border-top: 6px solid var(--slate); }
+  .module.ventas { border-top-color: var(--ventas); }
+  .module.seguros { border-top-color: var(--seguros); }
+  .module.fianzas { border-top-color: var(--fianzas); }
+  .module.instituciones { border-top-color: var(--instituciones); }
+  .module.gestion { border-top-color: var(--gestion-com); }
+  .module.general { border-top-color: var(--ink); }
+  .module.integraciones { border-top-color: var(--integraciones); }
+  .module .head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .module h2 { margin: 0; font-size: 22px; color: var(--ink); }
+  .module .pill { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 999px; font-weight: 700; background: var(--slate-soft); color: var(--slate); }
+  .module.ventas .pill { background: var(--ventas-soft); color: #6d28d9; }
+  .module.seguros .pill { background: var(--seguros-soft); color: #4338ca; }
+  .module.fianzas .pill { background: var(--fianzas-soft); color: #047857; }
+  .module.instituciones .pill { background: var(--instituciones-soft); color: #b45309; }
+  .module.gestion .pill { background: #fce7f3; color: #be185d; }
+  .module.general .pill { background: #1e293b; color: white; }
+  .module.integraciones .pill { background: var(--integraciones-soft); color: var(--slate); }
+  .module .lead { margin: 0 0 16px; color: var(--slate); font-size: 14.5px; }
+  .diagram { background: #fafbff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; overflow-x: auto; }
+  .diagram svg { display: block; max-width: 100%; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; font-size: 12.5px; color: var(--slate); }
+  .legend .item { display: flex; align-items: center; gap: 8px; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); }
+  .legend .line-icon { width: 28px; height: 2px; background: var(--ink); }
+  .legend .line-icon.dashed { background: transparent; border-top: 2px dashed var(--ink); }
+  .notes { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .notes .nt { background: var(--slate-soft); border-left: 3px solid var(--slate); border-radius: 6px; padding: 12px 14px; font-size: 13px; }
+  .notes .nt strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); margin-bottom: 4px; }
+  .obj-box { fill: white; stroke-width: 1.5; rx: 8; ry: 8; }
+  .obj-header { rx: 8; ry: 8; }
+  .obj-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; font-weight: 700; fill: white; }
+  .obj-api { font-family: "SF Mono", Consolas, monospace; font-size: 10px; fill: rgba(255,255,255,0.85); }
+  .obj-field { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: var(--ink); }
+  .obj-field.muted { fill: var(--slate); font-size: 10px; }
+  .rel-line { stroke: #475569; stroke-width: 1.5; fill: none; }
+  .rel-line.md { stroke-width: 2.5; stroke: #1e293b; }
+  .rel-line.dashed { stroke-dasharray: 5 4; stroke: #94a3b8; }
+  .rel-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: var(--slate); font-weight: 600; }
+  .rel-label-bg { fill: #fafbff; stroke: var(--line); stroke-width: 0.5; rx: 4; ry: 4; }
+  .final { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 12px; padding: 26px 30px; margin-top: 32px; }
+  .final h2 { margin: 0 0 10px; font-size: 18px; }
+  .final p { margin: 0; font-size: 14px; opacity: 0.85; }
+  @media print { body { background: white; } .module { page-break-inside: avoid; box-shadow: none; border: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Documento de Diseño · Ollin Protección</div>
+    <h1>Estructura de Datos — Modelo Ollin</h1>
+    <p>Esquema visual de objetos, relaciones y cardinalidades para el modelo de datos acordado en los documentos de diseño de Flujo de Ventas, Seguros, Fianzas, Instituciones y Gestión. Pensado como contraparte del documento de Technovalue, en el mismo formato de "Estructura de Datos" pero alineado con la arquitectura del negocio.</p>
+  </header>
+
+  <div class="toc">
+    <h3>Índice</h3>
+    <ol>
+      <li><a href="#general">Vista General — Modelo Completo</a></li>
+      <li><a href="#ventas">Módulo Flujo de Ventas</a></li>
+      <li><a href="#seguros">Módulo Seguros</a></li>
+      <li><a href="#fianzas">Módulo Fianzas</a></li>
+      <li><a href="#instituciones">Módulo Instituciones</a></li>
+      <li><a href="#gestion">Módulo Gestión — Vista panorámica</a></li>
+      <li><a href="#gestion-objetos">Gestión — Detalle de objetos</a></li>
+      <li><a href="#gestion-casos">Gestión — Casos especiales</a></li>
+      <li><a href="#integraciones">Integraciones Externas</a></li>
+    </ol>
+  </div>
+
+  <!-- VISTA GENERAL -->
+  <section class="module general" id="general">
+    <div class="head"><h2>Vista General — Modelo Completo</h2><span class="pill">Overview</span></div>
+    <p class="lead">Mapa de los objetos principales y cómo se conectan a través de los módulos. Las capas de Gestión (Cobranza, Comisiones, Renovaciones) se montan sobre Seguros y Fianzas sin re-registrar datos.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 760" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+          <marker id="arrow-md" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1e293b"/></marker>
+          <marker id="arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+        <text x="20" y="40" font-size="11" font-weight="700" fill="#8b5cf6" letter-spacing="2">FLUJO DE VENTAS</text>
+        <line x1="20" y1="48" x2="1120" y2="48" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="2 4" opacity="0.4"/>
+        <text x="20" y="240" font-size="11" font-weight="700" fill="#6366f1" letter-spacing="2">SEGUROS · FIANZAS</text>
+        <line x1="20" y1="248" x2="1120" y2="248" stroke="#6366f1" stroke-width="1" stroke-dasharray="2 4" opacity="0.4"/>
+        <text x="20" y="530" font-size="11" font-weight="700" fill="#ec4899" letter-spacing="2">GESTIÓN (3 CAPAS)</text>
+        <line x1="20" y1="538" x2="1120" y2="538" stroke="#ec4899" stroke-width="1" stroke-dasharray="2 4" opacity="0.4"/>
+
+        <g><rect class="obj-box" x="60" y="80" width="160" height="100" stroke="#8b5cf6"/><rect class="obj-header" x="60" y="80" width="160" height="32" fill="#8b5cf6"/><text class="obj-title" x="72" y="100">Lead</text><text class="obj-api" x="72" y="113">Lead (estándar)</text><text class="obj-field" x="72" y="135">Capturado por Agentforce</text><text class="obj-field muted" x="72" y="151">Score 0–100</text><text class="obj-field muted" x="72" y="165">Estatus: Calificado / No</text></g>
+        <g><rect class="obj-box" x="320" y="80" width="180" height="100" stroke="#8b5cf6"/><rect class="obj-header" x="320" y="80" width="180" height="32" fill="#8b5cf6"/><text class="obj-title" x="332" y="100">Oportunidad</text><text class="obj-api" x="332" y="113">Opportunity (estándar)</text><text class="obj-field" x="332" y="135">Cotización · Propuesta</text><text class="obj-field" x="332" y="151">Negociación · Cierre</text><text class="obj-field muted" x="332" y="166">Solo desde Lead calificado</text></g>
+        <g><rect class="obj-box" x="600" y="80" width="180" height="100" stroke="#8b5cf6"/><rect class="obj-header" x="600" y="80" width="180" height="32" fill="#8b5cf6"/><text class="obj-title" x="612" y="100">Cliente</text><text class="obj-api" x="612" y="113">Account (Person Account)</text><text class="obj-field" x="612" y="135">Persona o empresa</text><text class="obj-field muted" x="612" y="151">Datos personales</text><text class="obj-field muted" x="612" y="165">Historial de cartera</text></g>
+        <g><rect class="obj-box" x="880" y="80" width="180" height="100" stroke="#8b5cf6"/><rect class="obj-header" x="880" y="80" width="180" height="32" fill="#8b5cf6"/><text class="obj-title" x="892" y="100">Vendedor</text><text class="obj-api" x="892" y="113">Vendedor__c (Custom)</text><text class="obj-field" x="892" y="135">Productos asignados</text><text class="obj-field" x="892" y="151">% comisión, antigüedad</text><text class="obj-field muted" x="892" y="165">NO es User ni Contact</text></g>
+
+        <line class="rel-line" x1="220" y1="130" x2="320" y2="130" marker-end="url(#arrow)"/>
+        <rect class="rel-label-bg" x="240" y="116" width="60" height="14"/><text class="rel-label" x="270" y="126" text-anchor="middle">Convierte</text>
+        <line class="rel-line" x1="500" y1="130" x2="600" y2="130" marker-end="url(#arrow)"/>
+        <rect class="rel-label-bg" x="518" y="116" width="64" height="14"/><text class="rel-label" x="550" y="126" text-anchor="middle">Lookup</text>
+        <path class="rel-line dashed" d="M 970,180 Q 970,210 410,210 Q 410,200 410,180" marker-end="url(#arrow-dashed)"/>
+        <rect class="rel-label-bg" x="660" y="200" width="84" height="14"/><text class="rel-label" x="702" y="210" text-anchor="middle">Asignado a</text>
+
+        <!-- Seguro central -->
+        <g><rect class="obj-box" x="60" y="280" width="200" height="200" stroke="#6366f1"/><rect class="obj-header" x="60" y="280" width="200" height="36" fill="#6366f1"/><text class="obj-title" x="72" y="300">Seguro</text><text class="obj-api" x="72" y="313">Seguro__c (Custom · unificado)</text><text class="obj-field" x="72" y="335">Número de seguro</text><text class="obj-field" x="72" y="350">Ramo · Subproducto</text><text class="obj-field" x="72" y="365">Vigencia · Frecuencia pago</text><text class="obj-field" x="72" y="380">Detalle primas · IVA · Total</text><text class="obj-field" x="72" y="395">Tipo originador · Canal</text><text class="obj-field" x="72" y="410">Promotoría · Agente externo</text><text class="obj-field muted" x="72" y="427">Path: Emitida → Vigente →</text><text class="obj-field muted" x="72" y="440">Por renovar → Renovada / Vencida</text><text class="obj-field muted" x="72" y="455">Póliza renovada de (Lookup)</text></g>
+        <!-- Endoso de Seguro -->
+        <g><rect class="obj-box" x="320" y="280" width="180" height="100" stroke="#6366f1"/><rect class="obj-header" x="320" y="280" width="180" height="32" fill="#6366f1"/><text class="obj-title" x="332" y="300">Endoso de Seguro</text><text class="obj-api" x="332" y="313">Endoso__c</text><text class="obj-field" x="332" y="335">Tipo · Fecha efectiva</text><text class="obj-field" x="332" y="350">Diferencia monto · prima</text><text class="obj-field muted" x="332" y="367">Auto-actualiza Seguro padre</text></g>
+        <!-- Contrato -->
+        <g><rect class="obj-box" x="560" y="280" width="200" height="140" stroke="#10b981"/><rect class="obj-header" x="560" y="280" width="200" height="36" fill="#10b981"/><text class="obj-title" x="572" y="300">Contrato (de Fianza)</text><text class="obj-api" x="572" y="313">Contrato__c (Custom)</text><text class="obj-field" x="572" y="335">Valor · Beneficiario</text><text class="obj-field" x="572" y="350">Suma fianzas (rollup)</text><text class="obj-field" x="572" y="365">Exposición % (fórmula)</text><text class="obj-field muted" x="572" y="382">Valor_Contrato_Vigente__c</text><text class="obj-field muted" x="572" y="396">Fin_Contrato_Vigente__c</text><text class="obj-field muted" x="572" y="412">Padre de Fianzas + Convenios</text></g>
+        <!-- Fianza -->
+        <g><rect class="obj-box" x="820" y="280" width="180" height="140" stroke="#10b981"/><rect class="obj-header" x="820" y="280" width="180" height="36" fill="#10b981"/><text class="obj-title" x="832" y="300">Fianza</text><text class="obj-api" x="832" y="313">Fianza__c (Custom)</text><text class="obj-field" x="832" y="335">Número · Tipo de riesgo</text><text class="obj-field" x="832" y="350">Monto afianzado · Prima</text><text class="obj-field" x="832" y="365">Vigencia · Plazo reclamación</text><text class="obj-field muted" x="832" y="382">Monto_Afianzado_Vigente__c</text><text class="obj-field muted" x="832" y="396">Prima_Vigente__c</text><text class="obj-field muted" x="832" y="412">Hereda de Contrato</text></g>
+        <!-- Convenio -->
+        <g><rect class="obj-box" x="560" y="440" width="200" height="60" stroke="#10b981"/><rect class="obj-header" x="560" y="440" width="200" height="28" fill="#10b981"/><text class="obj-title" x="572" y="458">Convenio Modificatorio</text><text class="obj-api" x="572" y="470">Convenio_Modificatorio__c</text><text class="obj-field muted" x="572" y="490">Ampliación / Cambio de alcance</text></g>
+        <!-- Endoso de Fianza (objeto separado) -->
+        <g><rect class="obj-box" x="820" y="440" width="200" height="80" stroke="#10b981"/><rect class="obj-header" x="820" y="440" width="200" height="28" fill="#10b981"/><text class="obj-title" x="832" y="458">Endoso de Fianza</text><text class="obj-api" x="832" y="470">Endoso_de_Fianza__c</text><text class="obj-field muted" x="832" y="490">Vinculado al Convenio (Lookup)</text><text class="obj-field muted" x="832" y="504">Auto-actualiza Fianza vigente</text></g>
+
+        <path class="rel-line dashed" d="M 410,180 L 410,250 L 160,250 L 160,280" marker-end="url(#arrow-dashed)"/>
+        <rect class="rel-label-bg" x="200" y="244" width="120" height="14"/><text class="rel-label" x="260" y="254" text-anchor="middle">Crea (al cerrar Ganada)</text>
+        <path class="rel-line dashed" d="M 410,180 L 410,250 L 660,250 L 660,280" marker-end="url(#arrow-dashed)"/>
+
+        <line class="rel-line md" x1="260" y1="330" x2="320" y2="330" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="265" y="316" width="50" height="14"/><text class="rel-label" x="290" y="326" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="760" y1="350" x2="820" y2="350" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="765" y="336" width="50" height="14"/><text class="rel-label" x="790" y="346" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line md" d="M 660,420 L 660,440" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="666" y="426" width="50" height="14"/><text class="rel-label" x="691" y="436" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="900" y1="420" x2="900" y2="440" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="906" y="426" width="50" height="14"/><text class="rel-label" x="931" y="436" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line dashed" d="M 760,475 Q 790,475 820,475" marker-end="url(#arrow-dashed)"/>
+        <rect class="rel-label-bg" x="772" y="459" width="40" height="14"/><text class="rel-label" x="792" y="469" text-anchor="middle">Lookup</text>
+
+        <!-- GESTIÓN -->
+        <g><rect class="obj-box" x="60" y="570" width="180" height="100" stroke="#3b82f6"/><rect class="obj-header" x="60" y="570" width="180" height="32" fill="#3b82f6"/><text class="obj-title" x="72" y="590">Plan de Pagos</text><text class="obj-api" x="72" y="603">Plan_de_Pagos__c</text><text class="obj-field" x="72" y="625">Frecuencia · N recibos</text><text class="obj-field muted" x="72" y="641">Hijo de Seguro o Fianza</text><text class="obj-field muted" x="72" y="655">(NO en venta digital)</text></g>
+        <g><rect class="obj-box" x="280" y="570" width="180" height="100" stroke="#3b82f6"/><rect class="obj-header" x="280" y="570" width="180" height="32" fill="#3b82f6"/><text class="obj-title" x="292" y="590">Recibo de Cobro</text><text class="obj-api" x="292" y="603">Recibo__c</text><text class="obj-field" x="292" y="625">Fecha · Monto</text><text class="obj-field" x="292" y="640">Estatus · Cobrado</text><text class="obj-field muted" x="292" y="655">Cobrado → libera comisión</text></g>
+        <g><rect class="obj-box" x="500" y="570" width="200" height="100" stroke="#ec4899"/><rect class="obj-header" x="500" y="570" width="200" height="32" fill="#ec4899"/><text class="obj-title" x="512" y="590">Tabla de Comisiones</text><text class="obj-api" x="512" y="603">Tabla_de_Comisiones__c</text><text class="obj-field" x="512" y="625">Aseguradora × Ramo</text><text class="obj-field" x="512" y="640">% Ollin · % Vendedor</text><text class="obj-field muted" x="512" y="655">Tabla maestra (anual)</text></g>
+        <g><rect class="obj-box" x="740" y="570" width="180" height="100" stroke="#14b8a6"/><rect class="obj-header" x="740" y="570" width="180" height="32" fill="#14b8a6"/><text class="obj-title" x="752" y="590">Renovación</text><text class="obj-api" x="752" y="603">(Capa: alertas + nueva Op)</text><text class="obj-field" x="752" y="625">Alertas por ramo</text><text class="obj-field" x="752" y="640">Auto: crear Oportunidad</text><text class="obj-field muted" x="752" y="655">Vínculo Póliza renovada de</text></g>
+        <g><rect class="obj-box" x="940" y="570" width="170" height="100" stroke="#ec4899"/><rect class="obj-header" x="940" y="570" width="170" height="32" fill="#ec4899"/><text class="obj-title" x="952" y="590">Comisión</text><text class="obj-api" x="952" y="603">Comision__c</text><text class="obj-field" x="952" y="625">% aplicado · Monto</text><text class="obj-field" x="952" y="640">Estatus de pago</text><text class="obj-field muted" x="952" y="655">Por póliza + vendedor</text></g>
+
+        <path class="rel-line md" d="M 160,480 L 160,570" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="166" y="518" width="50" height="14"/><text class="rel-label" x="191" y="528" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="240" y1="620" x2="280" y2="620" marker-end="url(#arrow-md)"/>
+        <rect class="rel-label-bg" x="245" y="606" width="40" height="14"/><text class="rel-label" x="265" y="616" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line dashed" d="M 460,620 Q 700,720 940,620" marker-end="url(#arrow-dashed)"/>
+        <rect class="rel-label-bg" x="660" y="700" width="100" height="14"/><text class="rel-label" x="710" y="710" text-anchor="middle">Cobrado → libera</text>
+        <line class="rel-line dashed" x1="700" y1="620" x2="940" y2="620" marker-end="url(#arrow-dashed)"/>
+        <rect class="rel-label-bg" x="790" y="606" width="60" height="14"/><text class="rel-label" x="820" y="616" text-anchor="middle">Provee %</text>
+        <path class="rel-line dashed" d="M 260,420 Q 500,460 830,570" marker-end="url(#arrow-dashed)"/>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="item"><div class="swatch" style="background:#8b5cf6"></div>Flujo de Ventas</div>
+      <div class="item"><div class="swatch" style="background:#6366f1"></div>Seguros</div>
+      <div class="item"><div class="swatch" style="background:#10b981"></div>Fianzas</div>
+      <div class="item"><div class="swatch" style="background:#3b82f6"></div>Cobranza</div>
+      <div class="item"><div class="swatch" style="background:#ec4899"></div>Comisiones</div>
+      <div class="item"><div class="swatch" style="background:#14b8a6"></div>Renovaciones</div>
+      <div class="item"><div class="line-icon" style="background:#1e293b;height:3px"></div>Master-Detail (M-D)</div>
+      <div class="item"><div class="line-icon"></div>Lookup</div>
+      <div class="item"><div class="line-icon dashed"></div>Automatización / herencia</div>
+    </div>
+  </section>
+
+  <!-- FLUJO DE VENTAS -->
+  <section class="module ventas" id="ventas">
+    <div class="head"><h2>Módulo Flujo de Ventas</h2><span class="pill">Captación · Calificación · Cierre · Reciclaje</span></div>
+    <p class="lead">Lead capturado por Agentforce → calificado por scoring 0–100 → convertido a Oportunidad → cierre que genera Seguro o Contrato de Fianza. Cierres perdidos reciclables se retoman 10–11 meses después. Person Account es la cuenta del cliente; Vendedor es objeto custom.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 760" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="v-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+          <marker id="v-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+          <marker id="v-arrow-recycle" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#0ea5e9"/></marker>
+        </defs>
+        <rect x="20" y="40" width="340" height="20" fill="#f3e8ff" rx="4"/><text x="190" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6d28d9" letter-spacing="1.5">FASE 1 · CAPTACIÓN (Agentforce)</text>
+        <rect x="380" y="40" width="380" height="20" fill="#f3e8ff" rx="4"/><text x="570" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6d28d9" letter-spacing="1.5">FASE 2 · PROCESO DE VENTA</text>
+        <rect x="780" y="40" width="340" height="20" fill="#f3e8ff" rx="4"/><text x="950" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6d28d9" letter-spacing="1.5">FASE 3 · CARTERA POST-VENTA</text>
+
+        <g><rect class="obj-box" x="40" y="100" width="300" height="200" stroke="#8b5cf6"/><rect class="obj-header" x="40" y="100" width="300" height="36" fill="#8b5cf6"/><text class="obj-title" x="52" y="120">Lead</text><text class="obj-api" x="52" y="133">Lead (estándar)</text><text class="obj-field" x="52" y="155" font-weight="600">Orígenes:</text><text class="obj-field muted" x="60" y="170">Web (Muévete Seguro) · Redes</text><text class="obj-field muted" x="60" y="184">Referido · Llamada</text><text class="obj-field" x="52" y="204">Datos mínimos por producto</text><text class="obj-field" x="52" y="219">Score 0–100 (60 + 25 + 15)</text><text class="obj-field" x="52" y="239" font-weight="600">Estatus:</text><text class="obj-field muted" x="60" y="254">Nuevo · Recopilando info</text><text class="obj-field muted" x="60" y="268">Calificado / No calificado</text><text class="obj-field muted" x="60" y="284" fill="#0369a1" font-weight="700">Reciclado (retomado por IA)</text></g>
+
+        <!-- FUNNEL STAT -->
+        <g><rect x="350" y="140" width="50" height="100" fill="white" stroke="#cbd5e1" stroke-width="1" rx="6"/><text x="375" y="158" text-anchor="middle" font-size="9" font-weight="700" fill="#475569">FUNNEL</text><text x="375" y="180" text-anchor="middle" font-size="14" font-weight="700" fill="#8b5cf6">100</text><text x="375" y="192" text-anchor="middle" font-size="8" fill="#94a3b8">entran</text><text x="375" y="212" text-anchor="middle" font-size="14" font-weight="700" fill="#10b981">~30</text><text x="375" y="224" text-anchor="middle" font-size="8" fill="#94a3b8">califican</text><text x="375" y="236" text-anchor="middle" font-size="11" fill="#475569">↓</text></g>
+
+        <g><rect class="obj-box" x="410" y="100" width="300" height="240" stroke="#8b5cf6"/><rect class="obj-header" x="410" y="100" width="300" height="36" fill="#8b5cf6"/><text class="obj-title" x="422" y="120">Oportunidad</text><text class="obj-api" x="422" y="133">Opportunity (estándar)</text><text class="obj-field" x="422" y="155">Cliente · Vendedor · Institución</text><text class="obj-field" x="422" y="170">Ramo · Subproducto · Importe</text><text class="obj-field" x="422" y="185">% Comisión Ollin (auto)</text><text class="obj-field" x="422" y="205" font-weight="600">Estatus:</text><text class="obj-field muted" x="430" y="220">1. Cotización</text><text class="obj-field muted" x="430" y="234">2. Propuesta enviada</text><text class="obj-field muted" x="430" y="248">3. Negociación</text><text class="obj-field muted" x="430" y="262">4. Cierre ganado</text><text class="obj-field muted" x="430" y="276">5. Cierre perdido</text><text class="obj-field" x="422" y="296" font-weight="600">Cierre perdido — campos:</text><text class="obj-field muted" x="430" y="311">Motivo · Aseguradora competidora</text><text class="obj-field muted" x="430" y="325">Notas vendedor · Monto · Puede reactivarse</text></g>
+
+        <g><rect class="obj-box" x="780" y="100" width="340" height="240" stroke="#8b5cf6"/><rect class="obj-header" x="780" y="100" width="340" height="36" fill="#8b5cf6"/><text class="obj-title" x="792" y="120">Cliente</text><text class="obj-api" x="792" y="133">Account (Person Account)</text><text class="obj-field" x="792" y="155">Persona física o moral</text><text class="obj-field" x="792" y="170">Datos personales y contacto</text><text class="obj-field" x="792" y="185" font-weight="600">Conversión:</text><text class="obj-field muted" x="800" y="200">Prospecto → Cliente al ganar la venta</text><text class="obj-field" x="792" y="220" font-weight="600">Listas relacionadas:</text><text class="obj-field muted" x="800" y="235">Pólizas (Seguros)</text><text class="obj-field muted" x="800" y="249">Contratos / Fianzas</text><text class="obj-field muted" x="800" y="263">Endosos · Recibos</text><text class="obj-field muted" x="800" y="277">Archivos · Actividades</text><text class="obj-field muted" x="800" y="291">Historial de ventas</text><text class="obj-field muted" x="800" y="305">Renovaciones (vínculo)</text></g>
+
+        <!-- CAPTURA MANUAL DIRECTA (entrada paralela a Fase 2) -->
+        <g><rect class="obj-box" x="410" y="370" width="300" height="80" stroke="#a855f7" stroke-dasharray="5 3"/><rect class="obj-header" x="410" y="370" width="300" height="28" fill="#a855f7"/><text class="obj-title" x="422" y="388">Captura manual directa</text><text class="obj-api" x="422" y="400">Entrada alterna · sin pasar por Fase 1</text><text class="obj-field" x="422" y="420">Caso: referido por teléfono con info completa</text><text class="obj-field muted" x="422" y="436">El vendedor crea la Oportunidad directo</text></g>
+
+        <g><rect class="obj-box" x="40" y="490" width="300" height="180" stroke="#8b5cf6"/><rect class="obj-header" x="40" y="490" width="300" height="36" fill="#8b5cf6"/><text class="obj-title" x="52" y="510">Vendedor</text><text class="obj-api" x="52" y="523">Vendedor__c (Custom)</text><text class="obj-field" x="52" y="545">Nombre · Email · Teléfono</text><text class="obj-field" x="52" y="560">Productos asignados (multi)</text><text class="obj-field" x="52" y="575">Zona · Promotoría</text><text class="obj-field" x="52" y="590">% Comisión sobre Ollin</text><text class="obj-field" x="52" y="605">Antigüedad · Carga de trabajo</text><text class="obj-field muted" x="52" y="625">NO es User (sin licencia)</text><text class="obj-field muted" x="52" y="639">NO es Contact (no es cliente)</text><text class="obj-field muted" x="52" y="653">Tipo: Humano / IA / Externo</text></g>
+        <g><rect class="obj-box" x="410" y="490" width="300" height="180" stroke="#94a3b8"/><rect class="obj-header" x="410" y="490" width="300" height="32" fill="#94a3b8"/><text class="obj-title" x="422" y="510">3 caminos de venta (originador)</text><text class="obj-field" x="422" y="535">A · Venta digital (Tienda)</text><text class="obj-field muted" x="430" y="550">Auto, Membresía → IA cierra sola</text><text class="obj-field" x="422" y="570">B · Venta consultiva</text><text class="obj-field muted" x="430" y="585">Vida, GMM, PPR, Fianzas, Daños</text><text class="obj-field" x="422" y="605">C · Promotoría</text><text class="obj-field muted" x="430" y="620">Allianz Auto (agente externo)</text><text class="obj-field muted" x="430" y="637">Separación contable absoluta</text></g>
+        <g><rect class="obj-box" x="780" y="490" width="340" height="180" stroke="#94a3b8"/><rect class="obj-header" x="780" y="490" width="340" height="32" fill="#94a3b8"/><text class="obj-title" x="792" y="510">SLAs por producto</text><text class="obj-field" x="792" y="535">Auto digital · Inmediato</text><text class="obj-field" x="792" y="550">Auto campaña · 3 min</text><text class="obj-field" x="792" y="565">GMM · 90 min (24h complejo)</text><text class="obj-field" x="792" y="580">PPR · 60 min</text><text class="obj-field" x="792" y="595">Vida · Por definir</text><text class="obj-field" x="792" y="610">Membresía · Inmediato</text><text class="obj-field muted" x="792" y="630">Pausas si falta info</text><text class="obj-field muted" x="792" y="644">IA sigue 24/7</text></g>
+
+        <!-- LÍNEAS PRINCIPALES -->
+        <line class="rel-line" x1="400" y1="200" x2="410" y2="200" marker-end="url(#v-arrow)"/>
+        <rect class="rel-label-bg" x="320" y="84" width="120" height="14"/><text class="rel-label" x="380" y="94" text-anchor="middle">Convierte (auto)</text>
+
+        <line class="rel-line" x1="710" y1="200" x2="780" y2="200" marker-end="url(#v-arrow)"/>
+        <rect class="rel-label-bg" x="700" y="160" width="160" height="14"/><text class="rel-label" x="780" y="170" text-anchor="middle">Ganada: Prospecto → Cliente</text>
+        <rect class="rel-label-bg" x="700" y="178" width="160" height="14"/><text class="rel-label" x="780" y="188" text-anchor="middle">+ crea Seguro / Contrato</text>
+
+        <line class="rel-line dashed" x1="190" y1="490" x2="500" y2="340" marker-end="url(#v-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="278" y="450" width="84" height="14"/><text class="rel-label" x="320" y="460" text-anchor="middle">Asignado a</text>
+
+        <!-- Captura manual → Oportunidad (entrada lateral) -->
+        <path class="rel-line dashed" d="M 560,370 L 560,340" stroke="#a855f7" marker-end="url(#v-arrow-dashed)"/>
+        <rect x="490" y="350" width="140" height="14" fill="white" stroke="#a855f7" stroke-width="0.7" rx="3"/><text class="rel-label" x="560" y="360" text-anchor="middle" fill="#a855f7" font-weight="700">Entrada paralela a Fase 2</text>
+
+        <!-- RECICLAJE — flecha curva grande de Cierre Perdido (abajo de Oportunidad) hacia Lead -->
+        <path d="M 560,340 Q 560,710 50,710 Q 22,710 22,200 Q 22,180 40,180" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-dasharray="8 4" marker-end="url(#v-arrow-recycle)"/>
+        <rect x="290" y="700" width="240" height="22" fill="white" stroke="#0ea5e9" stroke-width="1.2" rx="4"/><text x="410" y="715" text-anchor="middle" font-size="11" font-weight="700" fill="#0ea5e9">RECICLAJE · 10–11 meses · Agentforce</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Conversión Lead → Oportunidad</strong>Solo desde Lead Calificado. Automática. Crea Person Account (si no existe) y Oportunidad ligados.</div>
+      <div class="nt"><strong>Cierre ganado</strong>El Prospecto se convierte en Cliente. Se dispara creación automática del Seguro__c o Contrato__c con herencia de Cliente, Vendedor e Institución.</div>
+      <div class="nt"><strong>Reciclaje (10–11 meses)</strong>Si el vendedor marca el cierre perdido como "Puede reactivarse", se crea un nuevo Lead con estatus "Reciclado", vinculado al original. Agentforce lo retoma 10–11 meses después.</div>
+      <div class="nt"><strong>Entrada manual</strong>El vendedor puede crear una Oportunidad directo en Fase 2 cuando recibe un referido con info completa, sin pasar por Agentforce.</div>
+    </div>
+  </section>
+
+  <!-- SEGUROS -->
+  <section class="module seguros" id="seguros">
+    <div class="head"><h2>Módulo Seguros</h2><span class="pill">Seguro__c unificado</span></div>
+    <p class="lead">Objeto unificado que absorbe el legacy <span class="obj">Polizas__c</span>. Recibe campos heredados de Oportunidad y se integra con la Tabla de Comisiones (% Ollin) y la capa de Cobranza (Plan de Pagos).</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="s-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+          <marker id="s-arrow-md" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1e293b"/></marker>
+          <marker id="s-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <g><rect class="obj-box" x="380" y="180" width="340" height="240" stroke="#6366f1" stroke-width="2.5"/><rect class="obj-header" x="380" y="180" width="340" height="40" fill="#6366f1"/><text class="obj-title" x="392" y="200" font-size="15">Seguro</text><text class="obj-api" x="392" y="214">Seguro__c · OBJETO UNIFICADO</text><text class="obj-field" x="392" y="240" font-weight="600">Identificación</text><text class="obj-field muted" x="400" y="255">Número · Estatus (path) · Ramo · Subproducto</text><text class="obj-field" x="392" y="275" font-weight="600">Vigencia y pago</text><text class="obj-field muted" x="400" y="290">Inicio · Fin · Días para vencer · Frecuencia</text><text class="obj-field muted" x="400" y="304">Forma de pago</text><text class="obj-field" x="392" y="324" font-weight="600">Detalle de primas</text><text class="obj-field muted" x="400" y="339">Prima neta · Descuento · Recargos · Derechos</text><text class="obj-field muted" x="400" y="353">Subtotal · IVA · Ajuste · Prima total (fórmula)</text><text class="obj-field" x="392" y="373" font-weight="600">Comisión y Gestión</text><text class="obj-field muted" x="400" y="388">% Comisión · Monto · Tipo originador</text><text class="obj-field muted" x="400" y="402">Canal · Promotoría · Póliza renovada de</text></g>
+
+        <g><rect class="obj-box" x="40" y="60" width="200" height="80" stroke="#94a3b8"/><rect class="obj-header" x="40" y="60" width="200" height="28" fill="#94a3b8"/><text class="obj-title" x="52" y="78">Cliente</text><text class="obj-api" x="52" y="90">Account (Person Account)</text><text class="obj-field muted" x="52" y="110">Hereda de Oportunidad</text><text class="obj-field muted" x="52" y="124">automático al crear</text></g>
+        <g><rect class="obj-box" x="280" y="60" width="200" height="80" stroke="#f59e0b"/><rect class="obj-header" x="280" y="60" width="200" height="28" fill="#f59e0b"/><text class="obj-title" x="292" y="78">Institución</text><text class="obj-api" x="292" y="90">Institución__c</text><text class="obj-field muted" x="292" y="110">Aseguradora del seguro</text><text class="obj-field muted" x="292" y="124">Tipo: Aseguradora</text></g>
+        <g><rect class="obj-box" x="520" y="60" width="200" height="80" stroke="#8b5cf6"/><rect class="obj-header" x="520" y="60" width="200" height="28" fill="#8b5cf6"/><text class="obj-title" x="532" y="78">Vendedor</text><text class="obj-api" x="532" y="90">Vendedor__c</text><text class="obj-field muted" x="532" y="110">Hereda de Oportunidad</text><text class="obj-field muted" x="532" y="124">o Promotoría externa</text></g>
+        <g><rect class="obj-box" x="760" y="60" width="200" height="80" stroke="#8b5cf6"/><rect class="obj-header" x="760" y="60" width="200" height="28" fill="#8b5cf6"/><text class="obj-title" x="772" y="78">Oportunidad</text><text class="obj-api" x="772" y="90">Opportunity</text><text class="obj-field muted" x="772" y="110">Origen del seguro</text><text class="obj-field muted" x="772" y="124">(oculto al usuario)</text></g>
+
+        <g><rect class="obj-box" x="40" y="220" width="240" height="120" stroke="#6366f1"/><rect class="obj-header" x="40" y="220" width="240" height="32" fill="#6366f1"/><text class="obj-title" x="52" y="240">Endoso de Seguro</text><text class="obj-api" x="52" y="252">Endoso__c</text><text class="obj-field" x="52" y="274">Tipo · Fecha efectiva · Estatus</text><text class="obj-field" x="52" y="289">Diferencia monto · prima</text><text class="obj-field muted" x="52" y="306">Auto-actualiza prima/vigencia</text><text class="obj-field muted" x="52" y="320">del Seguro padre al guardar</text></g>
+        <g><rect class="obj-box" x="40" y="380" width="240" height="120" stroke="#ec4899"/><rect class="obj-header" x="40" y="380" width="240" height="32" fill="#ec4899"/><text class="obj-title" x="52" y="400">Comisión registrada</text><text class="obj-api" x="52" y="412">Comision__c</text><text class="obj-field" x="52" y="434">% aplicado · Monto Ollin</text><text class="obj-field" x="52" y="449">Monto vendedor · Estatus</text><text class="obj-field muted" x="52" y="466">Liberada al cobrar recibo</text><text class="obj-field muted" x="52" y="480">% lo provee Cuaderno</text></g>
+        <g><rect class="obj-box" x="800" y="220" width="240" height="120" stroke="#3b82f6"/><rect class="obj-header" x="800" y="220" width="240" height="32" fill="#3b82f6"/><text class="obj-title" x="812" y="240">Plan de Pagos</text><text class="obj-api" x="812" y="252">Plan_de_Pagos__c</text><text class="obj-field" x="812" y="274">N recibos · Frecuencia</text><text class="obj-field muted" x="812" y="291">Auto al crear seguro</text><text class="obj-field muted" x="812" y="305">consultivo o promotoría</text><text class="obj-field muted" x="812" y="320">(NO en venta digital)</text></g>
+        <g><rect class="obj-box" x="800" y="380" width="240" height="120" stroke="#3b82f6"/><rect class="obj-header" x="800" y="380" width="240" height="32" fill="#3b82f6"/><text class="obj-title" x="812" y="400">Recibo de Cobro</text><text class="obj-api" x="812" y="412">Recibo__c</text><text class="obj-field" x="812" y="434">Fecha · Monto · Cobrado</text><text class="obj-field" x="812" y="449">Estatus · Fecha pago real</text><text class="obj-field muted" x="812" y="466">Programado → Por cobrar →</text><text class="obj-field muted" x="812" y="480">Cobrado / Vencido / Parcial</text></g>
+        <g><rect class="obj-box" x="380" y="460" width="340" height="80" stroke="#94a3b8"/><rect class="obj-header" x="380" y="460" width="340" height="28" fill="#94a3b8"/><text class="obj-title" x="392" y="478">Listas relacionadas (estándar)</text><text class="obj-field" x="392" y="500">Archivos (PDF de póliza, OCR/IA)</text><text class="obj-field" x="392" y="515">Actividades (llamadas · emails · tareas)</text><text class="obj-field muted" x="392" y="530">Recordatorios automáticos vía Digital Engagement</text></g>
+
+        <line class="rel-line" x1="140" y1="140" x2="450" y2="180" marker-end="url(#s-arrow)"/>
+        <rect class="rel-label-bg" x="240" y="146" width="50" height="14"/><text class="rel-label" x="265" y="156" text-anchor="middle">Lookup</text>
+        <line class="rel-line" x1="380" y1="140" x2="500" y2="180" marker-end="url(#s-arrow)"/>
+        <rect class="rel-label-bg" x="395" y="152" width="50" height="14"/><text class="rel-label" x="420" y="162" text-anchor="middle">Lookup</text>
+        <line class="rel-line" x1="620" y1="140" x2="600" y2="180" marker-end="url(#s-arrow)"/>
+        <rect class="rel-label-bg" x="606" y="152" width="50" height="14"/><text class="rel-label" x="631" y="162" text-anchor="middle">Lookup</text>
+        <line class="rel-line dashed" x1="860" y1="140" x2="700" y2="180" marker-end="url(#s-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="755" y="146" width="80" height="14"/><text class="rel-label" x="795" y="156" text-anchor="middle">Crea (Ganada)</text>
+        <line class="rel-line md" x1="380" y1="280" x2="280" y2="280" marker-end="url(#s-arrow-md)"/>
+        <rect class="rel-label-bg" x="295" y="266" width="50" height="14"/><text class="rel-label" x="320" y="276" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="720" y1="280" x2="800" y2="280" marker-end="url(#s-arrow-md)"/>
+        <rect class="rel-label-bg" x="735" y="266" width="50" height="14"/><text class="rel-label" x="760" y="276" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line md" d="M 920,340 L 920,380" marker-end="url(#s-arrow-md)"/>
+        <rect class="rel-label-bg" x="926" y="346" width="50" height="14"/><text class="rel-label" x="951" y="356" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="380" y1="380" x2="280" y2="430" marker-end="url(#s-arrow-md)"/>
+        <rect class="rel-label-bg" x="295" y="396" width="50" height="14"/><text class="rel-label" x="320" y="406" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line dashed" d="M 800,440 Q 600,460 280,440" marker-end="url(#s-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="475" y="434" width="100" height="14"/><text class="rel-label" x="525" y="444" text-anchor="middle">Cobrado → libera</text>
+        <line class="rel-line" x1="550" y1="420" x2="550" y2="460" marker-end="url(#s-arrow)"/>
+      </svg>
+    </div>
+
+    <!-- AUTOMATIZACIONES — Lo que Salesforce hace solo -->
+    <div style="margin-top: 18px; background: #fefce8; border: 1px solid #fde68a; border-radius: 12px; padding: 18px 22px;">
+      <div style="font-size: 13px; font-weight: 700; color: #854d0e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;">⚙️ Lo que Salesforce hace automáticamente</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="background: white; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #f59e0b;">
+          <div style="font-size: 12px; font-weight: 700; color: #854d0e; margin-bottom: 8px;">Al cerrar Oportunidad como ganada</div>
+          <ol style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #1e293b; line-height: 1.7;">
+            <li>Crea registro de <strong>Seguro__c</strong></li>
+            <li>Hereda <strong>Cliente</strong> de la Oportunidad</li>
+            <li>Hereda <strong>Vendedor</strong> (Owner de la Oportunidad)</li>
+            <li>Vincula la <strong>Oportunidad</strong> en campo oculto</li>
+            <li><strong>Convierte Prospecto → Cliente</strong> (Lead → Person Account)</li>
+          </ol>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #f59e0b;">
+          <div style="font-size: 12px; font-weight: 700; color: #854d0e; margin-bottom: 8px;">Durante la vida del Seguro</div>
+          <ol style="margin: 0; padding-left: 18px; font-size: 12.5px; color: #1e293b; line-height: 1.7;">
+            <li>Calcula <strong>Días para vencer</strong> diariamente</li>
+            <li>Cambia estatus a <strong>"Por renovar"</strong> según ramo (Auto 45d · GMM 60d · Vida/PPR 90d · Daños 30d)</li>
+            <li>Calcula <strong>% Comisión</strong> según Institución + Ramo + Subproducto (Tabla de Comisiones)</li>
+            <li>Calcula <strong>Monto Comisión</strong> = % × Prima neta</li>
+            <li>Calcula <strong>Prima total</strong> = Subtotal + IVA + Ajuste</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="nt"><strong>Path de estatus</strong>Emitida → Vigente → Por renovar (auto) → Renovada / Vencida / Cancelada</div>
+      <div class="nt"><strong>Conexión con Cobranza</strong>Prima total + Frecuencia de pago + Forma de pago son los datos que el Módulo de Gestión (Capa de Cobranza) lee para generar automáticamente el plan de pagos y los recibos.</div>
+      <div class="nt"><strong>Cambios vs sandbox</strong>Eliminar Polizas__c (legacy). Eliminar "Compañía" texto libre. Agregar Frecuencia, Detalle de primas, Forma de pago, campos de Gestión.</div>
+    </div>
+  </section>
+
+  <!-- FIANZAS -->
+  <section class="module fianzas" id="fianzas">
+    <div class="head"><h2>Módulo Fianzas</h2><span class="pill">Contrato → Fianza → Endoso · Cobranza por Fianza</span></div>
+    <p class="lead">Jerarquía de tres niveles. Un Contrato puede tener múltiples Fianzas y múltiples Convenios Modificatorios. Endoso de Fianza es objeto separado vinculado al Convenio que lo originó. La cobranza y comisión cuelgan de cada Fianza individual.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 880" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="f-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+          <marker id="f-arrow-md" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1e293b"/></marker>
+          <marker id="f-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <g><rect class="obj-box" x="380" y="180" width="320" height="200" stroke="#10b981" stroke-width="2.5"/><rect class="obj-header" x="380" y="180" width="320" height="40" fill="#10b981"/><text class="obj-title" x="392" y="200" font-size="15">Contrato</text><text class="obj-api" x="392" y="214">Contrato__c · PADRE</text><text class="obj-field" x="392" y="240">No. Contrato · Estatus</text><text class="obj-field" x="392" y="255">Valor del contrato (original)</text><text class="obj-field" x="392" y="270">Inicio · Fin de contrato (original)</text><text class="obj-field" x="392" y="285">Cliente (Contratista) · Beneficiario</text><text class="obj-field" x="392" y="300">Institución · Vendedor · Proyecto</text><text class="obj-field" x="392" y="320" font-weight="600">Calculados (vigentes):</text><text class="obj-field muted" x="400" y="335">Valor_Contrato_Vigente__c (con convenios)</text><text class="obj-field muted" x="400" y="350">Fin_Contrato_Vigente__c (con convenios)</text><text class="obj-field muted" x="400" y="365">Suma de fianzas (rollup) · Exposición %</text></g>
+
+        <g><rect class="obj-box" x="40" y="80" width="200" height="80" stroke="#94a3b8"/><rect class="obj-header" x="40" y="80" width="200" height="28" fill="#94a3b8"/><text class="obj-title" x="52" y="98">Cliente (Contratista)</text><text class="obj-api" x="52" y="110">Account</text><text class="obj-field muted" x="52" y="130">Persona o empresa</text><text class="obj-field muted" x="52" y="144">que contrata la fianza</text></g>
+        <g><rect class="obj-box" x="280" y="80" width="200" height="80" stroke="#94a3b8"/><rect class="obj-header" x="280" y="80" width="200" height="28" fill="#94a3b8"/><text class="obj-title" x="292" y="98">Beneficiario</text><text class="obj-api" x="292" y="110">Account</text><text class="obj-field muted" x="292" y="130">Quien recibe el</text><text class="obj-field muted" x="292" y="144">pago si reclamo</text></g>
+        <g><rect class="obj-box" x="520" y="80" width="200" height="80" stroke="#f59e0b"/><rect class="obj-header" x="520" y="80" width="200" height="28" fill="#f59e0b"/><text class="obj-title" x="532" y="98">Institución</text><text class="obj-api" x="532" y="110">Institución__c</text><text class="obj-field muted" x="532" y="130">Afianzadora</text><text class="obj-field muted" x="532" y="144">Tipo: Afianzadora / Ambas</text></g>
+        <g><rect class="obj-box" x="760" y="80" width="200" height="80" stroke="#8b5cf6"/><rect class="obj-header" x="760" y="80" width="200" height="28" fill="#8b5cf6"/><text class="obj-title" x="772" y="98">Vendedor</text><text class="obj-api" x="772" y="110">Vendedor__c</text><text class="obj-field muted" x="772" y="130">Hereda de Oportunidad</text><text class="obj-field muted" x="772" y="144">de precalificación</text></g>
+
+        <g><rect class="obj-box" x="40" y="220" width="280" height="220" stroke="#10b981"/><rect class="obj-header" x="40" y="220" width="280" height="32" fill="#10b981"/><text class="obj-title" x="52" y="240">Fianza</text><text class="obj-api" x="52" y="252">Fianza__c · HIJO M-D</text><text class="obj-field" x="52" y="274">Número · Tipo de riesgo</text><text class="obj-field muted" x="60" y="289">Cumplimiento · Anticipo · Vicios · Pasivos</text><text class="obj-field" x="52" y="306">Fecha emisión · vencimiento (original)</text><text class="obj-field" x="52" y="321">Monto afianzado · <tspan font-weight="700" fill="#047857">Prima neta</tspan> (original)</text><text class="obj-field" x="52" y="341" font-weight="600">Vigentes (auto, tras endosos):</text><text class="obj-field muted" x="60" y="356">Monto_Afianzado_Vigente__c</text><text class="obj-field muted" x="60" y="370">Prima_Vigente__c</text><text class="obj-field muted" x="60" y="384">Fecha_Vencimiento_Vigente__c</text><text class="obj-field muted" x="60" y="398">Días para vencer · Exposición %</text><text class="obj-field muted" x="52" y="416">Hereda Institución, Beneficiario,</text><text class="obj-field muted" x="52" y="430">Cliente, Vendedor del Contrato</text></g>
+
+        <g><rect class="obj-box" x="760" y="220" width="280" height="180" stroke="#10b981"/><rect class="obj-header" x="760" y="220" width="280" height="32" fill="#10b981"/><text class="obj-title" x="772" y="240">Convenio Modificatorio</text><text class="obj-api" x="772" y="252">Convenio_Modificatorio__c · HIJO M-D</text><text class="obj-field" x="772" y="274">No. Convenio · Fecha</text><text class="obj-field" x="772" y="289">Tipo de modificación</text><text class="obj-field muted" x="780" y="304">Ampliación monto · plazo</text><text class="obj-field muted" x="780" y="318">Cambio alcance · Reducción</text><text class="obj-field" x="772" y="338">Descripción</text><text class="obj-field" x="772" y="353">Nuevo valor del contrato</text><text class="obj-field" x="772" y="368">Nueva fecha de fin</text><text class="obj-field muted" x="772" y="385">Diferencia (fórmula)</text></g>
+
+        <g><rect class="obj-box" x="380" y="450" width="320" height="160" stroke="#10b981"/><rect class="obj-header" x="380" y="450" width="320" height="32" fill="#10b981"/><text class="obj-title" x="392" y="470">Endoso de Fianza</text><text class="obj-api" x="392" y="482">Endoso_de_Fianza__c · OBJETO PROPIO</text><text class="obj-field" x="392" y="504">Número auto · Fianza · Convenio (Lookup)</text><text class="obj-field" x="392" y="519">Tipo: Aumento monto · Extensión vigencia ·</text><text class="obj-field muted" x="400" y="533">Reducción monto · Cambio de prima</text><text class="obj-field" x="392" y="548">Nuevo monto · prima · vencimiento</text><text class="obj-field muted" x="392" y="565">Auto-actualiza Fianza (campos Vigente__c)</text><text class="obj-field muted" x="392" y="579">y Contrato recalcula Suma + Exposición</text></g>
+
+        <line class="rel-line" x1="140" y1="160" x2="430" y2="180" marker-end="url(#f-arrow)"/>
+        <line class="rel-line" x1="380" y1="160" x2="490" y2="180" marker-end="url(#f-arrow)"/>
+        <line class="rel-line" x1="620" y1="160" x2="560" y2="180" marker-end="url(#f-arrow)"/>
+        <line class="rel-line" x1="860" y1="160" x2="650" y2="180" marker-end="url(#f-arrow)"/>
+        <line class="rel-line md" x1="380" y1="280" x2="320" y2="280" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="328" y="266" width="50" height="14"/><text class="rel-label" x="353" y="276" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="700" y1="280" x2="760" y2="280" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="704" y="266" width="50" height="14"/><text class="rel-label" x="729" y="276" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line md" d="M 200,440 Q 300,460 380,485" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="265" y="465" width="50" height="14"/><text class="rel-label" x="290" y="475" text-anchor="middle">M-D 1:N</text>
+        <path class="rel-line dashed" d="M 900,400 Q 850,440 700,495" marker-end="url(#f-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="780" y="450" width="60" height="14"/><text class="rel-label" x="810" y="460" text-anchor="middle">Lookup</text>
+
+        <!-- BANDA COBRANZA · COMISIÓN (cuelgan de Fianza) -->
+        <rect x="40" y="650" width="1020" height="20" fill="#dbeafe" rx="4"/>
+        <text x="550" y="664" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af" letter-spacing="1.5">COBRANZA Y COMISIÓN — CUELGAN DE CADA FIANZA INDIVIDUAL</text>
+
+        <!-- Plan de Pagos -->
+        <g><rect class="obj-box" x="40" y="690" width="280" height="160" stroke="#3b82f6"/><rect class="obj-header" x="40" y="690" width="280" height="32" fill="#3b82f6"/><text class="obj-title" x="52" y="710">Plan de Pagos</text><text class="obj-api" x="52" y="722">Plan_de_Pagos__c · HIJO M-D de Fianza</text><text class="obj-field" x="52" y="744">Frecuencia (Mensual · Trim · Anual)</text><text class="obj-field" x="52" y="759">Número de recibos · Monto total</text><text class="obj-field" x="52" y="774">Método de pago · Domiciliación</text><text class="obj-field muted" x="52" y="792">Generado al emitir la Fianza</text><text class="obj-field muted" x="52" y="806">Lee Prima neta de la Fianza</text><text class="obj-field muted" x="52" y="820">Última 4 dígitos · Referencia</text><text class="obj-field muted" x="52" y="834">(si hay domiciliación)</text></g>
+
+        <!-- Recibo de Cobro -->
+        <g><rect class="obj-box" x="380" y="690" width="280" height="160" stroke="#3b82f6"/><rect class="obj-header" x="380" y="690" width="280" height="32" fill="#3b82f6"/><text class="obj-title" x="392" y="710">Recibo de Cobro</text><text class="obj-api" x="392" y="722">Recibo__c · HIJO M-D de Plan</text><text class="obj-field" x="392" y="744">Número (auto) · Fecha de cobro</text><text class="obj-field" x="392" y="759">Monto · Monto cobrado</text><text class="obj-field" x="392" y="774">Estatus:</text><text class="obj-field muted" x="400" y="789">Programado → Por cobrar →</text><text class="obj-field muted" x="400" y="803">Cobrado / Vencido / Parcial</text><text class="obj-field muted" x="392" y="822">Domiciliación: cobro automático</text><text class="obj-field muted" x="392" y="836">Manual: Operaciones marca Cobrado</text></g>
+
+        <!-- Comisión -->
+        <g><rect class="obj-box" x="720" y="690" width="320" height="160" stroke="#ec4899"/><rect class="obj-header" x="720" y="690" width="320" height="32" fill="#ec4899"/><text class="obj-title" x="732" y="710">Comisión</text><text class="obj-api" x="732" y="722">Comision__c · HIJO M-D de Fianza</text><text class="obj-field" x="732" y="744">Fianza · Vendedor</text><text class="obj-field" x="732" y="759">% aplicado · Monto Ollin · Monto Vendedor</text><text class="obj-field" x="732" y="774">Estatus: Devengada → Liberada → Pagada</text><text class="obj-field muted" x="732" y="792">% lo provee Tabla de Comisiones</text><text class="obj-field muted" x="732" y="806">(Aseguradora × Producto × Tipo negocio)</text><text class="obj-field muted" x="732" y="822">Liberación al cobrar el recibo</text><text class="obj-field muted" x="732" y="836">Parciales: liberación proporcional</text></g>
+
+        <!-- Fianza → Plan de Pagos -->
+        <path class="rel-line md" d="M 180,440 L 180,690" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="186" y="558" width="50" height="14"/><text class="rel-label" x="211" y="568" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Plan → Recibo -->
+        <line class="rel-line md" x1="320" y1="770" x2="380" y2="770" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="328" y="756" width="50" height="14"/><text class="rel-label" x="353" y="766" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Fianza → Comisión -->
+        <path class="rel-line md" d="M 320,400 Q 600,500 880,690" marker-end="url(#f-arrow-md)"/>
+        <rect class="rel-label-bg" x="660" y="546" width="50" height="14"/><text class="rel-label" x="685" y="556" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Recibo → Comisión libera -->
+        <path class="rel-line dashed" d="M 660,770 Q 690,840 720,770" marker-end="url(#f-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="615" y="846" width="120" height="14"/><text class="rel-label" x="675" y="856" text-anchor="middle">Cobrado → libera comisión</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Wizards (Screen Flows)</strong>1) Contrato + Fianzas (múltiples). 2) Convenio Modificatorio + Endosos en fianzas afectadas.</div>
+      <div class="nt"><strong>Plan de pagos por Fianza</strong>El Contrato agrupa legalmente; la cobranza y comisión ocurren por Fianza individual con su Prima neta propia.</div>
+    </div>
+  </section>
+
+  <!-- INSTITUCIONES -->
+  <section class="module instituciones" id="instituciones">
+    <div class="head"><h2>Módulo Instituciones</h2><span class="pill">Catálogo Aseguradora · Afianzadora</span></div>
+    <p class="lead">Catálogo unificado. NO es una Cuenta. Tiene dos hijos en Master-Detail: Ejecutivo de Contacto y Acceso al Portal. Las credenciales del portal son críticas para Promotoría.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="i-arrow-md" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1e293b"/></marker>
+          <marker id="i-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <g><rect class="obj-box" x="380" y="160" width="340" height="200" stroke="#f59e0b" stroke-width="2.5"/><rect class="obj-header" x="380" y="160" width="340" height="40" fill="#f59e0b"/><text class="obj-title" x="392" y="180" font-size="15">Institución</text><text class="obj-api" x="392" y="194">Institución__c · CATÁLOGO</text><text class="obj-field" x="392" y="220">Nombre de la Institución</text><text class="obj-field muted" x="400" y="234">Único case-insensitive</text><text class="obj-field" x="392" y="254">Tipo: Aseguradora / Afianzadora / Ambas</text><text class="obj-field" x="392" y="269">Estatus: Activa / Suspendida / Inactiva</text><text class="obj-field" x="392" y="284">Sitio web</text><text class="obj-field" x="392" y="304" font-weight="600">Rollups automáticos:</text><text class="obj-field muted" x="400" y="319">Total de ejecutivos</text><text class="obj-field muted" x="400" y="333">Total pólizas vigentes</text><text class="obj-field muted" x="400" y="347">Total fianzas vigentes</text></g>
+
+        <!-- Stack effect: cajas apiladas para mostrar multiplicidad -->
+        <rect class="obj-box" x="56" y="196" width="280" height="180" stroke="#f59e0b" opacity="0.4" fill="white"/>
+        <rect class="obj-box" x="48" y="188" width="280" height="180" stroke="#f59e0b" opacity="0.65" fill="white"/>
+        <g><rect class="obj-box" x="40" y="180" width="280" height="180" stroke="#f59e0b" stroke-width="1.5"/><rect class="obj-header" x="40" y="180" width="280" height="32" fill="#f59e0b"/><text class="obj-title" x="52" y="200">Ejecutivo de Contacto</text><text class="obj-api" x="52" y="212">EjecutivoContacto__c · 1:N HIJO M-D</text><text class="obj-field" x="52" y="234">Nombre completo · Puesto</text><text class="obj-field" x="52" y="249">Área:</text><text class="obj-field muted" x="60" y="264">Suscripción · Siniestros · Fianzas</text><text class="obj-field muted" x="60" y="278">Comercial · Operaciones · Dirección</text><text class="obj-field" x="52" y="298">Es contacto principal (checkbox)</text><text class="obj-field" x="52" y="313">Email · Teléfono directo · Celular</text><text class="obj-field muted" x="52" y="332">VARIOS por institución (puede haber N)</text><text class="obj-field muted" x="52" y="346">Solo 1 marcado como contacto principal</text></g>
+
+        <g><rect class="obj-box" x="780" y="180" width="280" height="180" stroke="#f59e0b"/><rect class="obj-header" x="780" y="180" width="280" height="32" fill="#f59e0b"/><text class="obj-title" x="792" y="200">Acceso al Portal</text><text class="obj-api" x="792" y="212">AccesoPortal__c · HIJO M-D</text><text class="obj-field" x="792" y="234">Nombre del portal · URL</text><text class="obj-field" x="792" y="249">Tipo de portal:</text><text class="obj-field muted" x="800" y="264">Emisión · Cotización · Fianzas</text><text class="obj-field muted" x="800" y="278">Siniestros · Comisiones · Otro</text><text class="obj-field" x="792" y="298">Usuario · Contraseña 🔒</text><text class="obj-field" x="792" y="313">Notas</text><text class="obj-field muted" x="792" y="332">FLS: Contraseña solo Dirección</text><text class="obj-field muted" x="792" y="346">y Operaciones (no Vendedores)</text></g>
+
+        <line class="rel-line md" x1="320" y1="260" x2="380" y2="260" marker-end="url(#i-arrow-md)"/>
+        <rect class="rel-label-bg" x="328" y="246" width="50" height="14"/><text class="rel-label" x="353" y="256" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="720" y1="260" x2="780" y2="260" marker-end="url(#i-arrow-md)"/>
+        <rect class="rel-label-bg" x="728" y="246" width="50" height="14"/><text class="rel-label" x="753" y="256" text-anchor="middle">M-D 1:N</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>NO tiene</strong>Email, teléfono, dirección a nivel Institución (esos datos pertenecen al Ejecutivo).</div>
+      <div class="nt"><strong>Reglas</strong>Nombre único · Solo 1 contacto principal · No se puede borrar si tiene pólizas/fianzas vigentes (se inactiva).</div>
+      <div class="nt"><strong>Acceso al Portal</strong>Para los sistemas web de las aseguradoras: cotización, emisión, fianzas, siniestros, comisiones. Una institución puede tener varios portales.</div>
+    </div>
+  </section>
+
+  <!-- GESTIÓN -->
+  <section class="module gestion" id="gestion">
+    <div class="head"><h2>Módulo Gestión — Vista panorámica</h2><span class="pill">Caminos · Capas · Comunicación · Reportes</span></div>
+    <p class="lead">El módulo de Gestión es la capa transversal que se monta sobre Seguros y Fianzas. Esta primera vista muestra cómo se conectan los caminos de entrada, las capas operativas, la comunicación con clientes y el consumo en reportes.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 820" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="g1-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+          <marker id="g1-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <!-- BANDA SUPERIOR: 3 CAMINOS DE ENTRADA -->
+        <rect x="20" y="20" width="1100" height="22" fill="#f1f5f9" rx="4"/>
+        <text x="570" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#475569" letter-spacing="1.5">3 CAMINOS DE ENTRADA</text>
+
+        <g><rect class="obj-box" x="40" y="60" width="340" height="80" stroke="#6366f1" stroke-width="2"/><rect class="obj-header" x="40" y="60" width="340" height="28" fill="#6366f1"/><text class="obj-title" x="52" y="78">Camino A · Venta Digital</text><text class="obj-api" x="52" y="90">Tienda en Línea (Muévete Seguro)</text><text class="obj-field" x="52" y="110">Auto · Membresía Salud</text><text class="obj-field muted" x="52" y="124">IA puede cerrar sola · contado · sin plan de pagos</text></g>
+
+        <g><rect class="obj-box" x="400" y="60" width="340" height="80" stroke="#10b981" stroke-width="2"/><rect class="obj-header" x="400" y="60" width="340" height="28" fill="#10b981"/><text class="obj-title" x="412" y="78">Camino B · Venta Consultiva</text><text class="obj-api" x="412" y="90">Vendedor humano (Ollin directo)</text><text class="obj-field" x="412" y="110">Vida · GMM · PPR · Fianzas · Daños · RC</text><text class="obj-field muted" x="412" y="124">Plan de pagos + aplicación manual de recibos</text></g>
+
+        <g><rect class="obj-box" x="760" y="60" width="340" height="80" stroke="#f59e0b" stroke-width="2"/><rect class="obj-header" x="760" y="60" width="340" height="28" fill="#f59e0b"/><text class="obj-title" x="772" y="78">Camino C · Promotoría</text><text class="obj-api" x="772" y="90">Agente externo · hoy Allianz</text><text class="obj-field" x="772" y="110">Auto (Allianz) · futuras promotorías</text><text class="obj-field muted" x="772" y="124">Operaciones lee portal · separación contable absoluta</text></g>
+
+        <!-- CAPA BASE -->
+        <rect x="380" y="170" width="380" height="60" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" rx="10"/>
+        <text x="570" y="190" text-anchor="middle" font-size="11" font-weight="700" fill="#4338ca" letter-spacing="1.5">CAPA BASE — REGISTROS QUE GESTIÓN ADMINISTRA</text>
+        <text x="570" y="212" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">Seguro__c · Contrato__c · Fianza__c</text>
+
+        <line class="rel-line dashed" x1="210" y1="140" x2="450" y2="170" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="570" y1="140" x2="570" y2="170" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="930" y1="140" x2="690" y2="170" marker-end="url(#g1-arrow-dashed)"/>
+
+        <!-- 4 CAPAS OPERATIVAS -->
+        <rect x="20" y="260" width="1100" height="22" fill="#f1f5f9" rx="4"/>
+        <text x="570" y="276" text-anchor="middle" font-size="11" font-weight="700" fill="#475569" letter-spacing="1.5">4 CAPAS OPERATIVAS DE GESTIÓN</text>
+
+        <g><rect class="obj-box" x="20" y="300" width="265" height="200" stroke="#3b82f6" stroke-width="2"/><rect class="obj-header" x="20" y="300" width="265" height="32" fill="#3b82f6"/><text class="obj-title" x="32" y="320">Capa 1 · Cobranza</text><text class="obj-api" x="32" y="332">Plan de Pagos · Recibo</text><text class="obj-field" x="32" y="354">Genera plan al emitir póliza</text><text class="obj-field" x="32" y="369">Recordatorios automáticos</text><text class="obj-field" x="32" y="384">Estados de recibo:</text><text class="obj-field muted" x="40" y="398">Programado · Por cobrar</text><text class="obj-field muted" x="40" y="412">Cobrado · Parcial · Vencido</text><text class="obj-field" x="32" y="432">Aplicación de pagos:</text><text class="obj-field muted" x="40" y="446">Digital: automática (Tienda)</text><text class="obj-field muted" x="40" y="460">Domiciliación: cargo recurrente</text><text class="obj-field muted" x="40" y="474">Manual: Operaciones marca</text><text class="obj-field muted" x="40" y="488">Pagos parciales soportados</text></g>
+
+        <g><rect class="obj-box" x="295" y="300" width="265" height="200" stroke="#ec4899" stroke-width="2"/><rect class="obj-header" x="295" y="300" width="265" height="32" fill="#ec4899"/><text class="obj-title" x="307" y="320">Capa 2 · Comisiones</text><text class="obj-api" x="307" y="332">Tabla de Comisiones · Comisión</text><text class="obj-field" x="307" y="354">Tabla maestra (Admin sub-mod)</text><text class="obj-field" x="307" y="369">Aseguradora × Producto × Tipo</text><text class="obj-field" x="307" y="384">% Comisión Ollin · % Vendedor</text><text class="obj-field" x="307" y="399">% Override Promotor (Allianz)</text><text class="obj-field muted" x="315" y="416">Versionado histórico automático</text><text class="obj-field" x="307" y="436">Comisión por póliza:</text><text class="obj-field muted" x="315" y="450">Devengada al emitir</text><text class="obj-field muted" x="315" y="464">Liberada al cobrar recibo</text><text class="obj-field muted" x="315" y="478">Pagada vía SPIFF (decisión)</text><text class="obj-field muted" x="315" y="492">Clawback al cancelar póliza</text></g>
+
+        <g><rect class="obj-box" x="570" y="300" width="265" height="200" stroke="#14b8a6" stroke-width="2"/><rect class="obj-header" x="570" y="300" width="265" height="32" fill="#14b8a6"/><text class="obj-title" x="582" y="320">Capa 3 · Renovaciones</text><text class="obj-api" x="582" y="332">Automatizaciones · sin objeto nuevo</text><text class="obj-field" x="582" y="354">Alertas por ramo:</text><text class="obj-field muted" x="590" y="368">Auto 45d · GMM 60d</text><text class="obj-field muted" x="590" y="382">Vida/PPR 90d · Daños 30d</text><text class="obj-field" x="582" y="402">Al entrar "Por renovar":</text><text class="obj-field muted" x="590" y="416">Cambia estatus de Seguro</text><text class="obj-field muted" x="590" y="430">Crea Oportunidad renovación</text><text class="obj-field muted" x="590" y="444">Asigna vendedor original</text><text class="obj-field muted" x="590" y="458">Inicia cadencia + notifica</text><text class="obj-field" x="582" y="478">Vínculo "Póliza renovada de"</text><text class="obj-field muted" x="590" y="492">Para reportes de retención</text></g>
+
+        <g><rect class="obj-box" x="845" y="300" width="275" height="200" stroke="#ef4444" stroke-width="2"/><rect class="obj-header" x="845" y="300" width="275" height="32" fill="#ef4444"/><text class="obj-title" x="857" y="320">Capa 4 · Remarketing</text><text class="obj-api" x="857" y="332">Cadencias automáticas + Cross-sell</text><text class="obj-field" x="857" y="354">Prospectos perdidos:</text><text class="obj-field muted" x="865" y="368">Cadencia 7d · 30d · 60d · 90d</text><text class="obj-field muted" x="865" y="382">post-cierre perdido</text><text class="obj-field" x="857" y="402">Cross-sell clientes activos:</text><text class="obj-field muted" x="865" y="416">Filtro por producto único</text><text class="obj-field muted" x="865" y="430">Campañas complementarias</text><text class="obj-field muted" x="865" y="444">Origen = "Cross-sell"</text><text class="obj-field" x="857" y="464">Segmentación inteligente</text><text class="obj-field muted" x="865" y="478">Mensaje según motivo de</text><text class="obj-field muted" x="865" y="492">cierre y producto</text></g>
+
+        <line class="rel-line" x1="570" y1="230" x2="155" y2="300" marker-end="url(#g1-arrow)"/>
+        <line class="rel-line" x1="570" y1="230" x2="427" y2="300" marker-end="url(#g1-arrow)"/>
+        <line class="rel-line" x1="570" y1="230" x2="700" y2="300" marker-end="url(#g1-arrow)"/>
+        <line class="rel-line" x1="570" y1="230" x2="980" y2="300" marker-end="url(#g1-arrow)"/>
+
+        <!-- DIGITAL ENGAGEMENT TRANSVERSAL -->
+        <rect x="20" y="540" width="1100" height="60" fill="#0f172a" rx="10"/>
+        <text x="570" y="560" text-anchor="middle" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="2">CANAL TRANSVERSAL · DIGITAL ENGAGEMENT (NATIVO SALESFORCE)</text>
+        <text x="570" y="582" text-anchor="middle" font-size="13" font-weight="700" fill="white">WhatsApp · SMS · Facebook Messenger · Instagram · Webchat</text>
+        <text x="570" y="595" text-anchor="middle" font-size="10" fill="#cbd5e1">Reemplaza Respond.io · Plantillas pre-aprobadas por Meta · Sirve a Cobranza, Renovaciones, Remarketing y Ventas</text>
+
+        <line class="rel-line dashed" x1="155" y1="500" x2="155" y2="540" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="700" y1="500" x2="700" y2="540" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="980" y1="500" x2="980" y2="540" marker-end="url(#g1-arrow-dashed)"/>
+
+        <!-- CAPA DE CONSUMO: REPORTES -->
+        <rect x="20" y="630" width="1100" height="22" fill="#f1f5f9" rx="4"/>
+        <text x="570" y="646" text-anchor="middle" font-size="11" font-weight="700" fill="#475569" letter-spacing="1.5">5 TABLEROS DE REPORTES — CAPA DE CONSUMO</text>
+
+        <g><rect class="obj-box" x="20" y="670" width="210" height="120" stroke="#8b5cf6"/><rect class="obj-header" x="20" y="670" width="210" height="28" fill="#8b5cf6"/><text class="obj-title" x="32" y="688">Tablero A · Ventas</text><text class="obj-api" x="32" y="700">y Productividad</text><text class="obj-field muted" x="32" y="720">Vendedores · Conversión</text><text class="obj-field muted" x="32" y="734">Originador · Ranking</text><text class="obj-field muted" x="32" y="748">KPIs vs metas</text><text class="obj-field muted" x="32" y="762">Audiencia: Dirección,</text><text class="obj-field muted" x="32" y="776">Gerencia comercial</text></g>
+
+        <g><rect class="obj-box" x="240" y="670" width="210" height="120" stroke="#06b6d4"/><rect class="obj-header" x="240" y="670" width="210" height="28" fill="#06b6d4"/><text class="obj-title" x="252" y="688">Tablero B · Marketing</text><text class="obj-api" x="252" y="700">y Analítica</text><text class="obj-field muted" x="252" y="720">Atribución · Funnel</text><text class="obj-field muted" x="252" y="734">Calidad de lead</text><text class="obj-field muted" x="252" y="748">Segmentación</text><text class="obj-field muted" x="252" y="762">Audiencia: Marketing,</text><text class="obj-field muted" x="252" y="776">Crecimiento</text></g>
+
+        <g><rect class="obj-box" x="460" y="670" width="210" height="120" stroke="#3b82f6"/><rect class="obj-header" x="460" y="670" width="210" height="28" fill="#3b82f6"/><text class="obj-title" x="472" y="688">Tablero C · Operaciones</text><text class="obj-api" x="472" y="700">y Gestión</text><text class="obj-field muted" x="472" y="720">Cobranza · Renovaciones</text><text class="obj-field muted" x="472" y="734">Comisiones · Cartera</text><text class="obj-field muted" x="472" y="748">Cuentas vencidas</text><text class="obj-field muted" x="472" y="762">Audiencia: Operaciones,</text><text class="obj-field muted" x="472" y="776">Cobranza</text></g>
+
+        <g><rect class="obj-box" x="680" y="670" width="210" height="120" stroke="#f59e0b"/><rect class="obj-header" x="680" y="670" width="210" height="28" fill="#f59e0b"/><text class="obj-title" x="692" y="688">Tablero D · Promotoría</text><text class="obj-api" x="692" y="700">Allianz</text><text class="obj-field muted" x="692" y="720">Ventas · cobranza · com.</text><text class="obj-field muted" x="692" y="734">por agente externo</text><text class="obj-field muted" x="692" y="748">Segregación total</text><text class="obj-field muted" x="692" y="762">Audiencia: Dirección,</text><text class="obj-field muted" x="692" y="776">Gerencia Promotoría</text></g>
+
+        <g><rect class="obj-box" x="900" y="670" width="220" height="120" stroke="#a855f7"/><rect class="obj-header" x="900" y="670" width="220" height="28" fill="#a855f7"/><text class="obj-title" x="912" y="688">Tablero E · Inteligencia</text><text class="obj-api" x="912" y="700">Artificial (Agentforce)</text><text class="obj-field muted" x="912" y="720">Cierres autónomos vs</text><text class="obj-field muted" x="912" y="734">asistidos · Handoff</text><text class="obj-field muted" x="912" y="748">Pre-calificación · ROI</text><text class="obj-field muted" x="912" y="762">Audiencia: Dirección,</text><text class="obj-field muted" x="912" y="776">Equipo IA</text></g>
+
+        <line class="rel-line dashed" x1="155" y1="600" x2="125" y2="670" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="427" y1="600" x2="345" y2="670" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="700" y1="600" x2="565" y2="670" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="700" y1="600" x2="785" y2="670" marker-end="url(#g1-arrow-dashed)"/>
+        <line class="rel-line dashed" x1="980" y1="600" x2="1010" y2="670" marker-end="url(#g1-arrow-dashed)"/>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Hub central</strong>Punto de entrada único con KPIs en vivo, listas filtradas por perfil (Director · Operaciones · Vendedor · Administrador) y alertas pendientes.</div>
+      <div class="nt"><strong>Registro de interacciones obligatorio</strong>Toda llamada, WhatsApp, chat, SMS y email se registra como objeto con resultado y duración (humanas e IA por igual).</div>
+    </div>
+  </section>
+
+  <!-- GESTIÓN: DETALLE DE OBJETOS -->
+  <section class="module gestion" id="gestion-objetos">
+    <div class="head"><h2>Gestión — Detalle de objetos</h2><span class="pill">Plan · Recibo · Comisión · Tabla de Comisiones</span></div>
+    <p class="lead">Detalle de los objetos de Cobranza y Comisiones, con campos clave y relaciones M-D / Lookup. Incluye el sub-módulo administrativo de la Tabla de Comisiones (acceso exclusivo del Administrador).</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 720" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="g2-arrow-md" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1e293b"/></marker>
+          <marker id="g2-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <!-- CAPA BASE -->
+        <rect x="380" y="20" width="380" height="60" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" rx="10"/>
+        <text x="570" y="42" text-anchor="middle" font-size="11" font-weight="700" fill="#4338ca" letter-spacing="1.5">CAPA BASE</text>
+        <text x="570" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">Seguro__c · Fianza__c</text>
+
+        <!-- COBRANZA -->
+        <rect x="20" y="110" width="540" height="22" fill="#dbeafe" rx="4"/>
+        <text x="290" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af" letter-spacing="1.5">COBRANZA</text>
+
+        <g><rect class="obj-box" x="20" y="150" width="260" height="200" stroke="#3b82f6"/><rect class="obj-header" x="20" y="150" width="260" height="36" fill="#3b82f6"/><text class="obj-title" x="32" y="170">Plan de Pagos</text><text class="obj-api" x="32" y="183">Plan_de_Pagos__c</text><text class="obj-field" x="32" y="206" font-weight="600">Configuración</text><text class="obj-field muted" x="40" y="221">Frecuencia · N recibos · Monto total</text><text class="obj-field muted" x="40" y="235">Fecha de inicio · Día de cobro mensual</text><text class="obj-field" x="32" y="255" font-weight="600">Domiciliación</text><text class="obj-field muted" x="40" y="270">Método de pago · Domiciliación activa</text><text class="obj-field muted" x="40" y="284">Últimos 4 dígitos · Referencia</text><text class="obj-field muted" x="32" y="305">Hijo M-D de Seguro o Fianza</text><text class="obj-field muted" x="32" y="319">No se crea en venta digital</text><text class="obj-field muted" x="32" y="333">Lee Prima neta del padre</text></g>
+
+        <g><rect class="obj-box" x="300" y="150" width="260" height="200" stroke="#3b82f6"/><rect class="obj-header" x="300" y="150" width="260" height="36" fill="#3b82f6"/><text class="obj-title" x="312" y="170">Recibo de Cobro</text><text class="obj-api" x="312" y="183">Recibo__c · Hijo M-D de Plan</text><text class="obj-field" x="312" y="206" font-weight="600">Identificación</text><text class="obj-field muted" x="320" y="221">Número (auto) · N consecutivo</text><text class="obj-field" x="312" y="241" font-weight="600">Cobro</text><text class="obj-field muted" x="320" y="256">Fecha de cobro · Monto programado</text><text class="obj-field muted" x="320" y="270">Monto cobrado · Fecha de pago real</text><text class="obj-field" x="312" y="290" font-weight="600">Estatus</text><text class="obj-field muted" x="320" y="305">Programado → Por cobrar →</text><text class="obj-field muted" x="320" y="319">Cobrado / Vencido / Parcial / Anulado</text><text class="obj-field muted" x="312" y="338">Recordatorios automáticos vía DE</text></g>
+
+        <line class="rel-line md" x1="280" y1="248" x2="300" y2="248" marker-end="url(#g2-arrow-md)"/>
+        <rect class="rel-label-bg" x="240" y="234" width="50" height="14"/><text class="rel-label" x="265" y="244" text-anchor="middle">M-D 1:N</text>
+
+        <!-- COMISIONES -->
+        <rect x="580" y="110" width="540" height="22" fill="#fce7f3" rx="4"/>
+        <text x="850" y="126" text-anchor="middle" font-size="11" font-weight="700" fill="#9d174d" letter-spacing="1.5">COMISIONES</text>
+
+        <g><rect class="obj-box" x="580" y="150" width="260" height="200" stroke="#ec4899"/><rect class="obj-header" x="580" y="150" width="260" height="36" fill="#ec4899"/><text class="obj-title" x="592" y="170">Comisión registrada</text><text class="obj-api" x="592" y="183">Comision__c · Hijo M-D de Seguro/Fianza</text><text class="obj-field" x="592" y="206" font-weight="600">Atribución</text><text class="obj-field muted" x="600" y="221">Seguro o Fianza · Vendedor</text><text class="obj-field muted" x="600" y="235">Aseguradora · Producto · Tipo negocio</text><text class="obj-field" x="592" y="255" font-weight="600">Cálculo</text><text class="obj-field muted" x="600" y="270">% aplicado (snapshot al emitir)</text><text class="obj-field muted" x="600" y="284">Monto Ollin · Monto Vendedor</text><text class="obj-field" x="592" y="304" font-weight="600">Estatus</text><text class="obj-field muted" x="600" y="319">Devengada → Liberada → Pagada</text><text class="obj-field muted" x="592" y="338">Clawback automático si se cancela</text></g>
+
+        <g><rect class="obj-box" x="860" y="150" width="260" height="200" stroke="#ec4899" stroke-dasharray="4 3"/><rect class="obj-header" x="860" y="150" width="260" height="36" fill="#ec4899"/><text class="obj-title" x="872" y="170">Tabla de Comisiones</text><text class="obj-api" x="872" y="183">Tabla_de_Comisiones__c · MAESTRA</text><text class="obj-field" x="872" y="206" font-weight="600">Identificación</text><text class="obj-field muted" x="880" y="221">Institución · Producto · Subproducto</text><text class="obj-field muted" x="880" y="235">Tipo de negocio · ID externo único</text><text class="obj-field" x="872" y="255" font-weight="600">Porcentajes y vigencia</text><text class="obj-field muted" x="880" y="270">% Comisión Ollin · % Override Promotor</text><text class="obj-field muted" x="880" y="284">Fecha inicio/fin vigencia · Vigente</text><text class="obj-field muted" x="872" y="305">Versionado: nueva fila al cambiar %</text><text class="obj-field muted" x="872" y="319">Override Promotor: hoy solo Allianz</text><text class="obj-field muted" x="872" y="334">Provee % a cada Comisión nueva</text></g>
+
+        <line class="rel-line dashed" x1="860" y1="248" x2="840" y2="248" marker-end="url(#g2-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="780" y="234" width="60" height="14"/><text class="rel-label" x="810" y="244" text-anchor="middle">Provee %</text>
+
+        <!-- Líneas hacia capa base -->
+        <line class="rel-line md" x1="500" y1="80" x2="150" y2="150" marker-end="url(#g2-arrow-md)"/>
+        <rect class="rel-label-bg" x="285" y="100" width="50" height="14"/><text class="rel-label" x="310" y="110" text-anchor="middle">M-D 1:N</text>
+        <line class="rel-line md" x1="640" y1="80" x2="710" y2="150" marker-end="url(#g2-arrow-md)"/>
+        <rect class="rel-label-bg" x="660" y="100" width="50" height="14"/><text class="rel-label" x="685" y="110" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Recibo → Comisión libera -->
+        <path class="rel-line dashed" d="M 560,330 Q 600,400 710,350" marker-end="url(#g2-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="565" y="394" width="120" height="14"/><text class="rel-label" x="625" y="404" text-anchor="middle">Cobrado → libera comisión</text>
+
+        <!-- SUB-MÓDULO ADMIN TABLA DE COMISIONES -->
+        <rect x="20" y="430" width="1100" height="22" fill="#fce7f3" rx="4"/>
+        <text x="570" y="446" text-anchor="middle" font-size="11" font-weight="700" fill="#9d174d" letter-spacing="1.5">SUB-MÓDULO · ADMINISTRACIÓN DE LA TABLA DE COMISIONES (acceso exclusivo del Administrador)</text>
+
+        <g><rect class="obj-box" x="20" y="470" width="260" height="180" stroke="#9d174d"/><rect class="obj-header" x="20" y="470" width="260" height="32" fill="#9d174d"/><text class="obj-title" x="32" y="490">Edición inline (primario)</text><text class="obj-api" x="32" y="502">Para ajustes puntuales</text><text class="obj-field muted" x="32" y="525">Cuándo: ajuste anual de 1–5 %</text><text class="obj-field" x="32" y="545">Flujo:</text><text class="obj-field muted" x="40" y="560">1. Filtrar institución/año/producto</text><text class="obj-field muted" x="40" y="574">2. Doble-click en celda</text><text class="obj-field muted" x="40" y="588">3. Escribir nuevo %</text><text class="obj-field muted" x="40" y="602">4. Guardar</text><text class="obj-field muted" x="40" y="616">5. Sistema versiona automático</text><text class="obj-field muted" x="40" y="630">6. Log de cambios visible</text></g>
+
+        <g><rect class="obj-box" x="300" y="470" width="260" height="180" stroke="#9d174d"/><rect class="obj-header" x="300" y="470" width="260" height="32" fill="#9d174d"/><text class="obj-title" x="312" y="490">Carga por CSV (secundario)</text><text class="obj-api" x="312" y="502">Para aseguradora nueva o reemplazo</text><text class="obj-field muted" x="312" y="525">Cuándo: alta nueva o reestructura</text><text class="obj-field" x="312" y="545">Flujo:</text><text class="obj-field muted" x="320" y="560">1. Descargar plantilla CSV</text><text class="obj-field muted" x="320" y="574">2. Llenar con datos</text><text class="obj-field muted" x="320" y="588">3. Subir archivo</text><text class="obj-field muted" x="320" y="602">4. Preview: válidas/error/duplicadas</text><text class="obj-field muted" x="320" y="616">5. Modo: agregar o reemplazar</text><text class="obj-field muted" x="320" y="630">6. Confirmar (transacción única)</text></g>
+
+        <g><rect class="obj-box" x="580" y="470" width="260" height="180" stroke="#9d174d"/><rect class="obj-header" x="580" y="470" width="260" height="32" fill="#9d174d"/><text class="obj-title" x="592" y="490">Versionado histórico</text><text class="obj-api" x="592" y="502">Auditoría y recálculos</text><text class="obj-field muted" x="592" y="525">Cada cambio crea fila nueva,</text><text class="obj-field muted" x="592" y="539">marca la anterior como histórica</text><text class="obj-field" x="592" y="559">Beneficios:</text><text class="obj-field muted" x="600" y="574">% aplicable a fecha pasada</text><text class="obj-field muted" x="600" y="588">Recálculo de comisiones</text><text class="obj-field muted" x="600" y="602">a partir de fecha histórica</text><text class="obj-field muted" x="600" y="616">Auditoría completa</text><text class="obj-field muted" x="600" y="630">Validación: sin duplicados vigentes</text></g>
+
+        <g><rect class="obj-box" x="860" y="470" width="260" height="180" stroke="#9d174d"/><rect class="obj-header" x="860" y="470" width="260" height="32" fill="#9d174d"/><text class="obj-title" x="872" y="490">Permisos y log</text><text class="obj-api" x="872" y="502">Acceso restringido</text><text class="obj-field" x="872" y="525">Permisos:</text><text class="obj-field muted" x="880" y="540">Solo perfil Administrador</text><text class="obj-field muted" x="880" y="554">Vendedores: NO ven la tabla</text><text class="obj-field muted" x="880" y="568">Operaciones: solo lectura</text><text class="obj-field" x="872" y="588">Log de auditoría:</text><text class="obj-field muted" x="880" y="603">Quién cambió qué y cuándo</text><text class="obj-field muted" x="880" y="617">Valor anterior y nuevo</text><text class="obj-field muted" x="880" y="631">Razón del cambio (texto)</text></g>
+
+        <line class="rel-line dashed" x1="990" y1="350" x2="990" y2="470" marker-end="url(#g2-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="996" y="404" width="80" height="14"/><text class="rel-label" x="1036" y="414" text-anchor="middle">Administra la tabla</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Frontera del sub-módulo</strong>Esta tabla guarda el ingreso de Ollin. SPIFF guarda el pago al vendedor. El Módulo de Bonos (por diseñar) guarda los bonos dinámicos de aseguradora.</div>
+      <div class="nt"><strong>Override Promotor</strong>Solo aplica cuando la aseguradora paga a Ollin un % adicional por su rol de promotor. Hoy solo Allianz. Para el resto, este campo queda en cero o vacío.</div>
+    </div>
+  </section>
+
+  <!-- GESTIÓN: CASOS ESPECIALES -->
+  <section class="module gestion" id="gestion-casos">
+    <div class="head"><h2>Gestión — Casos especiales del ciclo de vida</h2><span class="pill">Cancelación · Endoso afecta prima · Domiciliación</span></div>
+    <p class="lead">Tres situaciones que merecen diseño explícito porque tocan simultáneamente la cobranza y la comisión. El sistema las ejecuta automáticamente cuando se cumplen las condiciones.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1140 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="g3-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+        </defs>
+
+        <!-- CASO 1: CANCELACIÓN MID-TERM -->
+        <rect x="20" y="20" width="360" height="22" fill="#fee2e2" rx="4"/>
+        <text x="200" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c" letter-spacing="1.5">CASO 1 · CANCELACIÓN MID-TERM</text>
+
+        <g><rect class="obj-box" x="20" y="60" width="360" height="120" stroke="#ef4444"/><rect class="obj-header" x="20" y="60" width="360" height="32" fill="#ef4444"/><text class="obj-title" x="32" y="80">Disparador</text><text class="obj-api" x="32" y="92">Póliza pasa a "Cancelada"</text><text class="obj-field" x="32" y="114">Campos nuevos en Seguro/Fianza:</text><text class="obj-field muted" x="40" y="129">Fecha de cancelación</text><text class="obj-field muted" x="40" y="143">Motivo (Decisión cliente · Falta pago ·</text><text class="obj-field muted" x="40" y="157">Siniestro total · Cambio aseguradora ·</text><text class="obj-field muted" x="40" y="171">Error de emisión)</text></g>
+
+        <g><rect class="obj-box" x="20" y="200" width="360" height="180" stroke="#ef4444"/><rect class="obj-header" x="20" y="200" width="360" height="32" fill="#ef4444"/><text class="obj-title" x="32" y="220">Acciones automáticas</text><text class="obj-api" x="32" y="232">Sin aprobación manual</text><text class="obj-field" x="32" y="254">1. Recibos futuros → "Anulado"</text><text class="obj-field" x="32" y="269">2. Días vigentes al cancelar (fórmula)</text><text class="obj-field" x="32" y="284">3. Clawback proporcional de comisión</text><text class="obj-field muted" x="40" y="299">Comisión total $540, cancela mes 4/12</text><text class="obj-field muted" x="40" y="313">→ Proporcional $180, clawback $360</text><text class="obj-field" x="32" y="333">4. Renovación cancelada</text><text class="obj-field muted" x="40" y="348">Si había alerta activa, se descarta</text><text class="obj-field muted" x="32" y="368">Toca: Cobranza + Comisiones + Renovaciones</text></g>
+
+        <line class="rel-line" x1="200" y1="180" x2="200" y2="200" marker-end="url(#g3-arrow)"/>
+
+        <!-- CASO 2: ENDOSO AFECTA PRIMA -->
+        <rect x="390" y="20" width="360" height="22" fill="#fee2e2" rx="4"/>
+        <text x="570" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c" letter-spacing="1.5">CASO 2 · ENDOSO QUE AFECTA PRIMA</text>
+
+        <g><rect class="obj-box" x="390" y="60" width="360" height="120" stroke="#ef4444"/><rect class="obj-header" x="390" y="60" width="360" height="32" fill="#ef4444"/><text class="obj-title" x="402" y="80">Disparador</text><text class="obj-api" x="402" y="92">Endoso registrado con bandera "Afecta prima"</text><text class="obj-field" x="402" y="114">Bandera nueva en Endoso:</text><text class="obj-field muted" x="410" y="129">Afecta prima (checkbox)</text><text class="obj-field muted" x="410" y="143">Si TRUE → recálculo automático</text><text class="obj-field muted" x="410" y="157">Si FALSE → solo registra cambio</text><text class="obj-field muted" x="410" y="171">(cambio domicilio, corrección datos)</text></g>
+
+        <g><rect class="obj-box" x="390" y="200" width="360" height="180" stroke="#ef4444"/><rect class="obj-header" x="390" y="200" width="360" height="32" fill="#ef4444"/><text class="obj-title" x="402" y="220">Acciones automáticas</text><text class="obj-api" x="402" y="232">Si "Afecta prima" = TRUE</text><text class="obj-field" x="402" y="254">Recibos ya cobrados:</text><text class="obj-field muted" x="410" y="269">NO se tocan</text><text class="obj-field muted" x="410" y="283">Comisión liberada se respeta</text><text class="obj-field" x="402" y="303">Recibos futuros:</text><text class="obj-field muted" x="410" y="318">Se ajustan al nuevo monto</text><text class="obj-field muted" x="410" y="332">Recalcula saldo pendiente</text><text class="obj-field muted" x="410" y="346">Distribuye en recibos restantes</text><text class="obj-field muted" x="402" y="366">Comisión pendiente sobre nueva prima</text></g>
+
+        <line class="rel-line" x1="570" y1="180" x2="570" y2="200" marker-end="url(#g3-arrow)"/>
+
+        <!-- CASO 3: DOMICILIACIÓN -->
+        <rect x="760" y="20" width="360" height="22" fill="#dbeafe" rx="4"/>
+        <text x="940" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#0369a1" letter-spacing="1.5">CASO 3 · DOMICILIACIÓN</text>
+
+        <g><rect class="obj-box" x="760" y="60" width="360" height="120" stroke="#0ea5e9"/><rect class="obj-header" x="760" y="60" width="360" height="32" fill="#0ea5e9"/><text class="obj-title" x="772" y="80">Disparador</text><text class="obj-api" x="772" y="92">Plan de Pagos con Domiciliación = TRUE</text><text class="obj-field" x="772" y="114">Campos en Plan de Pagos:</text><text class="obj-field muted" x="780" y="129">Método de pago · Domiciliación activa</text><text class="obj-field muted" x="780" y="143">Últimos 4 dígitos de tarjeta</text><text class="obj-field muted" x="780" y="157">Referencia de domiciliación</text><text class="obj-field muted" x="780" y="171">(viene de pasarela o aseguradora)</text></g>
+
+        <g><rect class="obj-box" x="760" y="200" width="360" height="180" stroke="#0ea5e9"/><rect class="obj-header" x="760" y="200" width="360" height="32" fill="#0ea5e9"/><text class="obj-title" x="772" y="220">Flujo automático del cargo</text><text class="obj-api" x="772" y="232">Sin captura manual de Operaciones</text><text class="obj-field" x="772" y="254">Procesamiento:</text><text class="obj-field muted" x="780" y="269">Día de cobro · pasarela o aseguradora</text><text class="obj-field" x="772" y="289">Resultado exitoso:</text><text class="obj-field muted" x="780" y="304">Recibo → "Cobrado" automático</text><text class="obj-field muted" x="780" y="318">Comisión liberada</text><text class="obj-field" x="772" y="338">Resultado rechazado:</text><text class="obj-field muted" x="780" y="353">Recibo → "Por cobrar" + alerta</text><text class="obj-field muted" x="780" y="367">Reintento según política (ej. 3 días)</text></g>
+
+        <line class="rel-line" x1="940" y1="180" x2="940" y2="200" marker-end="url(#g3-arrow)"/>
+
+        <!-- LEYENDA INFERIOR -->
+        <rect x="20" y="430" width="1100" height="150" fill="#f8fafc" stroke="#e2e8f0" rx="10"/>
+        <text x="40" y="455" font-size="11" font-weight="700" fill="#475569" letter-spacing="1">REGLAS TRANSVERSALES</text>
+        <text x="40" y="478" font-size="11" fill="#0f172a" font-weight="600">• Clawback automático:</text>
+        <text x="40" y="494" font-size="11" fill="#475569">  Al cancelar póliza, el sistema calcula la comisión proporcional efectiva y revierte el excedente al vendedor. No requiere aprobación manual.</text>
+        <text x="40" y="514" font-size="11" fill="#0f172a" font-weight="600">• Pagos parciales:</text>
+        <text x="40" y="530" font-size="11" fill="#475569">  Cuando Monto cobrado &lt; Monto programado → estatus "Parcial". La comisión se libera proporcionalmente.</text>
+        <text x="40" y="550" font-size="11" fill="#0f172a" font-weight="600">• Domiciliación + venta digital:</text>
+        <text x="40" y="566" font-size="11" fill="#475569">  La Tienda en Línea ya maneja el token de la tarjeta; la domiciliación se propaga a Salesforce vía integración. En consultiva, Operaciones registra el token al emitir.</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Por qué viven aquí</strong>Estos tres casos tocan simultáneamente Cobranza y Comisiones. Si no se modelan explícitamente, generan inconsistencias entre lo cobrado y lo pagado al vendedor.</div>
+      <div class="nt"><strong>Convivencia con flujo manual</strong>El campo "Domiciliación activa" define cuál ruta aplica. Operaciones sigue marcando recibos manualmente cuando no hay domiciliación.</div>
+    </div>
+  </section>
+
+  <!-- INTEGRACIONES -->
+  <section class="module integraciones" id="integraciones">
+    <div class="head"><h2>Integraciones Externas</h2><span class="pill">Sistemas conectados</span></div>
+    <p class="lead">Cuatro integraciones modeladas como parte de la arquitectura. Cada una tiene IDs de trazabilidad o un flujo definido de entrada/salida con Salesforce.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="x-arrow-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <g><rect class="obj-box" x="400" y="180" width="300" height="120" stroke="#6366f1" stroke-width="2.5"/><rect class="obj-header" x="400" y="180" width="300" height="32" fill="#6366f1"/><text class="obj-title" x="412" y="200">Salesforce — Ollin</text><text class="obj-api" x="412" y="212">Sales Cloud · Lightning Experience</text><text class="obj-field" x="412" y="234">Modelo de datos completo (este documento)</text><text class="obj-field" x="412" y="249">Cartera, gestión, reportes, automatizaciones</text><text class="obj-field muted" x="412" y="268">Recibe IDs de integración para trazabilidad</text><text class="obj-field muted" x="412" y="282">lead_id · quote_id · checkout_id · payment_id · policy_id</text></g>
+
+        <g><rect class="obj-box" x="40" y="60" width="240" height="120" stroke="#64748b"/><rect class="obj-header" x="40" y="60" width="240" height="32" fill="#64748b"/><text class="obj-title" x="52" y="80">Muévete Seguro (Tienda)</text><text class="obj-api" x="52" y="92">Plataforma propia · transaccional</text><text class="obj-field" x="52" y="114">Máster de cotización y pago digital</text><text class="obj-field" x="52" y="129">Auto · Membresía Salud (futuro)</text><text class="obj-field muted" x="52" y="148">Salesforce NO recalcula precios</text><text class="obj-field muted" x="52" y="162">Consume IDs y refleja la transacción</text></g>
+        <g><rect class="obj-box" x="820" y="60" width="240" height="120" stroke="#64748b"/><rect class="obj-header" x="820" y="60" width="240" height="32" fill="#64748b"/><text class="obj-title" x="832" y="80">Agentforce</text><text class="obj-api" x="832" y="92">Agente IA nativo de Salesforce</text><text class="obj-field" x="832" y="114">Captura y pre-califica leads 24/7</text><text class="obj-field" x="832" y="129">Cierra ventas digitales sin humano</text><text class="obj-field muted" x="832" y="148">KPI: cierres autónomos vs asistidos</text><text class="obj-field muted" x="832" y="162">Tipo originador = "IA"</text></g>
+        <g><rect class="obj-box" x="40" y="320" width="240" height="120" stroke="#64748b"/><rect class="obj-header" x="40" y="320" width="240" height="32" fill="#64748b"/><text class="obj-title" x="52" y="340">SPIFF</text><text class="obj-api" x="52" y="352">us1.spiff.com · Sistema actual</text><text class="obj-field" x="52" y="374">Cálculo y pago de comisiones hoy</text><text class="obj-field" x="52" y="389">Tiene tablas históricas cargadas</text><text class="obj-field muted" x="52" y="408">Decisión pendiente:</text><text class="obj-field muted" x="52" y="422">Integrar / Migrar / Solo enlazar</text></g>
+        <g><rect class="obj-box" x="820" y="320" width="240" height="120" stroke="#64748b"/><rect class="obj-header" x="820" y="320" width="240" height="32" fill="#64748b"/><text class="obj-title" x="832" y="340">Digital Engagement</text><text class="obj-api" x="832" y="352">Nativo de Salesforce</text><text class="obj-field" x="832" y="374">WhatsApp · SMS · Messenger · Webchat</text><text class="obj-field" x="832" y="389">Recordatorios · cadencias · remarketing</text><text class="obj-field muted" x="832" y="408">Reemplaza Respond.io</text><text class="obj-field muted" x="832" y="422">Plantillas pre-aprobadas por Meta</text></g>
+
+        <line class="rel-line dashed" x1="280" y1="120" x2="400" y2="220" marker-end="url(#x-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="290" y="150" width="100" height="14"/><text class="rel-label" x="340" y="160" text-anchor="middle">IDs de transacción</text>
+        <line class="rel-line dashed" x1="820" y1="120" x2="700" y2="220" marker-end="url(#x-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="710" y="150" width="100" height="14"/><text class="rel-label" x="760" y="160" text-anchor="middle">Leads + acciones</text>
+        <line class="rel-line dashed" x1="280" y1="380" x2="400" y2="280" marker-end="url(#x-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="290" y="316" width="100" height="14"/><text class="rel-label" x="340" y="326" text-anchor="middle">Sync comisiones</text>
+        <line class="rel-line dashed" x1="820" y1="380" x2="700" y2="280" marker-end="url(#x-arrow-dashed)"/>
+        <rect class="rel-label-bg" x="710" y="316" width="100" height="14"/><text class="rel-label" x="760" y="326" text-anchor="middle">Mensajes salientes</text>
+      </svg>
+    </div>
+    <div class="notes">
+      <div class="nt"><strong>Trazabilidad</strong>Cada póliza creada por Tienda mantiene los IDs de origen (lead_id, quote_id, checkout_id, payment_id, policy_id) para reconciliación end-to-end.</div>
+      <div class="nt"><strong>Reglas de IA</strong>Agentforce SÍ cierra sola en ramo digital. NO inventa precios: solo guía a cotizar/pagar en Tienda.</div>
+    </div>
+  </section>
+
+  <div class="final">
+    <h2>Cómo leer este documento</h2>
+    <p>Cada caja representa un objeto en Salesforce (estándar o custom — el nombre técnico aparece debajo del título). Las líneas continuas son relaciones de datos (Lookup o Master-Detail, indicado en la etiqueta), y las líneas punteadas son automatizaciones, herencia o vínculos lógicos. Los colores indican a qué módulo pertenece cada objeto. La vista General es el mapa de bolsillo; los módulos individuales tienen el detalle de campos.</p>
+  </div>
+
+</div>
+</body>
+</html>

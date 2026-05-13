@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Planes_activos</fullName>
+    <columns>NAME</columns>
+    <columns>Seguro__c</columns>
+    <columns>Estado__c</columns>
+    <columns>Frecuencia__c</columns>
+    <columns>Monto__c</columns>
+    <columns>Total_pagado__c</columns>
+    <columns>Saldo_pendiente__c</columns>
+    <columns>Semaforo_salud__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Estado__c</field>
+        <operation>equals</operation>
+        <value>Activo,En_mora,Pausado</value>
+    </filters>
+    <label>Planes activos</label>
+</ListView>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_de_Modificacion__c</fullName>
+    <label>Tipo de Modificacion</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Ampliacion de monto</fullName>
+                <default>false</default>
+                <label>Ampliacion de monto</label>
+            </value>
+            <value>
+                <fullName>Ampliacion de plazo</fullName>
+                <default>false</default>
+                <label>Ampliacion de plazo</label>
+            </value>
+            <value>
+                <fullName>Cambio de alcance</fullName>
+                <default>false</default>
+                <label>Cambio de alcance</label>
+            </value>
+            <value>
+                <fullName>Reduccion de monto</fullName>
+                <default>false</default>
+                <label>Reduccion de monto</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

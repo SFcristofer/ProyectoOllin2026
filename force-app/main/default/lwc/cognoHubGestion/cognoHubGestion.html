@@ -1,0 +1,313 @@
+<template>
+    <!-- ============================================================
+         BANNER ATRASADAS
+         ============================================================ -->
+    <template lwc:if={hasAtrasadas}>
+        <div class="hub-banner-atrasadas slds-m-bottom_small" role="alert">
+            <span class="slds-assistive-text">Alerta</span>
+            <lightning-icon icon-name="utility:warning" alternative-text="Advertencia" size="small" variant="inverse"></lightning-icon>
+            <h2>
+                <span>Renovaciones atrasadas: {bannerText}</span>
+                <button type="button" class="slds-button slds-m-left_small" onclick={handleKpiRenovaciones} aria-label="Ver pólizas atrasadas">
+                    Ver atrasadas
+                </button>
+            </h2>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         LOADING / ERROR
+         ============================================================ -->
+    <template lwc:if={loading}>
+        <div class="slds-p-around_medium slds-align_absolute-center">
+            <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+        </div>
+    </template>
+
+    <template lwc:if={error}>
+        <div class="slds-notify slds-notify_alert slds-theme_error slds-m-bottom_small" role="alert">
+            <p>{error}</p>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         KPIs
+         ============================================================ -->
+    <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_medium">
+        <div class="slds-col slds-size_1-of-5">
+            <article class="slds-card slds-p-around_medium slds-card_boundary hub-kpi-card" onclick={handleKpiVencidos} role="button" tabindex="0" aria-label="Ver recibos vencidos" style="cursor:pointer;">
+                <p class="slds-text-title slds-text-color_weak">Vencidos</p>
+                <p class="slds-text-heading_large">{kpis.vencidosCount}</p>
+                <p class="slds-text-color_error">
+                    <lightning-formatted-number value={kpis.vencidosAmount} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                </p>
+            </article>
+        </div>
+
+        <div class="slds-col slds-size_1-of-5">
+            <article class="slds-card slds-p-around_medium slds-card_boundary hub-kpi-card" onclick={handleKpiPorCobrar} role="button" tabindex="0" aria-label="Ver recibos por cobrar" style="cursor:pointer;">
+                <p class="slds-text-title slds-text-color_weak">Por cobrar</p>
+                <p class="slds-text-heading_large">{kpis.porCobrarCount}</p>
+                <p class="slds-text-color_default">
+                    <lightning-formatted-number value={kpis.porCobrarAmount} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                </p>
+            </article>
+        </div>
+
+        <div class="slds-col slds-size_1-of-5">
+            <article class="slds-card slds-p-around_medium slds-card_boundary hub-kpi-card" onclick={handleKpiPagadoMes} role="button" tabindex="0" aria-label="Ver recibos pagados este mes" style="cursor:pointer;">
+                <p class="slds-text-title slds-text-color_weak">Pagado este mes</p>
+                <p class="slds-text-heading_large">{kpis.pagadoMesCount}</p>
+                <p class="slds-text-color_success">
+                    <lightning-formatted-number value={kpis.pagadoMesAmount} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                </p>
+            </article>
+        </div>
+
+        <div class="slds-col slds-size_1-of-5">
+            <article class="slds-card slds-p-around_medium slds-card_boundary hub-kpi-card" onclick={handleKpiRenovaciones} role="button" tabindex="0" aria-label="Ver pólizas por renovar" style="cursor:pointer;">
+                <p class="slds-text-title slds-text-color_weak">Renovaciones {mesActualLabel}</p>
+                <p class="slds-text-heading_large">{kpis.renovacionesMesActualCount}</p>
+                <p class="slds-text-color_default">
+                    <lightning-formatted-number value={kpis.renovacionesMesActualAmount} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                </p>
+                <p class="slds-text-body_small slds-text-color_weak">
+                    Próximo mes: {kpis.renovacionesMesSiguienteCount}
+                </p>
+            </article>
+        </div>
+
+        <div class="slds-col slds-size_1-of-5">
+            <article class="slds-card slds-p-around_medium slds-card_boundary hub-kpi-card" onclick={handleKpiPendienteMes} role="button" tabindex="0" aria-label="Ver pendiente del mes" style="cursor:pointer;">
+                <p class="slds-text-title slds-text-color_weak">Pendiente del mes</p>
+                <p class="slds-text-heading_large">{kpis.pendienteMesCount}</p>
+                <p class="slds-text-color_default">
+                    <lightning-formatted-number value={kpis.pendienteMesAmount} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                </p>
+            </article>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         RECIBOS VENCIDOS (tabla)
+         ============================================================ -->
+    <div class="slds-card slds-m-bottom_medium">
+        <header class="slds-card__header">
+            <h2 class="slds-text-heading_small">Recibos vencidos</h2>
+        </header>
+        <div class="slds-card__body slds-card__body_inner">
+            <template lwc:if={recibosVencidos.length}>
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th>Recibo</th>
+                            <th>Póliza</th>
+                            <th>Cliente</th>
+                            <th>Ramo</th>
+                            <th>Programado</th>
+                            <th class="slds-text-align_right">Monto</th>
+                            <th class="slds-text-align_center">Días mora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={recibosVencidos} for:item="r">
+                            <tr key={r.id} class={r.rowClass} data-id={r.id} data-object="Recibo_de_Cobro__c" onclick={handleRowNav} style="cursor:pointer;">
+                                <td>{r.numero}</td>
+                                <td>{r.poliza}</td>
+                                <td>{r.cliente}</td>
+                                <td>{r.ramo}</td>
+                                <td>
+                                    <lightning-formatted-date-time value={r.fechaProgramada} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                                </td>
+                                <td class="slds-text-align_right">
+                                    <lightning-formatted-number value={r.monto} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                                </td>
+                                <td class="slds-text-align_center hub-dias-mora">{r.diasMora}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+            <template lwc:else>
+                <p class="slds-text-color_weak slds-p-around_small">Sin recibos vencidos.</p>
+            </template>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         RENOVACIONES — 3 BUCKETS APILADOS
+         ============================================================ -->
+    <div class="slds-card slds-m-bottom_medium">
+        <header class="slds-card__header">
+            <h2 class="slds-text-heading_small">Renovaciones</h2>
+        </header>
+
+        <!-- Bucket 1: Atrasadas -->
+        <template lwc:if={renovaciones.atrasadas.length}>
+            <div class="hub-atrasadas-header">
+                <h3 class="slds-text-heading_x-small">
+                    Atrasadas ({renovaciones.atrasadas.length})
+                </h3>
+            </div>
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr>
+                        <th>Póliza</th>
+                        <th>Cliente</th>
+                        <th>Ramo</th>
+                        <th>Fin de vigencia</th>
+                        <th class="slds-text-align_center">Días</th>
+                        <th class="slds-text-align_right">Prima</th>
+                        <th class="slds-text-align_center">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={renovaciones.atrasadas} for:item="s">
+                        <tr key={s.id}>
+                            <td>
+                                <a href="#" data-id={s.id} data-object="Seguro__c" onclick={handleRowNav}>{s.numeroPoliza}</a>
+                            </td>
+                            <td>{s.cliente}</td>
+                            <td>{s.ramo}</td>
+                            <td>
+                                <lightning-formatted-date-time value={s.finVigencia} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                            </td>
+                            <td class="slds-text-align_center hub-dias-mora">{s.diasAtrasoTexto}</td>
+                            <td class="slds-text-align_right">
+                                <lightning-formatted-number value={s.primaTotal} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                            </td>
+                            <td class="slds-text-align_center">
+                                <lightning-button
+                                    variant="destructive-text"
+                                    label="Marcar no renovada"
+                                    data-id={s.id}
+                                    data-poliza={s.numeroPoliza}
+                                    data-cliente={s.cliente}
+                                    onclick={openMarcarNoRenovada}>
+                                </lightning-button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+
+        <!-- Bucket 2: Mes actual -->
+        <template lwc:if={renovaciones.mesActual.length}>
+            <div class="hub-mes-actual-header">
+                <h3 class="slds-text-heading_x-small">
+                    Mes actual — {mesActualLabel} ({renovaciones.mesActual.length})
+                </h3>
+            </div>
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr>
+                        <th>Póliza</th>
+                        <th>Cliente</th>
+                        <th>Ramo</th>
+                        <th>Fin de vigencia</th>
+                        <th class="slds-text-align_center">Días</th>
+                        <th class="slds-text-align_right">Prima</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={renovaciones.mesActual} for:item="s">
+                        <tr key={s.id}>
+                            <td>
+                                <a href="#" data-id={s.id} data-object="Seguro__c" onclick={handleRowNav}>{s.numeroPoliza}</a>
+                            </td>
+                            <td>{s.cliente}</td>
+                            <td>{s.ramo}</td>
+                            <td>
+                                <lightning-formatted-date-time value={s.finVigencia} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                            </td>
+                            <td class="slds-text-align_center hub-dias-mora">{s.diasParaVencer}</td>
+                            <td class="slds-text-align_right">
+                                <lightning-formatted-number value={s.primaTotal} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+
+        <!-- Bucket 3: Mes siguiente -->
+        <template lwc:if={renovaciones.mesSiguiente.length}>
+            <div class="hub-mes-siguiente-header">
+                <h3 class="slds-text-heading_x-small">
+                    Próximo mes — {mesSiguienteLabel} ({renovaciones.mesSiguiente.length})
+                </h3>
+            </div>
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr>
+                        <th>Póliza</th>
+                        <th>Cliente</th>
+                        <th>Ramo</th>
+                        <th>Fin de vigencia</th>
+                        <th class="slds-text-align_center">Días</th>
+                        <th class="slds-text-align_right">Prima</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={renovaciones.mesSiguiente} for:item="s">
+                        <tr key={s.id}>
+                            <td>
+                                <a href="#" data-id={s.id} data-object="Seguro__c" onclick={handleRowNav}>{s.numeroPoliza}</a>
+                            </td>
+                            <td>{s.cliente}</td>
+                            <td>{s.ramo}</td>
+                            <td>
+                                <lightning-formatted-date-time value={s.finVigencia} year="numeric" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                            </td>
+                            <td class="slds-text-align_center hub-dias-mora">{s.diasParaVencer}</td>
+                            <td class="slds-text-align_right">
+                                <lightning-formatted-number value={s.primaTotal} format-style="currency" currency-code="MXN" maximum-fraction-digits="0"></lightning-formatted-number>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+    </div>
+
+    <!-- ============================================================
+         MODAL — Marcar como no renovada
+         ============================================================ -->
+    <template lwc:if={showModal}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="modal-title-mnr" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close hub-modal-close" onclick={closeModal} title="Cerrar" aria-label="Cerrar modal">
+                        <lightning-icon icon-name="utility:close" alternative-text="Cerrar" size="small"></lightning-icon>
+                    </button>
+                    <h2 id="modal-title-mnr" class="slds-text-heading_medium">Marcar póliza como no renovada</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p class="slds-m-bottom_small">
+                        <strong>{modalPoliza}</strong> · {modalCliente}
+                    </p>
+                    <lightning-combobox
+                        name="motivo"
+                        label="Motivo de no renovación"
+                        value={modalMotivo}
+                        options={motivoOptions}
+                        onchange={handleMotivoChange}
+                        required>
+                    </lightning-combobox>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancelar" onclick={closeModal} disabled={saving}></lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label="Guardar"
+                        onclick={handleGuardarNoRenovada}
+                        disabled={saveDisabled}
+                        class="slds-m-left_x-small">
+                    </lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

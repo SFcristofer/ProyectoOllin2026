@@ -1,0 +1,1273 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="vm-overlay" onclick={handleOverlayClick}></div>
+        <div class="vm-panel">
+
+            <!-- Header -->
+            <div class="vm-header">
+                <div class="vm-header-left">
+                    <lightning-icon icon-name={headerIcon} size="x-small" class="vm-header-icon"></lightning-icon>
+                    <span class="vm-title">{modalTitle}</span>
+                    <span class="vm-badge">{typeLabel}</span>
+                </div>
+                <button class="vm-close" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                </button>
+            </div>
+
+            <!-- Type Selector (solo en modo creación) -->
+            <template if:false={isEdit}>
+                <div class="vm-type-row">
+                    <button class={btnLeadClass} data-type="lead" onclick={handleTypeChange}>
+                        <lightning-icon icon-name="utility:lead" size="x-small"></lightning-icon> Lead
+                    </button>
+                    <button class={btnOppClass} data-type="opp" onclick={handleTypeChange}>
+                        <lightning-icon icon-name="utility:opportunity" size="x-small"></lightning-icon> Oportunidad
+                    </button>
+                </div>
+            </template>
+
+            <!-- Body -->
+            <div class="vm-body">
+
+                <!-- ═══════════ LEAD ═══════════ -->
+                <template if:true={isLead}>
+
+                    <!-- Chips de Record Type -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:record_lookup" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Tipo de prospecto
+                        </div>
+                        <div class="vm-rt-chips">
+                            <template for:each={leadRTList} for:item="rt">
+                                <button key={rt.id} class={rt.chipClass}
+                                        data-id={rt.id} data-dev={rt.dev} data-name={rt.name}
+                                        onclick={handleLeadRTSelect}>
+                                    {rt.name}
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- ── § 1  Datos del prospecto ── -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:person_account" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Datos del prospecto
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Nombre *</label>
+                                <input class="vm-input" type="text" data-field="FirstName" placeholder="Nombre"
+                                       value={leadData.FirstName} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Apellido *</label>
+                                <input class="vm-input" type="text" data-field="LastName" placeholder="Apellido"
+                                       value={leadData.LastName} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field vm-field-full">
+                                <label class="vm-label">Email</label>
+                                <input class="vm-input" type="email" data-field="Email" placeholder="correo@empresa.com"
+                                       value={leadData.Email} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Teléfono</label>
+                                <input class="vm-input" type="tel" data-field="Phone" placeholder="55 1234 5678"
+                                       value={leadData.Phone} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Celular</label>
+                                <input class="vm-input" type="tel" data-field="MobilePhone" placeholder="55 9876 5432"
+                                       value={leadData.MobilePhone} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Empresa / Razón social</label>
+                                <input class="vm-input" type="text" data-field="Company" placeholder="Empresa S.A. de C.V."
+                                       value={leadData.Company} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Cargo</label>
+                                <input class="vm-input" type="text" data-field="Title" placeholder="Director, Gerente..."
+                                       value={leadData.Title} oninput={handleLeadField} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── § 2  Perfil personal ── -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:people" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Perfil personal
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Género</label>
+                                <select class="vm-select" data-field="Genero__c" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Fecha de nacimiento</label>
+                                <input class="vm-input" type="date" data-field="Fecha_de_nacimiento__c"
+                                       value={leadData.Fecha_de_nacimiento__c} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Edad calculada</label>
+                                <input class="vm-input vm-input-readonly" type="text" readonly
+                                       value={leadData.Edad_Calculada__c} placeholder="—" />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">RFC</label>
+                                <input class="vm-input" type="text" data-field="RFC__c" placeholder="XXXX000000XXX"
+                                       value={leadData.RFC__c} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">CURP</label>
+                                <input class="vm-input" type="text" data-field="CURP__c" placeholder="18 caracteres"
+                                       value={leadData.CURP__c} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Código Postal</label>
+                                <input class="vm-input" type="text" data-field="CP__c" placeholder="00000"
+                                       value={leadData.CP__c} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field vm-field-check-middle">
+                                <input type="checkbox" class="vm-checkbox" id="leadFuma"
+                                       data-field="Fuma__c" checked={leadData.Fuma__c} onchange={handleLeadCheckbox} />
+                                <label class="vm-label vm-label-check" for="leadFuma">¿Fuma?</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── § 3  Clasificación fiscal ── -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:company" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Clasificación fiscal
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Tipo de contribuyente</label>
+                                <select class="vm-select" data-field="tipos_de_contribuyentes__c" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Persona física">Persona física</option>
+                                    <option value="Persona moral">Persona moral</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Régimen fiscal</label>
+                                <select class="vm-select" data-field="Regimenes_Fiscales__c" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Sueldos y Salarios e Ingresos Asimilados a Salarios">Sueldos y Salarios</option>
+                                    <option value="Personas Físicas con Actividades Empresariales y Profesionales">Act. Empresariales y Profesionales</option>
+                                    <option value="Régimen Simplificado de Confianza (RESICO)">RESICO</option>
+                                    <option value="General de Ley Personas Morales">General de Ley (PM)</option>
+                                    <option value="Sin obligaciones fiscales">Sin obligaciones fiscales</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Industria</label>
+                                <select class="vm-select" data-field="Industry" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Agricultura">Agricultura</option>
+                                    <option value="Banca">Banca</option>
+                                    <option value="Construcción">Construcción</option>
+                                    <option value="Consultoría">Consultoría</option>
+                                    <option value="Educación">Educación</option>
+                                    <option value="Energía">Energía</option>
+                                    <option value="Finanzas">Finanzas</option>
+                                    <option value="Gobierno">Gobierno</option>
+                                    <option value="Salud / Atención médica">Salud</option>
+                                    <option value="Seguros">Seguros</option>
+                                    <option value="Manufactura">Manufactura</option>
+                                    <option value="Tecnología">Tecnología</option>
+                                    <option value="Telecomunicaciones">Telecomunicaciones</option>
+                                    <option value="Transporte">Transporte</option>
+                                    <option value="Venta al por menor / Comercio minorista">Comercio</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Valoración</label>
+                                <select class="vm-select" data-field="Rating" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Hot">🔥 Hot</option>
+                                    <option value="Warm">🌡 Warm</option>
+                                    <option value="Cold">❄ Cold</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── § 4  Estatus y origen ── -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:metrics" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Estatus y origen
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Estatus *</label>
+                                <select class="vm-select" data-field="Status" onchange={handleLeadField}>
+                                    <option value="Nuevo">Nuevo</option>
+                                    <option value="Recopilando info">Recopilando info</option>
+                                    <option value="Precalificado">Precalificado</option>
+                                    <option value="Transferido a agente">Transferido a agente</option>
+                                    <option value="Calificado">Calificado</option>
+                                    <option value="No Calificado">No Calificado</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Origen</label>
+                                <select class="vm-select" data-field="LeadSource" onchange={handleLeadField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Contacto referido">Contacto referido</option>
+                                    <option value="Campaña">Campaña</option>
+                                    <option value="Whatsapp">WhatsApp</option>
+                                    <option value="Tienda en línea">Tienda en línea</option>
+                                    <option value="Redes Sociales">Redes Sociales</option>
+                                    <option value="Agentforce">Agentforce (IA)</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Score de calificación</label>
+                                <input class="vm-input" type="number" min="0" max="100" data-field="Score__c"
+                                       placeholder="0–100" value={leadData.Score__c} oninput={handleLeadField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Nº de prospecto</label>
+                                <input class="vm-input vm-input-readonly" type="text" readonly
+                                       value={leadData.NumeroProspecto__c} placeholder="Auto-generado" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── § 5  Asignación ── -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:user" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Asignación
+                        </div>
+                        <div class="vm-grid-2">
+                            <!-- Vendedor -->
+                            <div class="vm-field">
+                                <label class="vm-label">Vendedor</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedVendedor.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:user" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedVendedor.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearVendedor}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedVendedor.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar vendedor..."
+                                                   value={vendedorSearch} oninput={handleVendedorSearch} />
+                                        </div>
+                                        <template if:true={hasVendedorResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={vendedorResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="vendedor"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:user" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                            <!-- Aseguradora -->
+                            <div class="vm-field">
+                                <label class="vm-label">Aseguradora</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedAseguradora.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:company" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedAseguradora.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearAseguradora}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedAseguradora.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="GNP, MAPFRE, AXA..."
+                                                   value={aseguradoraSearch} oninput={handleAseguradoraSearch} />
+                                        </div>
+                                        <template if:true={hasAseguradoraResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={aseguradoraResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="aseguradora"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:company" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── § 6  Producto (condicional por RT) ── -->
+
+                    <!-- Auto -->
+                    <template if:true={isLeadAuto}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:truck" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Seguro de auto
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Tipo de seguro</label>
+                                    <select class="vm-select" data-field="Tipo_de_seguro__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Seguros de auto">Seguros de auto</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Tipo de cobertura</label>
+                                    <select class="vm-select" data-field="Tipo_de_cobertura__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Básica">Básica</option>
+                                        <option value="Amplia">Amplia</option>
+                                        <option value="Limitada">Limitada</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Marca</label>
+                                    <input class="vm-input" type="text" data-field="Marca__c" placeholder="Toyota, Honda..."
+                                           value={leadData.Marca__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Modelo</label>
+                                    <input class="vm-input" type="text" data-field="Modelo__c" placeholder="Corolla, Civic..."
+                                           value={leadData.Modelo__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Año</label>
+                                    <input class="vm-input" type="number" data-field="Anho__c" placeholder="2024"
+                                           value={leadData.Anho__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Versión / Trim</label>
+                                    <input class="vm-input" type="text" data-field="Version__c" placeholder="XLE, Sport..."
+                                           value={leadData.Version__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Uso</label>
+                                    <select class="vm-select" data-field="Uso__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Particular">Particular</option>
+                                        <option value="Aplicación">Aplicación</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Suma asegurada</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Suma_asegurada__c"
+                                           placeholder="0.00" value={leadData.Suma_asegurada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Presupuesto mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Presupuesto__c"
+                                           placeholder="0.00" value={leadData.Presupuesto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Aportación estimada</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Aportacion_Estimada__c"
+                                           placeholder="0.00" value={leadData.Aportacion_Estimada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field vm-field-full">
+                                    <label class="vm-label">ID Cotización Externa</label>
+                                    <input class="vm-input" type="text" data-field="Quote_ID_Externo__c"
+                                           placeholder="ID del sistema cotizador"
+                                           value={leadData.Quote_ID_Externo__c} oninput={handleLeadField} />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Vida / PPR -->
+                    <template if:true={isLeadVida}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:activity" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Vida / PPR
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Objetivo del plan</label>
+                                    <select class="vm-select" data-field="ObjetivoPlan__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Retiro">Retiro</option>
+                                        <option value="Ahorro">Ahorro</option>
+                                        <option value="Seguro de vida">Seguro de vida</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Plazo del plan</label>
+                                    <select class="vm-select" data-field="Plazo_Plan__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="1 año">1 año</option>
+                                        <option value="5 años">5 años</option>
+                                        <option value="10 años">10 años</option>
+                                        <option value="20 años">20 años</option>
+                                        <option value="25 años">25 años</option>
+                                        <option value="Anual">Anual</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Suma asegurada</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Suma_asegurada__c"
+                                           placeholder="0.00" value={leadData.Suma_asegurada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Aportación mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Aportacion_Estimada__c"
+                                           placeholder="0.00" value={leadData.Aportacion_Estimada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Presupuesto mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Presupuesto__c"
+                                           placeholder="0.00" value={leadData.Presupuesto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field vm-field-check-middle">
+                                    <input type="checkbox" class="vm-checkbox" id="leadFumaVida"
+                                           data-field="Fuma__c" checked={leadData.Fuma__c} onchange={handleLeadCheckbox} />
+                                    <label class="vm-label vm-label-check" for="leadFumaVida">¿Fuma?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- GMM / Gastos Médicos -->
+                    <template if:true={isLeadGMM}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:heart" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Gastos Médicos (GMM)
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Suma asegurada</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Suma_asegurada__c"
+                                           placeholder="0.00" value={leadData.Suma_asegurada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Presupuesto mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Presupuesto__c"
+                                           placeholder="0.00" value={leadData.Presupuesto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Plazo del plan</label>
+                                    <select class="vm-select" data-field="Plazo_Plan__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Anual">Anual</option>
+                                        <option value="1 año">1 año</option>
+                                        <option value="5 años">5 años</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field vm-field-check-middle">
+                                    <input type="checkbox" class="vm-checkbox" id="leadFumaGMM"
+                                           data-field="Fuma__c" checked={leadData.Fuma__c} onchange={handleLeadCheckbox} />
+                                    <label class="vm-label vm-label-check" for="leadFumaGMM">¿Fuma?</label>
+                                </div>
+                                <div class="vm-field vm-field-full">
+                                    <label class="vm-label">Padecimientos existentes</label>
+                                    <textarea class="vm-textarea" data-field="PadecimientosExistentes__c"
+                                              placeholder="Diabetes, hipertensión..."
+                                              oninput={handleLeadField}>{leadData.PadecimientosExistentes__c}</textarea>
+                                </div>
+                                <div class="vm-field vm-field-full">
+                                    <label class="vm-label">Hospitales de referencia</label>
+                                    <textarea class="vm-textarea" data-field="HospitalesReferencias__c"
+                                              placeholder="Hospital ABC, Clínica XYZ..."
+                                              oninput={handleLeadField}>{leadData.HospitalesReferencias__c}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Daños -->
+                    <template if:true={isLeadDanos}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:home" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Daños
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Suma asegurada</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Suma_asegurada__c"
+                                           placeholder="0.00" value={leadData.Suma_asegurada__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Monto estimado</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Monto__c"
+                                           placeholder="0.00" value={leadData.Monto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Presupuesto mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Presupuesto__c"
+                                           placeholder="0.00" value={leadData.Presupuesto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Plazo del plan</label>
+                                    <select class="vm-select" data-field="Plazo_Plan__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Anual">Anual</option>
+                                        <option value="1 año">1 año</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Giro / Actividad</label>
+                                    <input class="vm-input" type="text" data-field="Giro_Actividad__c"
+                                           placeholder="Manufactura, Comercio..."
+                                           value={leadData.Giro_Actividad__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Ubicación del riesgo</label>
+                                    <input class="vm-input" type="text" data-field="Ubicacion_Riesgo__c"
+                                           placeholder="Ciudad, Estado..."
+                                           value={leadData.Ubicacion_Riesgo__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field vm-field-check-middle">
+                                    <input type="checkbox" class="vm-checkbox" id="leadContratoD"
+                                           data-field="Contrato__c" checked={leadData.Contrato__c} onchange={handleLeadCheckbox} />
+                                    <label class="vm-label vm-label-check" for="leadContratoD">¿Tiene contrato?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Fianzas -->
+                    <template if:true={isLeadFianzas}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:file" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Fianzas
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Tipo de fianza</label>
+                                    <input class="vm-input" type="text" data-field="TipoFianza__c"
+                                           placeholder="Cumplimiento, Anticipo..."
+                                           value={leadData.TipoFianza__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">% a afianzar</label>
+                                    <input class="vm-input" type="number" data-field="Porcentaje_de_afianzar__c"
+                                           placeholder="10" value={leadData.Porcentaje_de_afianzar__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Monto del contrato</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Monto_del_contrato__c"
+                                           placeholder="0.00" value={leadData.Monto_del_contrato__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Monto estimado (prima)</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Monto__c"
+                                           placeholder="0.00" value={leadData.Monto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Giro / Actividad</label>
+                                    <input class="vm-input" type="text" data-field="Giro_Actividad__c"
+                                           placeholder="Manufactura, Comercio..."
+                                           value={leadData.Giro_Actividad__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Ubicación del riesgo</label>
+                                    <input class="vm-input" type="text" data-field="Ubicacion_Riesgo__c"
+                                           placeholder="Ciudad, Estado..."
+                                           value={leadData.Ubicacion_Riesgo__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field vm-field-check-middle">
+                                    <input type="checkbox" class="vm-checkbox" id="leadDocFuente"
+                                           data-field="Documento_Fuente_Recibido__c"
+                                           checked={leadData.Documento_Fuente_Recibido__c} onchange={handleLeadCheckbox} />
+                                    <label class="vm-label vm-label-check" for="leadDocFuente">Documento fuente recibido</label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Membresía Ollin -->
+                    <template if:true={isLeadMembresia}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:identity" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Membresía Ollin
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Monto estimado</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Monto__c"
+                                           placeholder="0.00" value={leadData.Monto__c} oninput={handleLeadField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Presupuesto mensual</label>
+                                    <input class="vm-input vm-input-money" type="number" data-field="Presupuesto__c"
+                                           placeholder="0.00" value={leadData.Presupuesto__c} oninput={handleLeadField} />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ── § 7  No calificado ── -->
+                    <template if:true={isLeadNoCalif}>
+                        <div class="vm-section vm-section-danger">
+                            <div class="vm-section-header vm-section-header-danger">
+                                <lightning-icon icon-name="utility:warning" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Motivo de no calificación
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Motivo</label>
+                                    <select class="vm-select" data-field="Motivo_No_Calificacion__c" onchange={handleLeadField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Sin información suficiente">Sin información suficiente</option>
+                                        <option value="No aplica producto">No aplica producto</option>
+                                        <option value="Duplicado">Duplicado</option>
+                                        <option value="Sin interés">Sin interés</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field vm-field-check-middle">
+                                    <input type="checkbox" class="vm-checkbox" id="leadReactivar"
+                                           data-field="Puede_Reactivarse__c"
+                                           checked={leadData.Puede_Reactivarse__c} onchange={handleLeadCheckbox} />
+                                    <label class="vm-label vm-label-check" for="leadReactivar">¿Puede reactivarse?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- ═══════════ OPORTUNIDAD ═══════════ -->
+                <template if:false={isLead}>
+
+                    <!-- Chips de Record Type (solo en creación) -->
+                    <template if:false={isOppEdit}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:record_lookup" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Tipo de oportunidad
+                            </div>
+                            <div class="vm-rt-chips">
+                                <template for:each={oppRTList} for:item="rt">
+                                    <button key={rt.id} class={rt.chipClass}
+                                            data-id={rt.id} data-dev={rt.dev} data-name={rt.name}
+                                            onclick={handleOppRTSelect}>
+                                        {rt.name}
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- §1: Datos principales -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:opportunity" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Datos principales
+                        </div>
+                        <div class="vm-field vm-field-solo">
+                            <label class="vm-label">Nombre de la oportunidad *</label>
+                            <input class="vm-input" type="text" data-field="Name"
+                                   placeholder="Ej. Auto GMM - Empresa XYZ"
+                                   value={oppData.Name} oninput={handleOppField} />
+                        </div>
+                        <template if:true={hasProspecto}>
+                            <div class="vm-field vm-field-solo">
+                                <label class="vm-label">Prospecto vinculado</label>
+                                <div class="vm-lookup-pill vm-pill-readonly">
+                                    <lightning-icon icon-name="utility:lead" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                    <span class="vm-pill-name">{selectedProspecto.name}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Tipo</label>
+                                <select class="vm-select" data-field="Type" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Nueva">Nueva</option>
+                                    <option value="Renovación">Renovación</option>
+                                    <option value="Cross-sell">Cross-sell</option>
+                                    <option value="Reactivación">Reactivación</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Origen del prospecto</label>
+                                <select class="vm-select" data-field="LeadSource" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Contacto referido">Contacto referido</option>
+                                    <option value="Campaña">Campaña</option>
+                                    <option value="Whatsapp">WhatsApp</option>
+                                    <option value="Tienda en línea">Tienda en línea</option>
+                                    <option value="Redes Sociales">Redes Sociales</option>
+                                    <option value="Agentforce">Agentforce</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Etapa *</label>
+                                <select class="vm-select" data-field="StageName" onchange={handleOppField}>
+                                    <option value="Oportunidad creada">Oportunidad creada</option>
+                                    <option value="Análisis/Levantamiento de información">Análisis / Levantamiento</option>
+                                    <option value="Cotización iniciada">Cotización iniciada</option>
+                                    <option value="Propuesta enviada / presentada">Propuesta enviada</option>
+                                    <option value="Seguimiento">Seguimiento</option>
+                                    <option value="Negociación">Negociación</option>
+                                    <option value="Cierre ganado">Cierre ganado</option>
+                                    <option value="Cierre perdido">Cierre perdido</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Fecha de cierre *</label>
+                                <input class="vm-input" type="date" data-field="CloseDate"
+                                       value={oppData.CloseDate} oninput={handleOppField} />
+                            </div>
+                            <div class="vm-field vm-field-full">
+                                <label class="vm-label">Siguiente paso</label>
+                                <input class="vm-input" type="text" data-field="NextStep"
+                                       placeholder="¿Cuál es el siguiente paso?"
+                                       value={oppData.NextStep} oninput={handleOppField} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- §2: Asignación -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:people" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Asignación
+                        </div>
+                        <div class="vm-field vm-field-solo">
+                            <label class="vm-label">Cliente (Account)</label>
+                            <div class="vm-lookup-wrap">
+                                <template if:true={selectedAccount.id}>
+                                    <div class="vm-lookup-pill">
+                                        <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                        <span class="vm-pill-name">{selectedAccount.name}</span>
+                                        <button class="vm-pill-clear" onclick={clearAccount}>×</button>
+                                    </div>
+                                </template>
+                                <template if:false={selectedAccount.id}>
+                                    <div class="vm-lookup-input-wrap">
+                                        <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                        <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar cuenta..."
+                                               value={accountSearch} oninput={handleAccountSearch} />
+                                    </div>
+                                    <template if:true={hasAccountResults}>
+                                        <div class="vm-lookup-dropdown">
+                                            <template for:each={accountResults} for:item="r">
+                                                <div key={r.id} class="vm-lookup-option"
+                                                     data-id={r.id} data-name={r.name} data-type="account"
+                                                     onclick={selectLookup}>
+                                                    <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                    <div class="vm-opt-info">
+                                                        <div class="vm-opt-name">{r.name}</div>
+                                                        <div class="vm-opt-sub">{r.sub}</div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Vendedor asignado</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedVendedor.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:user" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedVendedor.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearVendedor}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedVendedor.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar vendedor..."
+                                                   value={vendedorSearch} oninput={handleVendedorSearch} />
+                                        </div>
+                                        <template if:true={hasVendedorResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={vendedorResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="vendedor"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:user" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Institución</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedInstitucion.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:company" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedInstitucion.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearInstitucion}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedInstitucion.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar institución..."
+                                                   value={institucionSearch} oninput={handleInstitucionSearch} />
+                                        </div>
+                                        <template if:true={hasInstitucionResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={institucionResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="institucion"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:company" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- §3: Producto -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:product" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Producto
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Ramo</label>
+                                <select class="vm-select" data-field="Ramo__c" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Auto">Auto</option>
+                                    <option value="Danos">Daños</option>
+                                    <option value="Fianzas">Fianzas</option>
+                                    <option value="GMM">GMM</option>
+                                    <option value="Multirramo">Multirramo</option>
+                                    <option value="PPR">PPR</option>
+                                    <option value="RC">RC</option>
+                                    <option value="Salud">Salud</option>
+                                    <option value="Vida">Vida</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Tipo originador</label>
+                                <select class="vm-select" data-field="Tipo_Originador__c" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Digital">Digital</option>
+                                    <option value="Consultivo">Consultivo</option>
+                                    <option value="Promotoría">Promotoría</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Subproducto</label>
+                                <input class="vm-input" type="text" data-field="Subproducto__c"
+                                       placeholder="Subproducto" value={oppData.Subproducto__c} oninput={handleOppField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Producto</label>
+                                <template if:true={isOppEdit}>
+                                    <template if:false={selectedInstitucion.id}>
+                                        <div class="vm-hint-institucion">
+                                            <lightning-icon icon-name="utility:info" size="xx-small" class="vm-hint-icon"></lightning-icon>
+                                            Selecciona primero la Institución para filtrar los productos disponibles.
+                                        </div>
+                                    </template>
+                                </template>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedProducto.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:product" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedProducto.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearProducto}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedProducto.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar producto..."
+                                                   value={productoSearch} oninput={handleProductoSearch} />
+                                        </div>
+                                        <template if:true={hasProductoResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={productoResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="producto"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:product" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Comisión Ollin %</label>
+                                <input class="vm-input vm-input-pct" type="number" data-field="PctComisionOllin__c"
+                                       placeholder="0.00" value={oppData.PctComisionOllin__c} oninput={handleOppField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Importe *</label>
+                                <input class="vm-input vm-input-money" type="number" data-field="Amount"
+                                       placeholder="0.00" value={oppData.Amount} oninput={handleOppField} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- §4: Vigencia y pagos -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:date_time" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Vigencia y pagos
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field">
+                                <label class="vm-label">Fecha inicio vigencia</label>
+                                <input class="vm-input" type="date" data-field="Fecha_Inicio_Vigencia__c"
+                                       value={oppData.Fecha_Inicio_Vigencia__c} oninput={handleOppField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Vigencia (meses)</label>
+                                <input class="vm-input" type="number" data-field="Vigencia__c"
+                                       placeholder="12" value={oppData.Vigencia__c} oninput={handleOppField} />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Fecha fin vigencia</label>
+                                <input class="vm-input vm-input-readonly" type="date"
+                                       value={oppData.Fecha_Fin_Vigencia__c} readonly />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Nº de pagos</label>
+                                <input class="vm-input vm-input-readonly" type="number"
+                                       value={oppData.Numero_Pagos__c} readonly />
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Método de pago</label>
+                                <select class="vm-select" data-field="Metodo_Pago__c" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Transferencia (SPEI)">Transferencia (SPEI)</option>
+                                    <option value="Tarjeta credito/debito">Tarjeta crédito/débito</option>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Domiciliacion bancaria">Domiciliación bancaria</option>
+                                    <option value="Descuento via nomina">Descuento vía nómina</option>
+                                    <option value="Enlace de pago">Enlace de pago</option>
+                                </select>
+                            </div>
+                            <div class="vm-field">
+                                <label class="vm-label">Período de pago</label>
+                                <select class="vm-select" data-field="Periodo_Pago__c" onchange={handleOppField}>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Mensual">Mensual</option>
+                                    <option value="Trimestral">Trimestral</option>
+                                    <option value="Semestral">Semestral</option>
+                                    <option value="Anual">Anual</option>
+                                    <option value="Contado">Contado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- §5: Datos del vehículo (condicional Ramo=Auto) -->
+                    <template if:true={isOppAuto}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:vehicle" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Datos del vehículo
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Modelo</label>
+                                    <input class="vm-input" type="text" data-field="Modelo__c"
+                                           placeholder="Ej. Spark, Aveo..."
+                                           value={oppData.Modelo__c} oninput={handleOppField} />
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Año</label>
+                                    <input class="vm-input" type="number" data-field="Ano_vehiculo__c"
+                                           placeholder="2024" value={oppData.Ano_vehiculo__c} oninput={handleOppField} />
+                                </div>
+                                <div class="vm-field vm-field-full">
+                                    <label class="vm-label">ID Cotización externa</label>
+                                    <input class="vm-input" type="text" data-field="Cotizacion_Externa_Id__c"
+                                           placeholder="ID del sistema cotizador"
+                                           value={oppData.Cotizacion_Externa_Id__c} oninput={handleOppField} />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- §6: Fianza Nueva (condicional) -->
+                    <template if:true={isOppFianzaNueva}>
+                        <div class="vm-section">
+                            <div class="vm-section-header">
+                                <lightning-icon icon-name="utility:file" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Detalle de fianza
+                            </div>
+                            <div class="vm-field vm-field-solo">
+                                <label class="vm-label">Contratista</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedContratista.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <div class="vm-pill-info">
+                                                <span class="vm-pill-name">{selectedContratista.name}</span>
+                                                <template if:true={selectedContratista.sub}>
+                                                    <span class="vm-pill-sub">{selectedContratista.sub}</span>
+                                                </template>
+                                            </div>
+                                            <button class="vm-pill-clear" onclick={clearContratista}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedContratista.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar contratista..."
+                                                   value={contratistaSearch} oninput={handleContratistaSearch} />
+                                        </div>
+                                        <template if:true={hasContratistaResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={contratistaResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="contratista"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="vm-field vm-field-solo">
+                                <label class="vm-label">Beneficiario</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedBeneficiario.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <div class="vm-pill-info">
+                                                <span class="vm-pill-name">{selectedBeneficiario.name}</span>
+                                                <template if:true={selectedBeneficiario.sub}>
+                                                    <span class="vm-pill-sub">{selectedBeneficiario.sub}</span>
+                                                </template>
+                                            </div>
+                                            <button class="vm-pill-clear" onclick={clearBeneficiario}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedBeneficiario.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text" placeholder="Buscar beneficiario..."
+                                                   value={beneficiarioSearch} oninput={handleBeneficiarioSearch} />
+                                        </div>
+                                        <template if:true={hasBeneficiarioResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={beneficiarioResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name} data-type="beneficiario"
+                                                         onclick={selectLookup}>
+                                                        <lightning-icon icon-name="utility:person_account" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- §7: Renovación -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:refresh" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Renovación de póliza
+                        </div>
+                        <div class="vm-grid-2">
+                            <div class="vm-field vm-field-full">
+                                <label class="vm-label">Póliza a renovar</label>
+                                <div class="vm-lookup-wrap">
+                                    <template if:true={selectedPolizaRenovar.id}>
+                                        <div class="vm-lookup-pill">
+                                            <lightning-icon icon-name="utility:shield" size="xx-small" class="vm-pill-icon"></lightning-icon>
+                                            <span class="vm-pill-name">{selectedPolizaRenovar.name}</span>
+                                            <button class="vm-pill-clear" onclick={clearPolizaRenovar}>×</button>
+                                        </div>
+                                    </template>
+                                    <template if:false={selectedPolizaRenovar.id}>
+                                        <div class="vm-lookup-input-wrap">
+                                            <lightning-icon icon-name="utility:search" size="xx-small" class="vm-lookup-icon"></lightning-icon>
+                                            <input class="vm-input vm-input-lookup" type="text"
+                                                   placeholder="Buscar póliza por número o cliente..."
+                                                   value={seguroSearch} oninput={handleSeguroSearch} />
+                                        </div>
+                                        <template if:true={hasSeguroResults}>
+                                            <div class="vm-lookup-dropdown">
+                                                <template for:each={seguroResults} for:item="r">
+                                                    <div key={r.id} class="vm-lookup-option"
+                                                         data-id={r.id} data-name={r.name}
+                                                         onclick={selectSeguro}>
+                                                        <lightning-icon icon-name="utility:shield" size="xx-small" class="vm-opt-icon"></lightning-icon>
+                                                        <div class="vm-opt-info">
+                                                            <div class="vm-opt-name">{r.name}</div>
+                                                            <div class="vm-opt-sub">{r.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- §7b: URL de póliza -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:link" size="x-small" class="vm-section-icon"></lightning-icon>
+                            URL de póliza
+                        </div>
+                        <div class="vm-field vm-field-solo">
+                            <label class="vm-label">URL Póliza</label>
+                            <input class="vm-input" type="url" data-field="URL_Poliza__c"
+                                   placeholder="https://..."
+                                   value={oppData.URL_Poliza__c} oninput={handleOppField} />
+                        </div>
+                    </div>
+
+                    <!-- §8: Seguimiento -->
+                    <div class="vm-section">
+                        <div class="vm-section-header">
+                            <lightning-icon icon-name="utility:note" size="x-small" class="vm-section-icon"></lightning-icon>
+                            Seguimiento
+                        </div>
+                        <div class="vm-field-solo">
+                            <label class="vm-label">Notas del vendedor</label>
+                            <textarea class="vm-textarea" data-field="Notas_Vendedor__c"
+                                      placeholder="Agrega notas relevantes de la conversación..."
+                                      oninput={handleOppField}>{oppData.Notas_Vendedor__c}</textarea>
+                        </div>
+                        <div class="vm-field-solo">
+                            <label class="vm-label">Descripción</label>
+                            <textarea class="vm-textarea" data-field="Description"
+                                      placeholder="Descripción de la oportunidad..."
+                                      oninput={handleOppField}>{oppData.Description}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- §9: Cierre perdido (condicional) -->
+                    <template if:true={isCierrePerdido}>
+                        <div class="vm-section vm-section-danger">
+                            <div class="vm-section-header vm-section-header-danger">
+                                <lightning-icon icon-name="utility:warning" size="x-small" class="vm-section-icon"></lightning-icon>
+                                Información de cierre perdido
+                            </div>
+                            <div class="vm-grid-2">
+                                <div class="vm-field">
+                                    <label class="vm-label">Motivo de pérdida *</label>
+                                    <select class="vm-select" data-field="Motivo_Perdida__c" onchange={handleOppField}>
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Precio">Precio</option>
+                                        <option value="Competencia">Competencia</option>
+                                        <option value="Sin respuesta del cliente">Sin respuesta del cliente</option>
+                                        <option value="Sin presupuesto">Sin presupuesto</option>
+                                        <option value="Cobertura insuficiente">Cobertura insuficiente</option>
+                                        <option value="Producto no disponible">Producto no disponible</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="vm-field">
+                                    <label class="vm-label">Aseguradora competidora</label>
+                                    <input class="vm-input" type="text" data-field="Aseguradora_Competidora__c"
+                                           placeholder="Nombre aseguradora"
+                                           value={oppData.Aseguradora_Competidora__c} oninput={handleOppField} />
+                                </div>
+                                <div class="vm-field vm-field-full vm-checkbox-row">
+                                    <input type="checkbox" class="vm-checkbox" id="puedeReactivarseOpp"
+                                           data-field="Puede_Reactivarse__c"
+                                           checked={oppData.Puede_Reactivarse__c} onchange={handleOppCheckbox} />
+                                    <label class="vm-label vm-label-check" for="puedeReactivarseOpp">
+                                        ¿Puede reactivarse para reciclaje?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                </template>
+            </div>
+
+            <!-- Error banner (above footer) -->
+            <template if:true={hasFormErrors}>
+                <div class="vm-error-banner">
+                    <template for:each={formErrors} for:item="err">
+                        <div key={err} class="vm-error-item">{err}</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Footer -->
+            <div class="vm-footer">
+                <button class="vm-btn-cancel" onclick={handleClose}>Cancelar</button>
+                <button class="vm-btn-save" onclick={handleSave} disabled={isSaving}>
+                    <template if:true={isSaving}>Guardando...</template>
+                    <template if:false={isSaving}>{saveLabel}</template>
+                </button>
+            </div>
+
+        </div>
+    </template>
+</template>

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo Instituciones — Ollin Protección</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f7fa; color: #1a1a2e; padding: 30px; }
+  h1 { text-align: center; font-size: 24px; margin-bottom: 5px; }
+  .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 30px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section {
+    background: white; border-radius: 12px; padding: 25px; margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid;
+  }
+  .section h2 { font-size: 18px; margin-bottom: 12px; }
+  .section p { font-size: 13px; line-height: 1.7; color: #475569; }
+
+  .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #92400e; line-height: 1.6; margin-top: 16px; }
+  .note strong { color: #78350f; }
+  .note-blue { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #1e40af; line-height: 1.6; margin-top: 16px; }
+  .note-blue strong { color: #1e3a8a; }
+  .note-green { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #166534; line-height: 1.6; margin-top: 16px; }
+  .note-green strong { color: #14532d; }
+  .note-red { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #991b1b; line-height: 1.6; margin-top: 16px; }
+  .note-red strong { color: #7f1d1d; }
+
+  /* Hierarchy */
+  .hierarchy { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 20px 0; }
+  .h-node { padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; text-align: center; min-width: 280px; }
+  .h-connector { width: 3px; height: 24px; background: #cbd5e1; }
+  .h-connector-label { font-size: 10px; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 2px 10px; border-radius: 10px; margin: -4px 0; }
+  .h-branch { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  /* Fields */
+  .field-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field-group { background: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0; }
+  .fg-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; }
+  .fr { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+  .fr:last-child { border-bottom: none; }
+  .fr .left { display: flex; align-items: center; gap: 8px; }
+  .fn { font-weight: 600; color: #334155; }
+  .ft { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+  .ft-lk { background: #dbeafe; color: #1e40af; }
+  .ft-tx { background: #f1f5f9; color: #475569; }
+  .ft-dt { background: #fef3c7; color: #b45309; }
+  .ft-pk { background: #ede9fe; color: #6d28d9; }
+  .ft-cur { background: #d1fae5; color: #065f46; }
+  .ft-fm { background: #fce7f3; color: #be185d; }
+  .ft-md { background: #fee2e2; color: #991b1b; }
+  .ft-num { background: #e0e7ff; color: #4338ca; }
+  .ft-txt { background: #f0fdf4; color: #166534; }
+  .ft-url { background: #fdf4ff; color: #a21caf; }
+  .ft-pw { background: #fef2f2; color: #b91c1c; }
+  .ft-email { background: #ecfdf5; color: #047857; }
+
+  .origin { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+  .or-auto { background: #fefce8; color: #ca8a04; }
+  .or-user { background: #e0e7ff; color: #4338ca; }
+
+  /* Record view */
+  .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .lf { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; display: flex; flex-direction: column; }
+  .lf-label { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+  .lf-val { font-size: 13px; color: #1e293b; font-weight: 500; }
+  .lf-val.link { color: #2563eb; text-decoration: underline; }
+  .lf-val.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; width: fit-content; }
+  .lf-val.auto { font-size: 10px; color: #94a3b8; font-style: italic; }
+  .ls-title { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: #475569; padding: 8px 0 4px; border-bottom: 2px solid #e2e8f0; margin-top: 6px; }
+  .lf-full { grid-column: 1 / -1; }
+
+  .result-box { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; border-radius: 12px; padding: 25px; margin-top: 20px; }
+  .result-box h2 { font-size: 18px; margin-bottom: 12px; }
+  .result-box p { font-size: 13px; line-height: 1.7; opacity: 0.9; }
+  .hl { color: #fbbf24; font-weight: 700; }
+
+  /* Related lists */
+  .rel-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+  .rel-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .rel-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+  .rel-desc { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  /* Change table */
+  .change-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .change-table th { padding: 10px; text-align: left; border-bottom: 2px solid; }
+  .change-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+  .change-table tr:nth-child(even) { background: #fafafa; }
+
+  /* Ejecutivo card */
+  .exec-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+  .exec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .exec-avatar { width: 40px; height: 40px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .exec-name { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .exec-role { font-size: 11px; color: #64748b; }
+  .exec-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .exec-field { font-size: 12px; }
+  .exec-field-label { color: #94a3b8; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+  .exec-field-val { color: #1e293b; font-weight: 500; }
+
+  /* Access section */
+  .access-box { background: #fef7ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 16px; margin-top: 12px; }
+  .access-title { font-size: 12px; font-weight: 700; color: #7c3aed; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .access-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f3e8ff; font-size: 12px; }
+  .access-row:last-child { border-bottom: none; }
+  .access-label { color: #6b7280; font-weight: 600; min-width: 90px; }
+  .access-val { color: #1e293b; font-weight: 500; }
+  .access-val.masked { letter-spacing: 3px; color: #9ca3af; }
+  .access-link { color: #7c3aed; text-decoration: underline; cursor: pointer; }
+
+  /* Btn row */
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; border-radius: 6px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #6366f1; color: white; }
+  .btn-outline { background: white; color: #6366f1; border: 2px solid #6366f1; }
+  .btn-green { background: #10b981; color: white; }
+
+  /* Mockup screen */
+  .mockup { border: 2px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin: 16px 0; }
+  .mockup-header { background: #1e293b; color: white; padding: 14px 20px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .mockup-body { background: white; padding: 24px; }
+  .mockup-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 20px; display: flex; justify-content: flex-end; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Módulo Instituciones — Ollin Protección</h1>
+  <p class="subtitle">Diseño del catálogo unificado: Institución + Ejecutivos + Accesos</p>
+
+  <!-- ============================================================ -->
+  <!-- CONCEPTO -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #6366f1;">
+    <h2>Concepto del módulo</h2>
+    <p>
+      <strong>Institución</strong> es el catálogo centralizado de todas las aseguradoras y afianzadoras con las que trabaja Ollin.
+      Cada institución agrupa en un solo lugar: sus datos generales, los ejecutivos de contacto (con puesto y correo), y
+      las credenciales de acceso a sus plataformas.
+    </p>
+    <p style="margin-top: 10px;">
+      La idea es que cualquier persona del equipo pueda abrir una institución y encontrar <strong>todo</strong> lo que necesita:
+      a quién contactar, cómo entrar a su sistema, y qué tipo de productos maneja (seguros, fianzas, o ambos).
+    </p>
+    <p style="margin-top: 10px;">
+      El módulo separado de "Ejecutivo de Institución" que existe hoy <strong>desaparece</strong>.
+      Los ejecutivos pasan a vivir directamente dentro de cada Institución como una lista relacionada.
+    </p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- QUÉ DEBE CAMBIAR -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #ef4444;">
+    <h2 style="color: #dc2626;">Qué debe cambiar</h2>
+    <p style="margin-bottom: 16px;">Comparación entre lo que hay hoy en el sandbox y lo que necesitamos.</p>
+
+    <table class="change-table">
+      <thead>
+        <tr style="background: #fef2f2;">
+          <th style="color: #991b1b; border-color: #fecaca; width: 45%;">Hoy</th>
+          <th style="color: #166534; border-color: #bbf7d0; width: 45%;">Lo que queremos</th>
+          <th style="color: #475569; border-color: #e2e8f0; width: 10%;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color: #991b1b;">Solo hay <strong>4 instituciones</strong> registradas (Axa, ALLIANZ, Allianz, GNP)</td>
+          <td style="color: #166534;">Catálogo completo con <strong>todas</strong> las aseguradoras y afianzadoras que maneja Ollin</td>
+          <td><strong>Completar</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;"><strong>ALLIANZ</strong> y <strong>Allianz</strong> aparecen como dos registros distintos</td>
+          <td style="color: #166534;">Un solo registro por institución. Regla de duplicados para evitar que se repita</td>
+          <td><strong>Deduplicar</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">El ejecutivo es un <strong>campo de texto suelto</strong> dentro de Institución</td>
+          <td style="color: #166534;">Los ejecutivos son registros hijos — puede haber <strong>varios por institución</strong>, cada uno con nombre, puesto y correo</td>
+          <td><strong>Rediseñar</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">Existe un <strong>módulo separado</strong> "Ejecutivo de Institución"</td>
+          <td style="color: #166534;">Ese módulo desaparece. Los ejecutivos se administran <strong>desde dentro</strong> de la Institución</td>
+          <td><strong>Eliminar módulo</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">No hay campo de <strong>Tipo</strong> (aseguradora vs afianzadora)</td>
+          <td style="color: #166534;">Campo <strong>Tipo</strong>: Aseguradora, Afianzadora o Ambas</td>
+          <td><strong>Agregar</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">No hay forma de guardar <strong>credenciales</strong> ni link de acceso a la plataforma de la aseguradora</td>
+          <td style="color: #166534;">Sección de acceso: URL del portal, usuario y contraseña protegida</td>
+          <td><strong>Agregar</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">Los campos Email y Teléfono están a nivel institución pero <strong>vacíos</strong></td>
+          <td style="color: #166534;">Email y teléfono <strong>se eliminan</strong> de la institución. Cada ejecutivo tiene su propio correo y teléfono</td>
+          <td><strong>Eliminar / Mover</strong></td>
+        </tr>
+        <tr>
+          <td style="color: #991b1b;">La dirección muestra <strong>"United States"</strong></td>
+          <td style="color: #166534;">Dirección correcta de la sucursal o eliminar si no se usa</td>
+          <td><strong>Corregir</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- JERARQUÍA -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #8b5cf6;">
+    <h2>Jerarquía del módulo</h2>
+    <p style="margin-bottom: 16px;">La institución es el padre. Todo lo demás vive dentro de ella.</p>
+
+    <div class="hierarchy">
+      <div class="h-node" style="background: #6366f1; color: white;">
+        Institución
+        <div style="font-size: 10px; font-weight: 400; opacity: 0.8; margin-top: 4px;">AXA Seguros, GNP, Chubb, Qualitas, etc.</div>
+      </div>
+      <div class="h-connector"></div>
+      <div style="display: flex; gap: 40px;">
+        <div class="h-branch">
+          <div class="h-connector-label">tiene muchos</div>
+          <div class="h-connector"></div>
+          <div class="h-node" style="background: #dbeafe; color: #1e40af;">
+            Ejecutivos
+            <div style="font-size: 10px; font-weight: 400; margin-top: 4px;">Personas de contacto en la aseguradora</div>
+          </div>
+        </div>
+        <div class="h-branch">
+          <div class="h-connector-label">tiene uno o más</div>
+          <div class="h-connector"></div>
+          <div class="h-node" style="background: #f3e8ff; color: #7c3aed;">
+            Accesos al portal
+            <div style="font-size: 10px; font-weight: 400; margin-top: 4px;">URL + usuario + contraseña</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-blue">
+      <strong>¿Por qué "Accesos" separados de la Institución?</strong> Porque una misma aseguradora puede tener más de un portal
+      (por ejemplo, uno para seguros y otro para fianzas, o un portal de cotización y otro de emisión).
+      Si solo hay uno, se muestra uno. Si hay varios, todos quedan visibles en la misma pantalla.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PANTALLA: DETALLE DE INSTITUCIÓN -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #0ea5e9;">
+    <h2>Pantalla de una Institución (ejemplo: AXA Seguros)</h2>
+    <p style="margin-bottom: 16px;">Así se vería al abrir el registro de una institución. Todo en una sola pantalla.</p>
+
+    <div class="mockup">
+      <div class="mockup-header">
+        <span style="font-size: 18px;">🏢</span>
+        AXA Seguros
+        <span style="background: #10b981; padding: 3px 12px; border-radius: 12px; font-size: 11px; margin-left: auto;">Activa</span>
+      </div>
+      <div class="mockup-body">
+
+        <!-- Datos generales -->
+        <div style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;">
+          Datos generales
+        </div>
+        <div class="layout-grid" style="margin-bottom: 24px;">
+          <div class="lf">
+            <span class="lf-label">Nombre de la Institución</span>
+            <span class="lf-val">AXA Seguros</span>
+          </div>
+          <div class="lf">
+            <span class="lf-label">Tipo</span>
+            <span class="lf-val badge" style="background: #dbeafe; color: #1e40af;">Aseguradora</span>
+          </div>
+          <div class="lf">
+            <span class="lf-label">Sitio web</span>
+            <span class="lf-val link">www.axa.com.mx</span>
+          </div>
+          <div class="lf">
+            <span class="lf-label">Estatus</span>
+            <span class="lf-val badge" style="background: #d1fae5; color: #065f46;">Activa</span>
+          </div>
+        </div>
+
+        <!-- Ejecutivos -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;">
+          <span style="font-size: 13px; font-weight: 700; color: #475569;">Ejecutivos de contacto (2)</span>
+          <button class="btn btn-primary" style="font-size: 11px; padding: 5px 14px;">+ Nuevo ejecutivo</button>
+        </div>
+
+        <div class="exec-card">
+          <div class="exec-header">
+            <div class="exec-avatar">LM</div>
+            <div>
+              <div class="exec-name">Laura Martínez</div>
+              <div class="exec-role">Gerente de Suscripción — Fianzas</div>
+            </div>
+          </div>
+          <div class="exec-fields">
+            <div class="exec-field">
+              <div class="exec-field-label">Correo electrónico</div>
+              <div class="exec-field-val" style="color: #2563eb;">laura.martinez@axa.com.mx</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Teléfono directo</div>
+              <div class="exec-field-val">55 5169 1234</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Celular</div>
+              <div class="exec-field-val">55 3210 9876</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Principal</div>
+              <div class="exec-field-val" style="color: #10b981; font-weight: 700;">Sí</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exec-card">
+          <div class="exec-header">
+            <div class="exec-avatar" style="background: #0ea5e9;">RG</div>
+            <div>
+              <div class="exec-name">Roberto García</div>
+              <div class="exec-role">Ejecutivo de Cuenta — Seguros</div>
+            </div>
+          </div>
+          <div class="exec-fields">
+            <div class="exec-field">
+              <div class="exec-field-label">Correo electrónico</div>
+              <div class="exec-field-val" style="color: #2563eb;">roberto.garcia@axa.com.mx</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Teléfono directo</div>
+              <div class="exec-field-val">55 5169 5678</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Celular</div>
+              <div class="exec-field-val">—</div>
+            </div>
+            <div class="exec-field">
+              <div class="exec-field-label">Principal</div>
+              <div class="exec-field-val" style="color: #94a3b8;">No</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accesos al portal -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; margin-top: 24px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;">
+          <span style="font-size: 13px; font-weight: 700; color: #475569;">Accesos al portal (1)</span>
+          <button class="btn btn-outline" style="font-size: 11px; padding: 5px 14px;">+ Nuevo acceso</button>
+        </div>
+
+        <div class="access-box">
+          <div class="access-title">
+            <span>🔐</span> Portal de emisión — Seguros
+          </div>
+          <div class="access-row">
+            <span class="access-label">URL del portal</span>
+            <span class="access-val"><a href="#" class="access-link">https://agentes.axa.com.mx/login</a></span>
+          </div>
+          <div class="access-row">
+            <span class="access-label">Usuario</span>
+            <span class="access-val">ollin_proteccion</span>
+          </div>
+          <div class="access-row">
+            <span class="access-label">Contraseña</span>
+            <span class="access-val masked">••••••••••</span>
+            <span style="font-size: 10px; color: #7c3aed; cursor: pointer; text-decoration: underline;">mostrar</span>
+          </div>
+          <div class="access-row">
+            <span class="access-label">Notas</span>
+            <span class="access-val" style="color: #6b7280; font-size: 11px;">Cambiar contraseña cada 90 días. Último cambio: ene 2026</span>
+          </div>
+        </div>
+
+        <div class="note-red" style="margin-top: 20px;">
+          <strong>⚠️ Sobre las contraseñas almacenadas:</strong> Las credenciales se guardan dentro de Salesforce para que el equipo las tenga a la mano.
+          Sin embargo, es importante que <strong>solo ciertos perfiles</strong> (ej. Dirección y Operaciones) puedan ver el campo de contraseña.
+          Los demás usuarios verán asteriscos sin opción de revelar. Esto se configura por permisos de perfil.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CAMPOS: INSTITUCIÓN -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #6366f1;">
+    <h2>Campos — Institución</h2>
+    <p style="margin-bottom: 16px;">Campos del registro principal de Institución.</p>
+
+    <div class="field-groups">
+      <div class="field-group">
+        <div class="fg-title">Identificación</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Nombre de la Institución</span> <span class="ft ft-tx">Texto</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Tipo</span> <span class="ft ft-pk">Lista</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Estatus</span> <span class="ft ft-pk">Lista</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="fg-title">General</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Sitio web</span> <span class="ft ft-url">URL</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+      </div>
+
+      <div class="field-group" style="grid-column: 1 / -1;">
+        <div class="fg-title">Contadores (calculados automáticamente)</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Total de ejecutivos</span> <span class="ft ft-fm">Calculado</span></div>
+          <span class="origin or-auto">automático</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Total de pólizas vigentes</span> <span class="ft ft-fm">Calculado</span></div>
+          <span class="origin or-auto">automático</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Total de fianzas vigentes</span> <span class="ft ft-fm">Calculado</span></div>
+          <span class="origin or-auto">automático</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-blue">
+      <strong>Valores del campo Tipo:</strong> Aseguradora, Afianzadora, Ambas.<br>
+      <strong>Valores del campo Estatus:</strong> Activa, Suspendida, Inactiva.<br>
+      "Suspendida" es para cuando temporalmente dejan de trabajar con una institución pero no quieren borrar el historial.
+    </div>
+
+    <div class="note">
+      <strong>Regla de duplicados:</strong> El nombre de la institución debe ser único. Si alguien intenta crear "ALLIANZ" cuando ya existe "Allianz",
+      el sistema debe alertar que ya existe un registro similar y bloquear la creación.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CAMPOS: EJECUTIVO -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #0ea5e9;">
+    <h2>Campos — Ejecutivo de contacto</h2>
+    <p style="margin-bottom: 16px;">Cada ejecutivo es un registro hijo que pertenece a una institución. Puede haber varios por institución.</p>
+
+    <div class="field-groups">
+      <div class="field-group">
+        <div class="fg-title">Datos del ejecutivo</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Nombre completo</span> <span class="ft ft-tx">Texto</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Puesto</span> <span class="ft ft-tx">Texto</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Área</span> <span class="ft ft-pk">Lista</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Es contacto principal</span> <span class="ft ft-pk">Sí/No</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="fg-title">Contacto</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Correo electrónico</span> <span class="ft ft-email">Email</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Teléfono directo</span> <span class="ft ft-tx">Teléfono</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Celular</span> <span class="ft ft-tx">Teléfono</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Institución</span> <span class="ft ft-md">Relación padre</span></div>
+          <span class="origin or-auto">automático</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-blue">
+      <strong>Valores del campo Área:</strong> Suscripción, Siniestros, Fianzas, Comercial, Operaciones, Dirección, Otro.<br>
+      El campo Área es una lista configurable para poder filtrar ejecutivos por departamento.
+    </div>
+
+    <div class="note-green">
+      <strong>"Es contacto principal":</strong> Permite marcar a un ejecutivo como el contacto principal de esa institución.
+      En los módulos de Seguros y Fianzas, cuando se selecciona una institución, el sistema puede sugerir automáticamente el ejecutivo principal.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CAMPOS: ACCESO AL PORTAL -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #7c3aed;">
+    <h2>Campos — Acceso al portal</h2>
+    <p style="margin-bottom: 16px;">Cada acceso es un registro hijo de la institución. Permite almacenar las credenciales de acceso a las plataformas de la aseguradora.</p>
+
+    <div class="field-groups">
+      <div class="field-group">
+        <div class="fg-title">Identificación del portal</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Nombre del portal</span> <span class="ft ft-tx">Texto</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">URL del portal</span> <span class="ft ft-url">URL</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Tipo de portal</span> <span class="ft ft-pk">Lista</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Institución</span> <span class="ft ft-md">Relación padre</span></div>
+          <span class="origin or-auto">automático</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="fg-title">Credenciales</div>
+        <div class="fr">
+          <div class="left"><span class="fn">Usuario</span> <span class="ft ft-tx">Texto</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Contraseña</span> <span class="ft ft-pw">Protegido</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+        <div class="fr">
+          <div class="left"><span class="fn">Notas</span> <span class="ft ft-txt">Texto largo</span></div>
+          <span class="origin or-user">usuario</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-red">
+      <strong>Seguridad de credenciales — Importante:</strong><br>
+      1. El campo Contraseña debe estar oculto por defecto (muestra asteriscos) y solo revelarse al hacer clic.<br>
+      2. Solo los perfiles de Dirección y Operaciones deben poder ver y editar las contraseñas.<br>
+      3. Los vendedores y perfiles básicos <strong>no</strong> deben poder ver las contraseñas.<br>
+      4. Se recomienda incluir en "Notas" la política de cambio de contraseña de cada aseguradora (ej. cada 90 días).
+    </div>
+
+    <div class="note-blue">
+      <strong>Valores del campo Tipo de portal:</strong> Emisión, Cotización, Fianzas, Siniestros, Comisiones, Otro.<br>
+      Esto permite distinguir entre los diferentes portales cuando una aseguradora tiene más de uno.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LISTA DE INSTITUCIONES -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #10b981;">
+    <h2>Vista de lista — Todas las Instituciones</h2>
+    <p style="margin-bottom: 16px;">La vista principal del módulo. Columnas sugeridas para ver todo de un vistazo.</p>
+
+    <div style="overflow-x: auto;">
+      <table class="change-table" style="font-size: 12px;">
+        <thead>
+          <tr style="background: #f0fdf4;">
+            <th style="border-color: #bbf7d0; color: #166534;">Nombre</th>
+            <th style="border-color: #bbf7d0; color: #166534;">Tipo</th>
+            <th style="border-color: #bbf7d0; color: #166534;">Estatus</th>
+            <th style="border-color: #bbf7d0; color: #166534;">Ejecutivo principal</th>
+            <th style="border-color: #bbf7d0; color: #166534;">Pólizas vigentes</th>
+            <th style="border-color: #bbf7d0; color: #166534;">Fianzas vigentes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color: #2563eb;">AXA Seguros</strong></td>
+            <td><span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">Aseguradora</span></td>
+            <td style="color: #10b981; font-weight: 600;">Activa</td>
+            <td>Laura Martínez</td>
+            <td style="text-align: center; font-weight: 700;">12</td>
+            <td style="text-align: center; font-weight: 700;">—</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #2563eb;">Chubb Seguros</strong></td>
+            <td><span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">Aseguradora</span></td>
+            <td style="color: #10b981; font-weight: 600;">Activa</td>
+            <td>Ana Rodríguez</td>
+            <td style="text-align: center; font-weight: 700;">8</td>
+            <td style="text-align: center; font-weight: 700;">—</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #2563eb;">Afianzadora Insurgentes</strong></td>
+            <td><span style="background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">Afianzadora</span></td>
+            <td style="color: #10b981; font-weight: 600;">Activa</td>
+            <td>Pedro Sánchez</td>
+            <td style="text-align: center; font-weight: 700;">—</td>
+            <td style="text-align: center; font-weight: 700;">23</td>
+          </tr>
+          <tr>
+            <td><strong style="color: #2563eb;">GNP Seguros</strong></td>
+            <td><span style="background: #ede9fe; color: #6d28d9; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">Ambas</span></td>
+            <td style="color: #10b981; font-weight: 600;">Activa</td>
+            <td>María López</td>
+            <td style="text-align: center; font-weight: 700;">15</td>
+            <td style="text-align: center; font-weight: 700;">7</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note-green">
+      <strong>Columnas útiles:</strong> El "Ejecutivo principal" se muestra automáticamente tomando el ejecutivo marcado como contacto principal.
+      Las columnas de pólizas y fianzas vigentes permiten ver de un vistazo la actividad con cada institución.
+      No hay email ni teléfono a nivel institución — esos datos viven en cada ejecutivo.
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- REGLAS DE NEGOCIO -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #f59e0b;">
+    <h2>Reglas de negocio</h2>
+    <p style="margin-bottom: 16px;">Comportamientos automáticos del módulo.</p>
+
+    <div style="display: grid; gap: 12px;">
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #fef3c7;">🔒</div>
+        <div>
+          <div class="rel-name">Regla de duplicados</div>
+          <div class="rel-desc">No se puede crear una institución con un nombre que ya existe (comparación sin importar mayúsculas/minúsculas). Bloquea "ALLIANZ" si ya existe "Allianz".</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #dbeafe;">👤</div>
+        <div>
+          <div class="rel-name">Un solo contacto principal por institución</div>
+          <div class="rel-desc">Si se marca un ejecutivo como "Principal", el anterior pierde automáticamente esa marca. Siempre hay máximo uno.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #d1fae5;">📊</div>
+        <div>
+          <div class="rel-name">Contadores automáticos</div>
+          <div class="rel-desc">Los campos "Total de pólizas vigentes" y "Total de fianzas vigentes" se calculan automáticamente contando los registros de Seguro y Fianza que apuntan a esta institución y están en estatus vigente.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #fce7f3;">🔗</div>
+        <div>
+          <div class="rel-name">Relación con otros módulos</div>
+          <div class="rel-desc">Cuando en Seguros o Fianzas se selecciona una institución, el sistema puede sugerir automáticamente el ejecutivo principal como contacto. El usuario puede cambiarlo si necesita otro ejecutivo.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #fef2f2;">🗑️</div>
+        <div>
+          <div class="rel-name">Protección contra borrado</div>
+          <div class="rel-desc">No se puede eliminar una institución que tenga pólizas o fianzas asociadas. Se debe cambiar a estatus "Inactiva" en lugar de borrar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PUNTOS ABIERTOS -->
+  <!-- ============================================================ -->
+  <div class="section" style="border-left-color: #64748b;">
+    <h2>Puntos abiertos</h2>
+    <p style="margin-bottom: 16px;">Decisiones pendientes para cerrar con Marlon antes de implementar.</p>
+
+    <div style="display: grid; gap: 10px;">
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #f1f5f9;">1</div>
+        <div>
+          <div class="rel-name">¿Cuántos portales por aseguradora en la práctica?</div>
+          <div class="rel-desc">Si siempre es uno solo, se puede simplificar e incluir URL/usuario/contraseña directamente en la Institución sin necesidad de registros hijos para accesos.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #f1f5f9;">2</div>
+        <div>
+          <div class="rel-name">¿Qué instituciones deben estar en el catálogo inicial?</div>
+          <div class="rel-desc">Necesitamos la lista completa de aseguradoras y afianzadoras con las que Ollin trabaja actualmente para cargarla al sandbox.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #f1f5f9;">3</div>
+        <div>
+          <div class="rel-name">¿Quién debe poder ver las contraseñas?</div>
+          <div class="rel-desc">Definir exactamente qué perfiles de usuario pueden ver y editar las credenciales almacenadas. Recomendación: solo Dirección y Operaciones.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #f1f5f9;">4</div>
+        <div>
+          <div class="rel-name">¿Hace falta algún otro campo a nivel institución?</div>
+          <div class="rel-desc">Se eliminaron email, teléfono y dirección porque no se usan a nivel institución. Si hace falta algún otro dato general (ej. RFC, razón social), definirlo antes de implementar.</div>
+        </div>
+      </div>
+
+      <div class="rel-item">
+        <div class="rel-icon" style="background: #f1f5f9;">5</div>
+        <div>
+          <div class="rel-name">¿El ejecutivo necesita un campo de "Estatus"?</div>
+          <div class="rel-desc">Por si un ejecutivo deja la aseguradora — ¿se borra o se marca como inactivo para conservar el historial de interacción?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- RESUMEN -->
+  <!-- ============================================================ -->
+  <div class="result-box">
+    <h2>Resumen</h2>
+    <p>
+      El módulo Instituciones pasa de ser un catálogo básico de 4 registros con campos vacíos a un <span class="hl">centro de información completo</span>
+      para cada aseguradora y afianzadora. Cada institución contiene sus ejecutivos de contacto (con puesto, correo y teléfono),
+      los accesos a sus portales (con credenciales protegidas), y contadores automáticos que muestran la actividad de Ollin con esa institución.
+    </p>
+    <p style="margin-top: 12px;">
+      El módulo separado de <span class="hl">Ejecutivo de Institución desaparece</span> — todo vive dentro de la Institución.
+      Se agrega un <span class="hl">campo Tipo</span> (Aseguradora/Afianzadora/Ambas) que conecta con los módulos de Seguros y Fianzas,
+      y una <span class="hl">regla de duplicados</span> para evitar registros repetidos como ALLIANZ/Allianz.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

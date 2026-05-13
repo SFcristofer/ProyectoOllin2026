@@ -1,0 +1,137 @@
+<template>
+    <div class="vcu-wrap">
+
+        <!-- ── Toolbar ── -->
+        <div class="vcu-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+            <div class="vcu-toolbar-spacer"></div>
+        </div>
+
+        <!-- ── Filter panel ── -->
+        <template if:true={showFilters}>
+            <div class="vcu-filter-panel">
+                <div class="vcu-filter-hdr">
+                    <span class="vcu-filter-title">Filtros avanzados</span>
+                    <div class="vcu-filter-actions">
+                        <button class="vcu-flt-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vcu-flt-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vcu-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vcu-filter-rule">
+                                <select class="vcu-flt-campo" data-id={rule.id} onchange={handleFilterField}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vcu-flt-op" data-id={rule.id} onchange={handleFilterOp}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <input class="vcu-flt-value" type="text" data-id={rule.id}
+                                    value={rule.value} oninput={handleFilterValue} placeholder="Valor..." />
+                                <button class="vcu-flt-remove" data-id={rule.id} onclick={handleRemoveRule}>×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vcu-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Content ── -->
+        <div class="vcu-content">
+
+            <template if:true={isLoading}>
+                <div class="vcu-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="vcu-error-msg">{error}</div>
+            </template>
+
+            <template if:true={isEmpty}>
+                <div class="vcu-empty-msg">No hay cuentas para mostrar.</div>
+            </template>
+
+            <!-- Tabla -->
+            <template if:true={showTable}>
+                <div class="vcu-table-scroll">
+                    <table class="vcu-table">
+                        <thead>
+                            <tr>
+                                <template for:each={headers} for:item="h">
+                                    <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="vcu-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredRows} for:item="row">
+                                <tr key={row.id} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+                                    <td class="vcu-td vcu-td-name">
+                                        <lightning-icon icon-name="utility:account" size="xx-small" style="margin-right:5px;color:#6366f1"></lightning-icon>
+                                        {row.name}
+                                    </td>
+                                    <td class="vcu-td"><span class={row.rtClass}>{row.recordType}</span></td>
+                                    <td class="vcu-td">{row.ciudad}</td>
+                                    <td class="vcu-td">{row.phone}</td>
+                                    <td class="vcu-td">{row.email}</td>
+                                    <td class="vcu-td">{row.numOpps}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- Panel lateral -->
+            <template if:true={showPanel}>
+                <div class="vcu-panel">
+                    <div class="vcu-panel-hdr">
+                        <span class="vcu-panel-title">{panelRecord.name}</span>
+                        <div class="vcu-panel-hdr-actions">
+                            <button class="vcu-panel-prev" onclick={handlePanelPrev} title="Anterior">
+                                <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vcu-panel-next" onclick={handlePanelNext} title="Siguiente">
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vcu-panel-close" onclick={handleClosePanel}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vcu-panel-body">
+                        <template for:each={panelFields} for:item="f">
+                            <div key={f.key} class="vcu-detail-row">
+                                <span class="vcu-detail-label">{f.label}</span>
+                                <template if:true={f.isBadge}>
+                                    <span class={f.badgeClass}>{f.value}</span>
+                                </template>
+                                <template if:false={f.isBadge}>
+                                    <span>{f.value}</span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </div>
+</template>

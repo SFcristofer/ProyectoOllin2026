@@ -2,7 +2,7 @@ public with sharing class TechAmpliacionFieldsController {
     @AuraEnabled(cacheable=true)
     public static List<FieldInfo> getAmpliacionFields() {
         List<FieldInfo> fieldList = new List<FieldInfo>();
-        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Endoso__c.fields.getMap();
+        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Tech_Endoso__c.fields.getMap();
         for (Schema.SObjectField field : fieldsMap.values()) {
             Schema.DescribeFieldResult descField = field.getDescribe();
             if (descField.isCreateable() || descField.getName() == 'Name') {

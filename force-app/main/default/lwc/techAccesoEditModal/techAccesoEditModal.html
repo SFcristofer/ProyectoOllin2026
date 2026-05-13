@@ -1,0 +1,61 @@
+<template>
+    <template if:true={showModal}>
+        <div class="aem-backdrop" onclick={handleBackdropClick}></div>
+        <div class="aem-modal">
+
+            <div class="aem-header">
+                <div class="aem-header-title">Editar acceso al portal</div>
+                <button class="aem-close" onclick={handleClose} title="Cerrar">×</button>
+            </div>
+
+            <lightning-record-edit-form
+                record-id={accesoId}
+                object-api-name="Acceso_al_portal__c"
+                onsuccess={handleSuccess}
+                onerror={handleError}>
+
+                <div class="aem-body">
+                    <div class="aem-grid">
+                        <div class="aem-col">
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">Nombre del acceso</span>
+                                <lightning-input-field field-name="Name" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">URL del portal</span>
+                                <lightning-input-field field-name="URL_del_portal__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">Tipo de portal</span>
+                                <lightning-input-field field-name="Tipo_de_portal__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                        <div class="aem-col">
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">Usuario</span>
+                                <lightning-input-field field-name="Usuario__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">Contraseña</span>
+                                <lightning-input-field field-name="Pass__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="aem-field-wrap">
+                                <span class="aem-field-label">Notas</span>
+                                <lightning-input-field field-name="Notas__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                    </div>
+                    <template if:true={errorMsg}>
+                        <div class="aem-error">{errorMsg}</div>
+                    </template>
+                </div>
+
+                <div class="aem-footer">
+                    <button class="aem-btn-cancel" type="button" onclick={handleClose}>Cancelar</button>
+                    <button class="aem-btn-save" type="submit">Guardar cambios</button>
+                </div>
+
+            </lightning-record-edit-form>
+        </div>
+    </template>
+</template>

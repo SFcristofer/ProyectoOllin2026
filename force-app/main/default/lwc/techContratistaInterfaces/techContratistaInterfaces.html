@@ -1,0 +1,226 @@
+<template>
+    <div class="if-overlay" onclick={handleClose}>
+        <div class="if-modal" onclick={stopPropagation}>
+
+            <!-- ── Header ── -->
+            <div class="if-header">
+                <div class="if-header-left">
+                    <lightning-icon icon-name="utility:dashboard" size="small" class="if-header-icon" alternative-text="Interfaces"></lightning-icon>
+                    <span class="if-header-title">Informe para {contratistaName}</span>
+                </div>
+                <div class="if-header-actions">
+                    <button class="if-btn-pdf" onclick={handleDownloadPDF} title="Descargar PDF">
+                        <lightning-icon icon-name="utility:download" size="xx-small" class="if-btn-pdf-icon" alternative-text="PDF"></lightning-icon>
+                        <span>PDF</span>
+                    </button>
+                    <button class="if-header-close" onclick={handleClose} title="Cerrar" aria-label="Cerrar">
+                        <lightning-icon icon-name="utility:close" size="x-small" alternative-text="Cerrar"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Cuerpo ── -->
+            <div class="if-body">
+
+                <template if:true={isLoading}>
+                    <div class="if-loading">
+                        <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template if:false={isLoading}>
+
+                    <!-- ── KPI Cards ── -->
+                    <div class="if-kpi-row">
+                        <div class="if-kpi-card if-kpi-contracts">
+                            <div class="if-kpi-label">Monto de contratos</div>
+                            <div class="if-kpi-value">{montoContratosFmt}</div>
+                        </div>
+                        <div class="if-kpi-card if-kpi-afianzado">
+                            <div class="if-kpi-label">Monto Afianzado</div>
+                            <div class="if-kpi-value">{montoAfianzadoFmt}</div>
+                        </div>
+                        <div class="if-kpi-card if-kpi-count">
+                            <div class="if-kpi-label">Contratos</div>
+                            <div class="if-kpi-value if-kpi-num">{contratosCount}</div>
+                        </div>
+                        <div class="if-kpi-card if-kpi-vencidas">
+                            <div class="if-kpi-label">Fianzas Vencidas</div>
+                            <div class="if-kpi-value if-kpi-num">{fianzasVencidasCount}</div>
+                        </div>
+                    </div>
+
+                    <!-- ── Gráficas ── -->
+                    <div class="if-charts-row">
+                        <div class="if-chart-card">
+                            <div class="if-chart-title">Total afianzado por contratista</div>
+                            <div class="if-chart-body">
+                                <svg class="if-bar-svg" viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" aria-label="Gráfica de barras">
+                                    <template for:each={barYLabels} for:item="lbl">
+                                        <text key={lbl.key} x="68" y={lbl.y} class="if-axis-label" text-anchor="end">{lbl.text}</text>
+                                        <line key={lbl.key} x1="72" y1={lbl.lineY} x2="290" y2={lbl.lineY} class="if-grid-line"/>
+                                    </template>
+                                    <rect x="120" y={barVigenteY} width="70" height={barVigenteH} fill="#06b6d4" rx="2"/>
+                                    <rect x="120" y={barVencidaY} width="70" height={barVencidaH} fill="#eab308" rx="2"/>
+                                    <text x="155" y="195" class="if-axis-label-x" text-anchor="middle">{contratistaName}</text>
+                                    <rect x="200" y="24" width="10" height="10" fill="#06b6d4" rx="2"/>
+                                    <text x="214" y="34" class="if-legend-text">En plazo</text>
+                                    <rect x="200" y="40" width="10" height="10" fill="#eab308" rx="2"/>
+                                    <text x="214" y="50" class="if-legend-text">Vencida</text>
+                                    <text x="240" y="16" class="if-section-label">VIGENCIA</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="if-chart-card">
+                            <div class="if-chart-title">Reclamaciones cercanas a la expiración</div>
+                            <div class="if-chart-body if-donut-body">
+                                <svg class="if-donut-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Gráfica de dona">
+                                    <circle cx="100" cy="100" r="70" fill="none" stroke="#3b82f6" stroke-width="30"/>
+                                    <circle cx="100" cy="100" r="70" fill="none" stroke="#ef4444" stroke-width="30"
+                                            stroke-dasharray={donutNearDash}
+                                            transform="rotate(-90 100 100)"/>
+                                    <text x="100" y="96" class="if-donut-pct" text-anchor="middle">{donutNearPct}%</text>
+                                    <text x="100" y="115" class="if-donut-sub" text-anchor="middle">-90 días</text>
+                                </svg>
+                                <div class="if-donut-legend">
+                                    <div class="if-legend-item"><span class="if-legend-dot if-legend-dot-blue"></span><span>-90 días</span></div>
+                                    <div class="if-legend-item"><span class="if-legend-dot if-legend-dot-red"></span><span>En plazo</span></div>
+                                </div>
+                                <div class="if-donut-section-lbl">RECLAMACIÓN</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Sección: Contratos (Grid) ── -->
+                    <div class="if-report-section">
+                        <div class="if-report-header" onclick={toggleContratos}>
+                            <lightning-icon icon-name={contratosChevron} size="xx-small" class="if-chevron" alternative-text="Toggle"></lightning-icon>
+                            <span class="if-report-label">Reporte de:</span>
+                            <span class="if-report-name">Contratos</span>
+                            <span class="if-report-count">{contratosCount} registros</span>
+                        </div>
+                        <template if:true={isContratosOpen}>
+                            <div class="if-grid-wrap">
+                                <!-- Header Grid -->
+                                <div class="if-grid-header if-grid-contratos">
+                                    <div class="if-grid-cell if-grid-cell-num">#</div>
+                                    <div class="if-grid-cell">No Contrato</div>
+                                    <div class="if-grid-cell if-grid-cell-right">Valor Contrato</div>
+                                    <div class="if-grid-cell">Contratista</div>
+                                    <div class="if-grid-cell">Proyectos</div>
+                                </div>
+                                <!-- Rows -->
+                                <div class="if-grid-body">
+                                    <template for:each={contratos} for:item="c">
+                                        <div key={c.rowKey} class="if-grid-row if-grid-contratos">
+                                            <div class="if-grid-cell if-grid-cell-num">{c.rowNum}</div>
+                                            <div class="if-grid-cell if-grid-cell-name">{c.name}</div>
+                                            <div class="if-grid-cell if-grid-cell-right if-grid-cell-money">{c.montoFmt}</div>
+                                            <div class="if-grid-cell"><span class="if-chip if-chip-teal">{c.contratista}</span></div>
+                                            <div class="if-grid-cell if-grid-cell-muted">{c.proyecto}</div>
+                                        </div>
+                                    </template>
+                                </div>
+                                <template if:false={hasContratos}>
+                                    <div class="if-grid-empty">Sin contratos vinculados</div>
+                                </template>
+                                <!-- Footer -->
+                                <div class="if-grid-footer">{contratosCount} registro(s)</div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- ── Sección: Todas las fianzas (Grid) ── -->
+                    <div class="if-report-section">
+                        <div class="if-report-header" onclick={toggleFianzas}>
+                            <lightning-icon icon-name={fianzasChevron} size="xx-small" class="if-chevron" alternative-text="Toggle"></lightning-icon>
+                            <span class="if-report-label">Reporte de:</span>
+                            <span class="if-report-name">todas las fianzas</span>
+                            <span class="if-report-count">{fianzasCount} registros &nbsp;·&nbsp; Suma {montoAfianzadoFmt}</span>
+                        </div>
+                        <template if:true={isFianzasOpen}>
+                            <div class="if-grid-wrap">
+                                <div class="if-grid-header if-grid-fianzas">
+                                    <div class="if-grid-cell if-grid-cell-num">#</div>
+                                    <div class="if-grid-cell">Referencia de fianza</div>
+                                    <div class="if-grid-cell">Contratista</div>
+                                    <div class="if-grid-cell">Contrato</div>
+                                    <div class="if-grid-cell if-grid-cell-right">Afianzado</div>
+                                    <div class="if-grid-cell">Estatus</div>
+                                </div>
+                                <div class="if-grid-body">
+                                    <template for:each={fianzas} for:item="f">
+                                        <div key={f.rowKey} class="if-grid-row if-grid-fianzas">
+                                            <div class="if-grid-cell if-grid-cell-num">{f.rowNum}</div>
+                                            <div class="if-grid-cell if-grid-cell-name">{f.name}</div>
+                                            <div class="if-grid-cell"><span class="if-chip if-chip-teal">{f.contratista}</span></div>
+                                            <div class="if-grid-cell">
+                                                <template if:true={f.contrato}><span class="if-chip if-chip-blue">{f.contrato}</span></template>
+                                            </div>
+                                            <div class="if-grid-cell if-grid-cell-right if-grid-cell-money">{f.montoFmt}</div>
+                                            <div class="if-grid-cell"><span class={f.estatusClass}>{f.estatus}</span></div>
+                                        </div>
+                                    </template>
+                                </div>
+                                <template if:false={hasFianzas}>
+                                    <div class="if-grid-empty">Sin fianzas vinculadas</div>
+                                </template>
+                                <div class="if-grid-footer">{fianzasCount} registro(s) &nbsp;·&nbsp; Total {montoAfianzadoFmt}</div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- ── Sección: Fianzas Vencidas (Grid con grupo) ── -->
+                    <div class="if-report-section">
+                        <div class="if-report-header" onclick={toggleVencidas}>
+                            <lightning-icon icon-name={vencidasChevron} size="xx-small" class="if-chevron" alternative-text="Toggle"></lightning-icon>
+                            <span class="if-report-label">Reporte de:</span>
+                            <span class="if-report-name-editable">Fianzas Vencidas</span>
+                            <span class="if-report-count">{fianzasVencidasCount} registros &nbsp;·&nbsp; Suma {montoVencidasFmt}</span>
+                        </div>
+                        <template if:true={isVencidasOpen}>
+                            <div class="if-grid-wrap">
+                                <!-- Group Row -->
+                                <div class="if-grid-group">
+                                    <span class="if-group-toggle">▼</span>
+                                    <span class="if-group-label">RECLAMACIÓN</span>
+                                    <span class="if-group-sub">&nbsp;-90 días &nbsp; {fianzasVencidasCount} fianzas &nbsp;·&nbsp; {montoVencidasFmt} &nbsp;·&nbsp; Vigencia: {sumaVigencia} días &nbsp;·&nbsp; Reclamo: {sumaReclamo} días</span>
+                                </div>
+                                <div class="if-grid-header if-grid-vencidas">
+                                    <div class="if-grid-cell if-grid-cell-num">#</div>
+                                    <div class="if-grid-cell">Referencia</div>
+                                    <div class="if-grid-cell if-grid-cell-right">Afianzado total</div>
+                                    <div class="if-grid-cell">Fin vencimiento</div>
+                                    <div class="if-grid-cell if-grid-cell-right">Días vigencia</div>
+                                    <div class="if-grid-cell if-grid-cell-right">Días reclamo</div>
+                                    <div class="if-grid-cell">Fin Reclamo</div>
+                                    <div class="if-grid-cell">Estatus</div>
+                                </div>
+                                <div class="if-grid-body">
+                                    <template for:each={fianzasVencidas} for:item="fv">
+                                        <div key={fv.rowKey} class="if-grid-row if-grid-vencidas">
+                                            <div class="if-grid-cell if-grid-cell-num">{fv.rowNum}</div>
+                                            <div class="if-grid-cell if-grid-cell-name">{fv.name}</div>
+                                            <div class="if-grid-cell if-grid-cell-right if-grid-cell-money">{fv.montoFmt}</div>
+                                            <div class="if-grid-cell if-grid-cell-date">{fv.fechaFin}</div>
+                                            <div class="if-grid-cell if-grid-cell-right if-grid-cell-neg">{fv.diasVigencia}</div>
+                                            <div class="if-grid-cell if-grid-cell-right if-grid-cell-neg">{fv.diasReclamo}</div>
+                                            <div class="if-grid-cell if-grid-cell-date">{fv.finReclamo}</div>
+                                            <div class="if-grid-cell"><span class={fv.estatusClass}>{fv.estatusLabel}</span></div>
+                                        </div>
+                                    </template>
+                                </div>
+                                <template if:false={hasFianzasVencidas}>
+                                    <div class="if-grid-empty">Sin fianzas vencidas</div>
+                                </template>
+                                <div class="if-grid-footer">{fianzasVencidasCount} registro(s) &nbsp;·&nbsp; Total {montoVencidasFmt}</div>
+                            </div>
+                        </template>
+                    </div>
+
+                </template>
+            </div>
+
+        </div>
+    </div>
+</template>

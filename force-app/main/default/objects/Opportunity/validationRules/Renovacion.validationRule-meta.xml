@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Renovacion</fullName>
+    <active>true</active>
+    <description>No se puede crear/guardar una renovación sin póliza origen.</description>
+    <errorConditionFormula>AND(
+    ISPICKVAL(Type, &quot;Renovación&quot;),
+    ISBLANK(Poliza_Renovar__c)
+)</errorConditionFormula>
+    <errorDisplayField>Type</errorDisplayField>
+    <errorMessage>No se puede crear/guardar una renovación sin póliza origen.</errorMessage>
+</ValidationRule>

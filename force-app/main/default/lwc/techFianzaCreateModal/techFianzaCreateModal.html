@@ -1,94 +1,132 @@
 <template>
     <template if:true={showModal}>
-        <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open slds-modal_large">
-            <div class="slds-modal__container">
-                <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeModal}>
-                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
-                        <span class="slds-assistive-text">Cerrar</span>
-                    </button>
-                    <h2 class="slds-text-heading_medium">Creación de Fianza - Guardado Masivo Real</h2>
-                </header>
-                
-                <div class="slds-modal__content slds-p-around_medium">
-                    <!-- Spinner para el guardado -->
-                    <template if:true={isLoading}>
-                        <lightning-spinner alternative-text="Guardando datos..." size="medium"></lightning-spinner>
-                    </template>
+        <div class="at-modal-overlay" onclick={handleOverlayClick}></div>
+        <div class="at-modal-panel">
 
-                    <lightning-record-edit-form object-api-name="Fianza__c" onsubmit={handleSubmit}>
-                        <div class="slds-grid slds-wrap slds-gutters">
-                            <template for:each={fields} for:item="f">
-                                <div key={f.apiName} class="slds-col slds-size_1-of-2">
-                                    
-                                    <!-- Contrato (Multi-Lookup) -->
+            <!-- Header -->
+            <div class="at-modal-header">
+                <div class="at-modal-header-left">
+                    <lightning-icon icon-name="utility:contract" size="small" class="at-modal-obj-icon" alternative-text="Fianza"></lightning-icon>
+                    <div>
+                        <div class="at-modal-obj-label">Fianza</div>
+                        <div class="at-modal-title">{modalTitle}</div>
+                    </div>
+                </div>
+                <button class="at-modal-close" onclick={closeModal} title="Cerrar">
+                    <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="at-modal-body">
+                <template if:true={isLoading}>
+                    <div class="at-modal-loading">
+                        <lightning-spinner alternative-text="Guardando..." size="medium"></lightning-spinner>
+                    </div>
+                </template>
+
+                <lightning-record-edit-form object-api-name="Fianza__c" record-id={editRecordId} onsubmit={handleSubmit}>
+                    <div class="at-modal-fields">
+                        <template for:each={fields} for:item="f">
+                            <div key={f.apiName} class="at-modal-field-row">
+
+                                <!-- Field label with type icon -->
+                                <div class="at-modal-field-label">
+                                    <lightning-icon
+                                        icon-name={f.typeIcon}
+                                        size="xx-small"
+                                        class="at-modal-field-type-icon"
+                                        alternative-text={f.typeLabel}>
+                                    </lightning-icon>
+                                    <span>{f.label}</span>
+                                </div>
+
+                                <!-- Field input area -->
+                                <div class="at-modal-field-input">
+
+                                    <!-- Contrato multi-lookup -->
                                     <template if:true={f.isContrato}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Contrato__c" 
-                                                placeholder="Buscar o crear contrato..."
-                                                onselectionchange={handleContratoChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
-                                        </div>
+                                        <c-tech-multi-lookup
+                                            label={f.label}
+                                            object-api-name="Contract"
+                                            placeholder="Buscar contrato..."
+                                            onselectionchange={handleContratoChange}
+                                            oncreatenew={handleQuickCreate}>
+                                        </c-tech-multi-lookup>
                                     </template>
 
-                                    <!-- Endoso (Multi-Lookup) -->
+                                    <!-- Endoso multi-lookup -->
                                     <template if:true={f.isEndoso}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Endoso__c" 
-                                                placeholder="Buscar o crear endoso..."
-                                                onselectionchange={handleEndosoChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
-                                        </div>
+                                        <c-tech-multi-lookup
+                                            label={f.label}
+                                            object-api-name="Endoso__c"
+                                            placeholder="Buscar endoso..."
+                                            onselectionchange={handleEndosoChange}
+                                            oncreatenew={handleQuickCreate}>
+                                        </c-tech-multi-lookup>
                                     </template>
 
-                                    <!-- Contratista (Multi-Lookup) -->
+                                    <!-- Contratista multi-lookup -->
                                     <template if:true={f.isContratista}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Account" 
-                                                placeholder="Buscar o crear contratista..."
-                                                onselectionchange={handleContratistaChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
-                                        </div>
+                                        <c-tech-multi-lookup
+                                            label={f.label}
+                                            object-api-name="Account"
+                                            placeholder="Buscar contratista..."
+                                            onselectionchange={handleContratistaChange}
+                                            oncreatenew={handleQuickCreate}>
+                                        </c-tech-multi-lookup>
                                     </template>
 
-                                    <!-- Vendedor (Multi-Lookup) -->
+                                    <!-- Vendedor multi-lookup -->
                                     <template if:true={f.isVendedor}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Vendedores__c" 
-                                                placeholder="Buscar o crear vendedor..."
-                                                onselectionchange={handleVendedorChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
+                                        <c-tech-multi-lookup
+                                            label={f.label}
+                                            object-api-name="Vendedores__c"
+                                            placeholder="Buscar vendedor..."
+                                            onselectionchange={handleVendedorChange}
+                                            oncreatenew={handleQuickCreate}>
+                                        </c-tech-multi-lookup>
+                                    </template>
+
+                                    <!-- Estatus: color badge preview -->
+                                    <template if:true={f.isEstatusField}>
+                                        <div class="at-estatus-wrapper">
+                                            <lightning-input-field field-name={f.apiName} onchange={handleEstatusChange}></lightning-input-field>
+                                            <template if:true={currentEstatusClass}>
+                                                <span class={currentEstatusClass}>{currentEstatus}</span>
+                                            </template>
                                         </div>
                                     </template>
 
-                                    <!-- Campos estándar del objeto -->
+                                    <!-- Standard field -->
                                     <template if:false={f.isSpecial}>
                                         <lightning-input-field field-name={f.apiName}></lightning-input-field>
                                     </template>
-                                </div>
-                            </template>
-                        </div>
 
-                        <div class="slds-m-top_medium slds-text-align_right">
-                            <lightning-button label="Cancelar" onclick={closeModal} class="slds-m-right_small" disabled={isLoading}></lightning-button>
-                            <lightning-button type="submit" label="Guardar Todo" variant="brand" disabled={isLoading}></lightning-button>
-                        </div>
-                    </lightning-record-edit-form>
-                </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Footer actions -->
+                    <div class="at-modal-footer">
+                        <lightning-button
+                            label="Cancelar"
+                            onclick={closeModal}
+                            disabled={isLoading}
+                            class="slds-var-m-right_small">
+                        </lightning-button>
+                        <lightning-button
+                            type="submit"
+                            label="Guardar"
+                            variant="brand"
+                            icon-name="utility:save"
+                            disabled={isLoading}>
+                        </lightning-button>
+                    </div>
+                </lightning-record-edit-form>
             </div>
-        </section>
-        <div class="slds-backdrop slds-backdrop_open"></div>
+
+        </div>
     </template>
 </template>

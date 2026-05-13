@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Metodo_Pago__c</fullName>
+    <label>Metodo de pago</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Transferencia SPEI</fullName>
+                <default>false</default>
+                <label>Transferencia SPEI</label>
+            </value>
+            <value>
+                <fullName>Credito proxima poliza</fullName>
+                <default>false</default>
+                <label>Credito proxima poliza</label>
+            </value>
+            <value>
+                <fullName>Gift card</fullName>
+                <default>false</default>
+                <label>Gift card</label>
+            </value>
+            <value>
+                <fullName>Descuento renovacion</fullName>
+                <default>false</default>
+                <label>Descuento renovacion</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

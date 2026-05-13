@@ -1,0 +1,167 @@
+<template>
+    <div class="prec-panel">
+        <div class="prec-panel-header">
+            <div class="prec-panel-title">
+                <lightning-icon icon-name="standard:survey" size="small" alternative-text="Precalificación" class="prec-panel-icon"></lightning-icon>
+                <span>Nueva Precalificación</span>
+            </div>
+            <button class="prec-panel-close" onclick={handleCancel} title="Cerrar" aria-label="Cerrar">
+                <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+            </button>
+        </div>
+
+        <div class="prec-panel-body">
+            <lightning-record-edit-form
+                object-api-name="Precalificacion__c"
+                onsuccess={handleSuccess}
+                onerror={handleError}>
+
+                <!-- IDENTIFICACIÓN -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Identificación</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row prec-field-full">
+                            <lightning-input-field field-name="Name" required></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row prec-field-full">
+                            <lightning-input-field field-name="Contratista__c" value={contratistaId}></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Fecha_Estados_Financieros__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Estado__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Capacidad_de_Afianzamiento__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Comentarios__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BALANCE — ACTIVOS -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Balance General — Activos</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Activo_Circulante__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Inventarios__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Activo_Fijo_Neto__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Activo_total__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BALANCE — PASIVOS -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Balance General — Pasivos</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Pasivo_Circulante__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Pasivo_Corto_Plazo__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Pasivo_Total__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAPITAL -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Capital</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Capital_Social__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Capital_Contable__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Utilidades_Retenidas__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Resultados_anteriores__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Utilidad_del_Ejercicio__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ESTADO DE RESULTADOS -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Estado de Resultados</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Ventas_Netas__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTRATO -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Datos del Contrato</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Importe_Total_Contrato__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Porcentaje_Anticipo__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Porcentaje_Cumplimiento__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Porcentaje_Pasivos_Cont__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row prec-field-full">
+                            <lightning-input-field field-name="Datos_de_Presupuesto_Base__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFIANZAMIENTO -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Afianzamiento</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="L_nea_de_Afianzamiento_Estimada__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Capacidad_Afianzamiento__c"></lightning-input-field>
+                        </div>
+                        <div class="prec-field-row">
+                            <lightning-input-field field-name="Resultado_afianzamiento__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTAS -->
+                <div class="prec-section">
+                    <div class="prec-section-title">Notas</div>
+                    <div class="prec-fields">
+                        <div class="prec-field-row prec-field-full">
+                            <lightning-input-field field-name="Motivo_Score__c"></lightning-input-field>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prec-panel-footer">
+                    <button class="prec-btn prec-btn-cancel" type="button" onclick={handleCancel}>Cancelar</button>
+                    <lightning-button type="submit" label="Guardar Precalificación" variant="brand" disabled={isSaving}></lightning-button>
+                </div>
+
+            </lightning-record-edit-form>
+        </div>
+    </div>
+</template>

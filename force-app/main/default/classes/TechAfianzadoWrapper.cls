@@ -7,16 +7,16 @@ public class TechAfianzadoWrapper {
     @AuraEnabled public String estatusClass { get; set; }
 
     public TechAfianzadoWrapper(Account a) {
-        this.id = a.Id;
-        this.name = a.Name;
-        this.rfc = a.RFC__c;
+        this.id      = a.Id;
+        this.name    = a.Name;
+        this.rfc     = a.RFC__c;
         this.fianzas = new List<String>();
 
-        for (Tech_Relacion__c rel : a.Relaciones_Tecnicas_Account__r) {
-            if (rel.Tipo__c == 'Fianza' && rel.Fianza__r.Name != null) this.fianzas.add(rel.Fianza__r.Name);
-        }
+        for (Tech_Fianza__c f : a.Fianzas1__r) this.fianzas.add(f.Name);
+        for (Tech_Fianza__c f : a.Fianzas2__r) { if (!this.fianzas.contains(f.Name)) this.fianzas.add(f.Name); }
+        for (Tech_Fianza__c f : a.Fianzas3__r) { if (!this.fianzas.contains(f.Name)) this.fianzas.add(f.Name); }
 
-        this.estatus = 'Activo';
+        this.estatus      = 'Activo';
         this.estatusClass = 'airtable-badge-green';
     }
 }

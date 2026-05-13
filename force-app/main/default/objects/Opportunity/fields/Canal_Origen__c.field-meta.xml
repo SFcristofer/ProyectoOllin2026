@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Canal_Origen__c</fullName>
+    <label>Origen / Canal</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Tienda Digital</fullName>
+                <default>false</default>
+                <label>Tienda Digital</label>
+            </value>
+            <value>
+                <fullName>Consultivo</fullName>
+                <default>false</default>
+                <label>Consultivo</label>
+            </value>
+            <value>
+                <fullName>Promotoría</fullName>
+                <default>false</default>
+                <label>Promotoría</label>
+            </value>
+            <value>
+                <fullName>Referido</fullName>
+                <default>false</default>
+                <label>Referido</label>
+            </value>
+            <value>
+                <fullName>Cross-sell</fullName>
+                <default>false</default>
+                <label>Cross-sell</label>
+            </value>
+            <value>
+                <fullName>Reactivación</fullName>
+                <default>false</default>
+                <label>Reactivación</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

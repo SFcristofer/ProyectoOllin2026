@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>tech_Closed</fullName>
+    <active>true</active>
+    <description>Todo cierre perdido debe tener motivo.</description>
+    <errorConditionFormula>IF(ISPICKVAL (StageName, &apos;Cierre gando&apos;),
+   IF( 
+     OR( ISPICKVAL (Ramo__c, &apos;&apos;),
+         Producto__c = &apos;&apos;,
+         Institucion__c = &apos;&apos;,
+         ISPICKVAL (Ramo__c, &apos;&apos;)
+       )
+,true,false
+   ),false)</errorConditionFormula>
+    <errorDisplayField>StageName</errorDisplayField>
+    <errorMessage>Todo cierre perdido debe tener motivo.</errorMessage>
+</ValidationRule>

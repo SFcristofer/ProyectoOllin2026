@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tabla_Comision__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Tabla de comisiones</label>
+    <referenceTo>Tabla_Comision__c</referenceTo>
+    <relationshipName>Comisiones_Tabla</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fecha_marcado_por_renovar__c</fullName>
+    <description>Se establece automaticamente el dia que el seguro entra a Estatus = Por renovar. Sirve como ancla para la cadencia 7d/30d/45d.</description>
+    <label>Fecha marcado por renovar</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>

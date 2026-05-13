@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Linea_Sofimex_Resultado__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(AND(Sofimex_Liquidez_Eval__c=&quot;POSITIVO&quot;, Sofimex_Perdidas_Eval__c=&quot;POSITIVO&quot;, Sofimex_Apalancamiento_Eval__c=&quot;POSITIVO&quot;, Sofimex_Utilidad_Eval__c=&quot;POSITIVO&quot;, Sofimex_CapTrabajo_Eval__c=&quot;POSITIVO&quot;, Sofimex_ActivoFijo_Eval__c=&quot;POSITIVO&quot;), &quot;CUMPLE&quot;, &quot;NO CUMPLE CON LOS CRITERIOS PARA ASIGNACION DE LINEA&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Línea SOFIMEX (Resultado)</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

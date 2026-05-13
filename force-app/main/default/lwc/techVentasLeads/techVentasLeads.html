@@ -1,0 +1,539 @@
+<template>
+    <div class="vl-container">
+
+        <!-- Toolbar -->
+        <div class="vl-toolbar">
+            <span class="vl-title">Prospectos · Fase 1 Captación</span>
+            <div class="vl-toolbar-right">
+                <div class="vl-view-toggle">
+                    <button class={btnListaClass} onclick={handleViewLista}>
+                        <lightning-icon icon-name="utility:table" size="xx-small"></lightning-icon>
+                        Lista
+                    </button>
+                    <button class={btnKanbanClass} onclick={handleViewKanban}>
+                        <lightning-icon icon-name="utility:kanban" size="xx-small"></lightning-icon>
+                        Kanban
+                    </button>
+                </div>
+                <input type="text" class="vl-search" placeholder="Buscar prospecto..."
+                       value={searchTerm} oninput={handleSearch} />
+                <button class={filterBtnClass} onclick={handleToggleFilters}>
+                    <lightning-icon icon-name="utility:filter" size="x-small" class="vl-btn-icon"></lightning-icon>
+                    {filterBtnLabel}
+                </button>
+                <button class="vl-btn-new" onclick={handleNuevoLead}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="vl-btn-icon"></lightning-icon>
+                    Nuevo Prospecto
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══ PANEL DE FILTROS ═══ -->
+        <template if:true={showFilters}>
+            <div class="vl-filter-panel">
+                <div class="vl-filter-panel-hdr">
+                    <span class="vl-filter-panel-title">Filtros avanzados</span>
+                    <div class="vl-filter-panel-actions">
+                        <button class="vl-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vl-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vl-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vl-filter-rule">
+                                <select class="vl-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vl-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vl-flt-value" type={rule.inputType} data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isDate}>
+                                    <input class="vl-flt-value" type="date" data-id={rule.id}
+                                           value={rule.value} onchange={handleFilterValueChange} />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vl-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="vl-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vl-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+                <div class="vl-filter-panel-footer">
+                    <button class="vl-flt-btn-apply" onclick={handleApplyFilters} disabled={isApplying}>
+                        <lightning-icon icon-name="utility:search" size="xx-small" class="vl-btn-icon"></lightning-icon>
+                        {applyBtnLabel}
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══ LISTA VIEW ═══ -->
+        <template if:true={isLista}>
+            <div class="vl-grid-wrap">
+
+                <!-- Header -->
+                <div class="vl-grid-row vl-grid-header">
+                    <div class="vl-grid-cell vl-cell-num">#</div>
+                    <template for:each={gridHeaders} for:item="hdr">
+                        <div key={hdr.key} class={hdr.cellClass} data-field={hdr.field} onclick={handleSort}>
+                            {hdr.label}
+                            <template if:true={hdr.sortable}>
+                                <span class="vl-sort-icon">{hdr.icon}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Empty -->
+                <template if:false={hasLeads}>
+                    <div class="vl-empty">Sin prospectos activos</div>
+                </template>
+
+                <!-- Rows -->
+                <template for:each={filteredLeads} for:item="lead">
+                    <div key={lead.id} class="vl-grid-row vl-grid-data" data-id={lead.id} onclick={handleRowClick}>
+
+                        <!-- # -->
+                        <div class="vl-grid-cell vl-cell-num">{lead.rowNum}</div>
+
+                        <!-- Editar directo -->
+                        <div class="vl-grid-cell vl-cell-edit">
+                            <button class="vl-row-edit-btn" data-id={lead.id} onclick={handleRowEditBtn} title="Editar">
+                                <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                            </button>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="vl-grid-cell vl-cell-2line">
+                            <div class="vl-cell-name">{lead.name}</div>
+                            <div class="vl-cell-sub">{lead.company}</div>
+                        </div>
+
+                        <!-- Contacto -->
+                        <div class="vl-grid-cell vl-cell-2line">
+                            <div class="vl-cell-contact">{lead.phone}</div>
+                            <div class="vl-cell-sub">{lead.email}</div>
+                        </div>
+
+                        <!-- Tipo de seguro ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingSeguro}>
+                                <select class="vl-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">-- Tipo --</option>
+                                    <template for:each={seguroOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingSeguro}>
+                                <template if:true={lead.tipoSeguro}>
+                                    <span class="vl-chip vl-chip-btn"
+                                          data-id={lead.id} data-field="tipoSeguro" data-val={lead.tipoSeguro}
+                                          onclick={handleInlineOpen}>{lead.tipoSeguro}</span>
+                                </template>
+                                <template if:false={lead.tipoSeguro}>
+                                    <span class="vl-add-btn"
+                                          data-id={lead.id} data-field="tipoSeguro" data-val=""
+                                          onclick={handleInlineOpen}>+ Seguro</span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Monto ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingMonto}>
+                                <input type="number" class="vl-inline-input" placeholder="0"
+                                       value={lead.monto}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur}
+                                       onclick={handleSelectClick} />
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingMonto}>
+                                <template if:true={lead.montoFmt}>
+                                    <span class="vl-money-btn"
+                                          data-id={lead.id} data-field="monto" data-val={lead.monto}
+                                          onclick={handleInlineOpen}>{lead.montoFmt}</span>
+                                </template>
+                                <template if:false={lead.montoFmt}>
+                                    <span class="vl-add-btn"
+                                          data-id={lead.id} data-field="monto" data-val=""
+                                          onclick={handleInlineOpen}>+ Monto</span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Rating ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingRating}>
+                                <select class="vl-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">-- Rating --</option>
+                                    <template for:each={ratingOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingRating}>
+                                <template if:true={lead.rating}>
+                                    <span class={lead.ratingClass}
+                                          data-id={lead.id} data-field="rating" data-val={lead.rating}
+                                          onclick={handleInlineOpen}>{lead.rating}</span>
+                                </template>
+                                <template if:false={lead.rating}>
+                                    <span class="vl-add-btn"
+                                          data-id={lead.id} data-field="rating" data-val=""
+                                          onclick={handleInlineOpen}>+ Rating</span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Suma asegurada ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingSumaAseg}>
+                                <input type="number" class="vl-inline-input" placeholder="0"
+                                       value={lead.sumaAsegurada}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur}
+                                       onclick={handleSelectClick} />
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingSumaAseg}>
+                                <template if:true={lead.sumaAseguradaFmt}>
+                                    <span class="vl-money-btn"
+                                          data-id={lead.id} data-field="sumaAsegurada" data-val={lead.sumaAsegurada}
+                                          onclick={handleInlineOpen}>{lead.sumaAseguradaFmt}</span>
+                                </template>
+                                <template if:false={lead.sumaAseguradaFmt}>
+                                    <span class="vl-add-btn"
+                                          data-id={lead.id} data-field="sumaAsegurada" data-val=""
+                                          onclick={handleInlineOpen}>+ Suma aseg.</span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Score IA -->
+                        <div class="vl-grid-cell">
+                            <div class="vl-score-wrap">
+                                <div class={lead.scoreClass}>
+                                    <span class="vl-score-num">{lead.scoreLabel}</span>
+                                </div>
+                                <div class="vl-score-bar-bg">
+                                    <div class="vl-score-bar-fill" style={lead.scoreBarStyle}></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estatus ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingStatus}>
+                                <select class="vl-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <template for:each={statusOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingStatus}>
+                                <span class={lead.statusClass}
+                                      data-id={lead.id} data-field="status" data-val={lead.status}
+                                      onclick={handleInlineOpen}
+                                      title="Clic para cambiar">{lead.status}</span>
+                            </template>
+                        </div>
+
+                        <!-- Origen ✎ -->
+                        <div class="vl-grid-cell vl-cell-editable">
+                            <template if:true={lead.isEditingSource}>
+                                <select class="vl-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">-- Origen --</option>
+                                    <template for:each={sourceOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <button class="vl-inline-x" onclick={handleInlineCancel}>×</button>
+                            </template>
+                            <template if:false={lead.isEditingSource}>
+                                <template if:true={lead.leadSource}>
+                                    <span class="vl-source-btn"
+                                          data-id={lead.id} data-field="leadSource" data-val={lead.leadSource}
+                                          onclick={handleInlineOpen}>{lead.leadSource}</span>
+                                </template>
+                                <template if:false={lead.leadSource}>
+                                    <span class="vl-add-btn"
+                                          data-id={lead.id} data-field="leadSource" data-val=""
+                                          onclick={handleInlineOpen}>+ Origen</span>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Vendedor -->
+                        <div class="vl-grid-cell vl-cell-muted">{lead.vendedor}</div>
+
+                        <!-- Fecha -->
+                        <div class="vl-grid-cell vl-cell-muted">{lead.createdDate}</div>
+
+                    </div>
+                </template>
+
+                <!-- Footer -->
+                <template if:true={hasLeads}>
+                    <div class="vl-footer">{totalLabel}</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══ KANBAN VIEW ═══ -->
+        <template if:true={isKanban}>
+            <div class="vk-board">
+                <template for:each={kanbanColumns} for:item="col">
+                    <div key={col.key} class={col.colClass} style={col.colStyle}
+                         data-status={col.key}
+                         ondragover={handleDragOver}
+                         ondrop={handleDrop}>
+
+                        <div class="vk-col-header">
+                            <span class="vk-col-label">{col.label}</span>
+                            <span class="vk-col-count">{col.count}</span>
+                        </div>
+
+                        <div class="vk-cards">
+                            <template for:each={col.leads} for:item="lead">
+                                <div key={lead.id} class="vk-card"
+                                     draggable="true"
+                                     data-id={lead.id}
+                                     ondragstart={handleDragStart}
+                                     ondragend={handleDragEnd}>
+
+                                    <div class="vk-card-header">
+                                        <div class="vk-card-name">{lead.name}</div>
+                                        <button class="vk-card-edit" data-id={lead.id} onclick={handleKanbanEdit} title="Editar">
+                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                        </button>
+                                    </div>
+                                    <template if:true={lead.company}>
+                                        <div class="vk-card-company">{lead.company}</div>
+                                    </template>
+                                    <div class="vk-card-footer">
+                                        <template if:true={lead.tipoSeguro}>
+                                            <span class="vl-chip">{lead.tipoSeguro}</span>
+                                        </template>
+                                        <div class={lead.scoreClass}>
+                                            <span class="vl-score-num">{lead.scoreLabel}</span>
+                                        </div>
+                                    </div>
+                                    <template if:true={lead.vendedor}>
+                                        <div class="vk-card-vendedor">{lead.vendedor}</div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={col.count}>
+                                <div class="vk-empty-col">Sin leads</div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Detail Panel -->
+        <template if:true={selectedLead}>
+            <div class="vl-overlay" onclick={handleCloseDetail}></div>
+            <div class="vl-detail-panel">
+
+                <div class="vl-detail-header">
+                    <div class="vl-detail-header-info">
+                        <span class="vl-detail-name">{selectedLead.name}</span>
+                        <span class="vl-detail-company">{selectedLead.company}</span>
+                    </div>
+                    <button class="vl-detail-precal-btn" onclick={handleAddPrecal}>
+                        <lightning-icon icon-name="utility:adduser" size="x-small"></lightning-icon>
+                        Precalificar
+                    </button>
+                    <button class="vl-detail-convert-btn" onclick={handleConvertirLead}>
+                        <lightning-icon icon-name="utility:opportunity" size="x-small"></lightning-icon>
+                        Oportunidad
+                    </button>
+                    <button class="vl-detail-edit-btn" onclick={handleEditLead}>
+                        <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                        Editar
+                    </button>
+                    <button class="vl-detail-close" onclick={handleCloseDetail}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="vl-detail-body">
+
+                    <!-- Modal nueva / editar precalificación -->
+                    <template if:true={showPrecalModal}>
+                        <c-tech-precalificacion-modal
+                            record-id={editingPrecalId}
+                            prospecto-id={selectedLead.id}
+                            context-label={selectedLead.name}
+                            onclose={handlePrecalModalClose}
+                            onsuccess={handlePrecalModalSuccess}>
+                        </c-tech-precalificacion-modal>
+                    </template>
+
+                    <div class="vl-score-section">
+                        <div class="vl-score-section-title">Score de Calificación</div>
+                        <div class="vl-score-gauge-row">
+                            <div class={selectedLead.scoreClass}>
+                                <span class="vl-score-num vl-score-num-lg">{selectedLead.scoreLabel}</span>
+                            </div>
+                            <div class="vl-score-gauge-info">
+                                <div class="vl-score-bar-bg vl-score-bar-lg">
+                                    <div class="vl-score-bar-fill" style={selectedLead.scoreBarStyle}></div>
+                                </div>
+                                <div class="vl-score-hint">
+                                    <lightning-icon icon-name="utility:bot" size="xx-small" class="vl-score-hint-icon"></lightning-icon>
+                                    Calculado por IA · puedes ajustar manualmente
+                                </div>
+                            </div>
+                        </div>
+                        <div class="vl-score-edit-row">
+                            <label class="vl-score-edit-label">Ajustar score</label>
+                            <input type="range" class="vl-score-slider" min="0" max="100"
+                                   value={editScore} oninput={handleScoreSlider} />
+                            <span class="vl-score-edit-val">{editScore}</span>
+                            <button class="vl-score-save-btn" onclick={handleSaveScore} disabled={isSavingScore}>
+                                {scoreSaveLabel}
+                            </button>
+                        </div>
+                        <div class="vl-score-levels">
+                            <span class="vl-level vl-level-red">0–40 No calificado</span>
+                            <span class="vl-level vl-level-orange">41–70 En proceso</span>
+                            <span class="vl-level vl-level-green">71–100 Calificado</span>
+                        </div>
+                    </div>
+
+                    <div class="vl-detail-section">Contacto</div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Email</span>
+                        <span class="vl-detail-val">{selectedLead.email}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Teléfono</span>
+                        <span class="vl-detail-val">{selectedLead.phone}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Celular</span>
+                        <span class="vl-detail-val">{selectedLead.mobilePhone}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Vendedor</span>
+                        <span class="vl-detail-val">{selectedLead.vendedor}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Estatus</span>
+                        <span class={selectedLead.statusClass}>{selectedLead.status}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Origen</span>
+                        <span class="vl-detail-val">{selectedLead.leadSource}</span>
+                    </div>
+
+                    <div class="vl-detail-section">Producto</div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Tipo de seguro</span>
+                        <span class="vl-detail-val">{selectedLead.tipoSeguro}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Monto estimado</span>
+                        <span class="vl-detail-val vl-detail-money">{selectedLead.montoFmt}</span>
+                    </div>
+                    <div class="vl-detail-row">
+                        <span class="vl-detail-label">Aportación</span>
+                        <span class="vl-detail-val">{selectedLead.aportacionEstimada}</span>
+                    </div>
+
+                    <template if:true={selectedLead.motivoNoCalif}>
+                        <div class="vl-detail-section">Calificación</div>
+                        <div class="vl-detail-row">
+                            <span class="vl-detail-label">Motivo no calif.</span>
+                            <span class="vl-detail-val vl-detail-red">{selectedLead.motivoNoCalif}</span>
+                        </div>
+                    </template>
+
+                    <!-- Precalificaciones -->
+                    <div class="vl-detail-section">Precalificaciones</div>
+
+                    <template if:true={hasPanelPrecal}>
+                        <template for:each={panelPrecalificaciones} for:item="p">
+                            <div key={p.id} class="vl-precal-card">
+                                <div class="vl-precal-card-header">
+                                    <span class="vl-precal-card-name">{p.name}</span>
+                                    <span class={p.estatusClass}>{p.estadoLabel}</span>
+                                    <button class="vl-precal-card-edit-btn" data-id={p.id} onclick={handleEditPrecal} title="Editar">
+                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    </button>
+                                </div>
+                                <div class="vl-precal-card-grid">
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Capital Contable</span>
+                                        <span class="vl-precal-kpi-val">{p.capitalFmt}</span>
+                                    </div>
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Ventas Netas</span>
+                                        <span class="vl-precal-kpi-val">{p.ventasFmt}</span>
+                                    </div>
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Línea Afianz.</span>
+                                        <span class="vl-precal-kpi-val vl-precal-kpi-accent">{p.lineaFmt}</span>
+                                    </div>
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Importe Contrato</span>
+                                        <span class="vl-precal-kpi-val">{p.importeTotalContratoFmt}</span>
+                                    </div>
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Liquidez</span>
+                                        <span class="vl-precal-kpi-val">{p.liquidezLabel}</span>
+                                    </div>
+                                    <div class="vl-precal-kpi">
+                                        <span class="vl-precal-kpi-label">Apalancamiento</span>
+                                        <span class="vl-precal-kpi-val">{p.apalancLabel}</span>
+                                    </div>
+                                </div>
+                                <div class="vl-precal-card-footer">
+                                    <span class="vl-precal-kpi-label">Fecha EF: {p.fechaFmt}</span>
+                                    <template if:true={p.capacidadAfianzamiento}>
+                                        <span class={p.estatusClass}>{p.capacidadLabel}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasPanelPrecal}>
+                        <div class="vl-detail-row">
+                            <span class="vl-detail-muted">Sin precalificaciones</span>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

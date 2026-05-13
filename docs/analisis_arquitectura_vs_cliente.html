@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Análisis de Arquitectura · Ollin Protección · Technovalue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tv-blue:    #1e73be;
+    --tv-navy:    #222F39;
+    --tv-dark:    #222222;
+    --tv-mid:     #575760;
+    --tv-light:   #b2b2be;
+    --tv-bg:      #f0f0f0;
+    --tv-bg2:     #f7f8f9;
+    --tv-white:   #ffffff;
+    --tv-blue-soft: #dbeafe;
+
+    --ok:         #16a34a;
+    --ok-soft:    #dcfce7;
+    --warn:       #d97706;
+    --warn-soft:  #fef3c7;
+    --bad:        #dc2626;
+    --bad-soft:   #fee2e2;
+    --missing:    #7c3aed;
+    --missing-soft:#ede9fe;
+    --neu:        #475569;
+    --neu-soft:   #f1f5f9;
+
+    --line: #e2e8f0;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--tv-dark);
+    background: var(--tv-bg);
+  }
+  .page { max-width: 1160px; margin: 0 auto; padding: 36px 28px 80px; }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: linear-gradient(135deg, var(--tv-navy) 0%, #1a3a52 60%, var(--tv-blue) 100%);
+    border-radius: 14px;
+    padding: 36px 40px;
+    color: white;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .doc-header .brand { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: .65; text-transform: uppercase; margin-bottom: 10px; }
+  .doc-header h1 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+  .doc-header .sub { font-size: 13px; opacity: .82; max-width: 800px; }
+  .doc-header .meta { margin-top: 18px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .doc-header .meta-item { font-size: 11px; opacity: .7; }
+  .doc-header .meta-item strong { opacity: 1; font-weight: 600; }
+
+  /* ── TOC ── */
+  .toc { background: white; border-left: 5px solid var(--tv-blue); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(34,47,57,.06); }
+  .toc h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--tv-mid); margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; columns: 2; gap: 20px; }
+  .toc li { margin-bottom: 5px; font-size: 12.5px; }
+  .toc a { color: var(--tv-blue); text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── SECTION ── */
+  .section { background: white; border-radius: 14px; padding: 28px 32px; margin-bottom: 26px; box-shadow: 0 2px 10px rgba(34,47,57,.06); }
+  .section-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .section-head h2 { font-size: 18px; font-weight: 700; color: var(--tv-navy); }
+  .pill { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; }
+  .pill-blue   { background: var(--tv-blue-soft); color: var(--tv-blue); }
+  .pill-green  { background: var(--ok-soft);      color: var(--ok); }
+  .pill-orange { background: var(--warn-soft);     color: var(--warn); }
+  .pill-red    { background: var(--bad-soft);      color: var(--bad); }
+  .pill-purple { background: var(--missing-soft);  color: var(--missing); }
+  .pill-gray   { background: var(--neu-soft);      color: var(--neu); }
+  .lead { color: var(--tv-mid); font-size: 13px; margin-bottom: 18px; line-height: 1.7; }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  th { background: var(--tv-bg2); padding: 8px 11px; text-align: left; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: .7px; color: var(--tv-mid); border-bottom: 2px solid var(--line); border-right: 1px solid var(--line); }
+  td { padding: 7px 11px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; }
+  th:last-child, td:last-child { border-right: none; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  code { font-family: 'Courier New', monospace; font-size: 11px; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; color: var(--tv-navy); }
+
+  /* ── STATUS BADGES ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .badge-ok     { background: var(--ok-soft);      color: var(--ok);      } .badge-ok::before     { background: var(--ok); }
+  .badge-warn   { background: var(--warn-soft);    color: var(--warn);    } .badge-warn::before   { background: var(--warn); }
+  .badge-bad    { background: var(--bad-soft);      color: var(--bad);     } .badge-bad::before    { background: var(--bad); }
+  .badge-purple { background: var(--missing-soft); color: var(--missing); } .badge-purple::before { background: var(--missing); }
+
+  /* ── DIAGRAM WRAPPER ── */
+  .diagram { background: var(--tv-bg2); border: 1px solid var(--line); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+  .diagram svg { display: block; max-width: 100%; height: auto; }
+
+  /* ── SVG SHARED ── */
+  .obj-box    { fill: white; stroke-width: 1.5; }
+  .obj-title  { font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; fill: white; }
+  .obj-api    { font-family: 'Courier New', monospace; font-size: 9.5px; fill: rgba(255,255,255,.82); }
+  .obj-field  { font-family: 'Montserrat', sans-serif; font-size: 10.5px; fill: #222; }
+  .obj-muted  { font-family: 'Montserrat', sans-serif; font-size: 9.5px; fill: #575760; }
+  .rel-line   { stroke: #475569; stroke-width: 1.5; fill: none; }
+  .rel-md     { stroke: #1e293b; stroke-width: 2.5; fill: none; }
+  .rel-dash   { stroke: #94a3b8; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+  .rel-bad    { stroke: #dc2626; stroke-width: 2; fill: none; stroke-dasharray: 4 3; }
+  .rel-lbl    { font-family: 'Montserrat', sans-serif; font-size: 9.5px; fill: #475569; font-weight: 600; }
+  .rel-lbl-bg { fill: #fafbff; stroke: #e2e8f0; stroke-width: 0.5; }
+  .sec-label  { font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+  .axis-line  { stroke: #e2e8f0; stroke-width: 1; }
+
+  /* ── ALERT BOXES ── */
+  .alert { border-radius: 8px; padding: 14px 16px; margin: 14px 0; font-size: 12.5px; }
+  .alert-warn { background: var(--warn-soft); border-left: 4px solid var(--warn); }
+  .alert-bad  { background: var(--bad-soft);  border-left: 4px solid var(--bad);  }
+  .alert-ok   { background: var(--ok-soft);   border-left: 4px solid var(--ok);   }
+  .alert-blue { background: var(--tv-blue-soft); border-left: 4px solid var(--tv-blue); }
+  .alert strong { font-weight: 700; display: block; margin-bottom: 4px; }
+
+  /* ── PHASE CARDS ── */
+  .phases { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  .phase-card { border-radius: 10px; padding: 16px 18px; border: 1.5px solid var(--line); }
+  .phase-card .phase-num { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .phase-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--tv-navy); }
+  .phase-card .duration { font-size: 10px; color: var(--tv-mid); margin-bottom: 10px; }
+  .phase-card ul { padding-left: 16px; font-size: 11.5px; color: var(--tv-mid); line-height: 1.8; }
+  .phase-card ul li { margin-bottom: 2px; }
+  .phase-0 { border-color: #94a3b8; }  .phase-0 .phase-num { color: #64748b; }
+  .phase-1 { border-color: var(--tv-blue); } .phase-1 .phase-num { color: var(--tv-blue); }
+  .phase-2 { border-color: #3b82f6; } .phase-2 .phase-num { color: #3b82f6; }
+  .phase-3 { border-color: #6366f1; } .phase-3 .phase-num { color: #6366f1; }
+  .phase-4 { border-color: #8b5cf6; } .phase-4 .phase-num { color: #8b5cf6; }
+  .phase-5 { border-color: #10b981; } .phase-5 .phase-num { color: #10b981; }
+  .phase-6 { border-color: #f59e0b; background: #fffbeb; } .phase-6 .phase-num { color: #d97706; }
+
+  /* ── NOTES GRID ── */
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .note { background: var(--tv-bg2); border-left: 3px solid var(--tv-mid); border-radius: 6px; padding: 12px 14px; font-size: 12px; }
+  .note strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--tv-mid); margin-bottom: 4px; }
+  .note.note-blue  { border-left-color: var(--tv-blue); }
+  .note.note-red   { border-left-color: var(--bad); }
+  .note.note-green { border-left-color: var(--ok); }
+  .note.note-warn  { border-left-color: var(--warn); }
+
+  /* ── FOOTER ── */
+  .doc-footer { background: linear-gradient(135deg, var(--tv-navy), #1a3a52); color: white; border-radius: 12px; padding: 24px 32px; margin-top: 32px; font-size: 12.5px; }
+  .doc-footer h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .doc-footer p { opacity: .8; line-height: 1.7; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; font-size: 11px; }
+    .page { padding: 0; max-width: 100%; }
+    .section { page-break-inside: avoid; box-shadow: none; border: 1px solid var(--line); margin-bottom: 16px; padding: 18px 20px; }
+    .doc-header { border-radius: 0; margin-bottom: 16px; }
+    .phases { grid-template-columns: 1fr 1fr; }
+    @page { size: A4 portrait; margin: 1.5cm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="brand">Technovalue · Salesforce Consulting · Ollin Protección</div>
+    <h1>Análisis de Arquitectura<br>Cliente vs. Implementación Actual</h1>
+    <p class="sub">Diagnóstico completo del modelo de datos implementado en el org de Salesforce frente a la arquitectura objetivo documentada por el cliente. Incluye brechas, errores estructurales y plan de acción priorizado.</p>
+    <div class="meta">
+      <div class="meta-item"><strong>Proyecto:</strong> Ollin Protección</div>
+      <div class="meta-item"><strong>Fecha:</strong> 24 de abril de 2026</div>
+      <div class="meta-item"><strong>Branch:</strong> implement-airtable-ProyectoOllin2026</div>
+      <div class="meta-item"><strong>Org:</strong> soporte.technovalue@ollin.com.mx.dev</div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Índice</h3>
+    <ol>
+      <li><a href="#correcto">Lo que tenemos correcto</a></li>
+      <li><a href="#mal">Lo que está estructuralmente MAL</a></li>
+      <li><a href="#falta">Lo que falta completamente</a></li>
+      <li><a href="#diagrama-actual">Diagrama: estado actual</a></li>
+      <li><a href="#diagrama-objetivo">Diagrama: estado objetivo (Fianzas)</a></li>
+      <li><a href="#delta">Análisis de brechas por módulo</a></li>
+      <li><a href="#decision">¿Nuevo sandbox o modificar?</a></li>
+      <li><a href="#bloqueante">Decisión bloqueante</a></li>
+      <li><a href="#plan">Plan de acción por fases</a></li>
+      <li><a href="#spec">Especificación detallada: objetos y campos</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. CORRECTO -->
+  <section class="section" id="correcto">
+    <div class="section-head">
+      <h2>1. Lo que tenemos correcto o salvageable</h2>
+      <span class="pill pill-green">Rescatable</span>
+    </div>
+    <p class="lead">Estos artefactos representan trabajo valioso que se migra al nuevo sandbox sin reescritura significativa. Son la base sobre la que se construye la arquitectura objetivo.</p>
+    <table>
+      <thead><tr><th>Artefacto</th><th>Estado</th><th>Alineación con cliente</th><th>Acción</th></tr></thead>
+      <tbody>
+        <tr><td><code>Fianza__c</code></td><td><span class="badge badge-warn">Parcial</span></td><td>Concepto correcto. Relaciones incorrectas</td><td>Redefinir campo padre a M-D de Contrato__c</td></tr>
+        <tr><td><code>Contrato__c</code></td><td><span class="badge badge-warn">Mínimo</span></td><td>Existe, solo tiene Name</td><td>Agregar todos los campos del modelo cliente</td></tr>
+        <tr><td><code>Precalificacion__c</code></td><td><span class="badge badge-ok">Completo</span></td><td>No está en el doc pero sí en el negocio</td><td>Confirmar con cliente y preservar</td></tr>
+        <tr><td><code>Proyecto__c</code></td><td><span class="badge badge-ok">Funcional</span></td><td>Mencionado como campo en Contrato__c</td><td>Verificar si queda como objeto o campo</td></tr>
+        <tr><td><code>Vendedores__c</code></td><td><span class="badge badge-warn">Naming mal</span></td><td>Concepto correcto, API plural incorrecto</td><td>Renombrar a <code>Vendedor__c</code></td></tr>
+        <tr><td>Arquitectura Apex Controller/Selector/Wrapper</td><td><span class="badge badge-ok">Sólida</span></td><td>No especificado — es valor añadido</td><td>Migrar, ~20% refactor</td></tr>
+        <tr><td>20 LWC Airtable UI (tablas, modales, dashboard)</td><td><span class="badge badge-ok">Funcional</span></td><td>No especificado — es valor añadido</td><td>Migrar, ~30% refactor por componente</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 2. MAL -->
+  <section class="section" id="mal">
+    <div class="section-head">
+      <h2>2. Lo que está estructuralmente MAL</h2>
+      <span class="pill pill-red">Requiere corrección</span>
+    </div>
+
+    <div class="alert alert-bad">
+      <strong>⚠ Error crítico #1 — Relación Fianza → Contrato</strong>
+      El campo <code>No_Contrato__c</code> en <code>Fianza__c</code> apunta al objeto <strong>estándar</strong> <code>Contract</code> (prefijo <code>800</code>), no a <code>Contrato__c</code> custom. Además, la relación a <code>Contrato__c</code> custom se gestiona a través de <code>Tech_Relacion__c</code> junction, que es un parche. El modelo del cliente requiere un <strong>Master-Detail</strong> nativo.
+    </div>
+
+    <div class="alert alert-bad">
+      <strong>⚠ Error crítico #2 — Contratista__c y Beneficiario__c como objetos custom separados</strong>
+      El cliente define ambos como <strong>Account</strong> (estándar, Person Account para físicas). Tener objetos custom propios duplica datos, rompe la vista de 360° del cliente en Salesforce y complica integraciones futuras (Agentforce, Digital Engagement).
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>⚠ Error estructural #3 — Endoso__c con colisión de nombre</strong>
+      El <code>Endoso__c</code> actual se usa como "Ampliación" de Fianza. El cliente define dos objetos distintos: <code>Endoso__c</code> hijo de <code>Seguro__c</code>, y <code>Endoso_de_Fianza__c</code> con Lookup a <code>Convenio_Modificatorio__c</code>. El objeto actual colisiona con ambos conceptos y bloquea el módulo de Seguros.
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>⚠ Error estructural #4 — Naming de Vendedor</strong>
+      <code>Vendedores__c</code> usa plural, la convención estándar de Salesforce es singular: <code>Vendedor__c</code>. Impacta API paths, queries y labels.
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>⚠ Deuda técnica — Tech_Relacion__c como parche</strong>
+      El junction object fue una solución rápida para relaciones M:N que en el modelo final son directas (M-D nativos o Lookups simples). No está en la arquitectura del cliente y genera queries complejas innecesarias. Se depreca gradualmente al implementar los M-D correctos.
+    </div>
+
+    <table style="margin-top:16px">
+      <thead><tr><th>Elemento</th><th>Tenemos</th><th>Cliente quiere</th><th>Impacto</th></tr></thead>
+      <tbody>
+        <tr><td>Fianza → Contrato</td><td><code>No_Contrato__c</code> → Contract estándar</td><td>M-D de <code>Contrato__c</code> custom</td><td><span class="badge badge-bad">Crítico</span></td></tr>
+        <tr><td>Contratista</td><td><code>Contratista__c</code> custom con Lookup a Account</td><td>Account directo</td><td><span class="badge badge-bad">Crítico</span></td></tr>
+        <tr><td>Beneficiario</td><td><code>Beneficiario__c</code> custom separado</td><td>Account directo</td><td><span class="badge badge-bad">Crítico</span></td></tr>
+        <tr><td>Endoso</td><td><code>Endoso__c</code> = Ampliación de Fianza</td><td>Endoso Seguro + Endoso_de_Fianza__c por separado</td><td><span class="badge badge-warn">Alto</span></td></tr>
+        <tr><td>Vendedor naming</td><td><code>Vendedores__c</code></td><td><code>Vendedor__c</code></td><td><span class="badge badge-warn">Medio</span></td></tr>
+        <tr><td>Junction object</td><td><code>Tech_Relacion__c</code> (M:N genérico)</td><td>Relaciones directas M-D / Lookup</td><td><span class="badge badge-warn">Medio</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. FALTA -->
+  <section class="section" id="falta">
+    <div class="section-head">
+      <h2>3. Lo que falta completamente</h2>
+      <span class="pill pill-purple">Por implementar</span>
+    </div>
+    <p class="lead">Siete módulos completos del documento del cliente no tienen ninguna implementación en el org actual.</p>
+
+    <table>
+      <thead><tr><th>Módulo</th><th>Objeto(s) faltantes</th><th>Relación con padre</th><th>Completitud actual</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Seguros (core)</strong></td>
+          <td><code>Seguro__c</code> (objeto central unificado)</td>
+          <td>Hijo de oportunidad ganada</td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Seguros (endoso)</strong></td>
+          <td><code>Endoso__c</code> de Seguro</td>
+          <td>M-D de <code>Seguro__c</code></td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Fianzas (convenios)</strong></td>
+          <td><code>Convenio_Modificatorio__c</code></td>
+          <td>M-D de <code>Contrato__c</code></td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Fianzas (endoso fianza)</strong></td>
+          <td><code>Endoso_de_Fianza__c</code></td>
+          <td>Lookup a <code>Convenio_Modificatorio__c</code></td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Instituciones</strong></td>
+          <td><code>Institucion__c</code> · <code>EjecutivoContacto__c</code> · <code>AccesoPortal__c</code></td>
+          <td>Los dos últimos M-D de Institución</td>
+          <td><span class="badge badge-bad">5%</span> solo campo texto en Fianza</td>
+        </tr>
+        <tr>
+          <td><strong>Cobranza</strong></td>
+          <td><code>Plan_de_Pagos__c</code> · <code>Recibo__c</code></td>
+          <td>Plan M-D de Fianza/Seguro · Recibo M-D de Plan</td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Comisiones</strong></td>
+          <td><code>Comision__c</code> · <code>Tabla_de_Comisiones__c</code></td>
+          <td>Comisión M-D de Fianza/Seguro</td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Flujo de Ventas</strong></td>
+          <td>Lead · Opportunity · Person Account · Agentforce</td>
+          <td>Estándar Salesforce</td>
+          <td><span class="badge badge-bad">0%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. DIAGRAMA ACTUAL -->
+  <section class="section" id="diagrama-actual">
+    <div class="section-head">
+      <h2>4. Diagrama: Estado actual del org</h2>
+      <span class="pill pill-orange">As-Is</span>
+    </div>
+    <p class="lead">Mapa de los objetos implementados hoy y sus relaciones reales. Las líneas rojas indican relaciones incorrectas o que deben cambiar.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1080 620" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr"      markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#475569"/></marker>
+          <marker id="arr-red"  markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#dc2626"/></marker>
+          <marker id="arr-md"   markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#222F39"/></marker>
+          <marker id="arr-dash" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <!-- SECTION LABELS -->
+        <rect x="20" y="10" width="1040" height="18" fill="#f1f5f9" rx="4"/>
+        <text x="540" y="24" text-anchor="middle" class="sec-label" fill="#475569">MODELO ACTUAL — AS-IS (con errores señalados en rojo)</text>
+
+        <!-- FIANZA (central) -->
+        <rect class="obj-box" x="380" y="200" width="220" height="180" rx="8" stroke="#1e73be" stroke-width="2"/>
+        <rect x="380" y="200" width="220" height="34" rx="8" fill="#1e73be"/>
+        <rect x="380" y="222" width="220" height="12" fill="#1e73be"/>
+        <text class="obj-title" x="392" y="220">Fianza__c</text>
+        <text class="obj-api"   x="392" y="232">Fianza__c (Custom)</text>
+        <text class="obj-field" x="392" y="252">Estatus · Monto_Afianzado__c</text>
+        <text class="obj-field" x="392" y="267">Fecha_de_Emisi_n__c</text>
+        <text class="obj-field" x="392" y="282">Fecha_de_Vencimiento__c</text>
+        <text class="obj-field" x="392" y="297">ContratistaFianza__c ⟶ Contratista</text>
+        <text class="obj-field" x="392" y="312">Vendedor__c · Beneficiario__c</text>
+        <text class="obj-muted" x="392" y="330" fill="#dc2626" font-weight="700">No_Contrato__c ⟶ Contract (ESTÁNDAR ❌)</text>
+        <text class="obj-muted" x="392" y="345">Afianzadora__c (solo texto)</text>
+        <text class="obj-muted" x="392" y="360">PlazoReclamaci_n__c (fórmula)</text>
+        <text class="obj-muted" x="392" y="373">DiasReclamaci_n__c</text>
+
+        <!-- CONTRATO (custom) -->
+        <rect class="obj-box" x="700" y="200" width="180" height="90" rx="8" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="700" y="200" width="180" height="30" rx="8" fill="#10b981"/>
+        <rect x="700" y="218" width="180" height="12" fill="#10b981"/>
+        <text class="obj-title" x="712" y="218">Contrato__c</text>
+        <text class="obj-api"   x="712" y="230">Custom · solo Name</text>
+        <text class="obj-muted" x="712" y="252">Sin campos de negocio</text>
+        <text class="obj-muted" x="712" y="266">Sin relaciones M-D</text>
+        <text class="obj-muted" x="712" y="280">Vinculado vía junction</text>
+
+        <!-- TECH_RELACION (junction) -->
+        <rect class="obj-box" x="700" y="330" width="200" height="130" rx="8" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <rect x="700" y="330" width="200" height="30" rx="8" fill="#64748b"/>
+        <rect x="700" y="348" width="200" height="12" fill="#64748b"/>
+        <text class="obj-title" x="712" y="348">Tech_Relacion__c</text>
+        <text class="obj-api"   x="712" y="360">Junction / parche M:N</text>
+        <text class="obj-muted" x="712" y="380">Fianza__c · Contrato__c</text>
+        <text class="obj-muted" x="712" y="394">Contratista__c · Beneficiario__c</text>
+        <text class="obj-muted" x="712" y="408">Proyecto__c · Vendedor__c</text>
+        <text class="obj-muted" x="712" y="422">Tipo__c (texto libre)</text>
+        <text class="obj-muted" x="712" y="438">⚠ No en arquitectura cliente</text>
+
+        <!-- CONTRATISTA -->
+        <rect class="obj-box" x="50" y="120" width="190" height="100" rx="8" stroke="#8b5cf6" stroke-width="1.5"/>
+        <rect x="50" y="120" width="190" height="30" rx="8" fill="#8b5cf6"/>
+        <rect x="50" y="138" width="190" height="12" fill="#8b5cf6"/>
+        <text class="obj-title" x="62" y="138">Contratista__c</text>
+        <text class="obj-api"   x="62" y="150">Custom (≠ Account)</text>
+        <text class="obj-muted" x="62" y="170">Name · Cliente__c → Account</text>
+        <text class="obj-muted" x="62" y="184">⚠ Debería ser Account</text>
+        <text class="obj-muted" x="62" y="198">Precalificaciones__r (vínculo OK)</text>
+
+        <!-- BENEFICIARIO -->
+        <rect class="obj-box" x="50" y="260" width="190" height="80" rx="8" stroke="#8b5cf6" stroke-width="1.5"/>
+        <rect x="50" y="260" width="190" height="30" rx="8" fill="#8b5cf6"/>
+        <rect x="50" y="278" width="190" height="12" fill="#8b5cf6"/>
+        <text class="obj-title" x="62" y="278">Beneficiario__c</text>
+        <text class="obj-api"   x="62" y="290">Custom (≠ Account)</text>
+        <text class="obj-muted" x="62" y="312">Name · CreatedDate</text>
+        <text class="obj-muted" x="62" y="326">⚠ Debería ser Account</text>
+
+        <!-- ENDOSO (ampliacion) -->
+        <rect class="obj-box" x="50" y="380" width="190" height="90" rx="8" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="50" y="380" width="190" height="30" rx="8" fill="#f59e0b"/>
+        <rect x="50" y="398" width="190" height="12" fill="#f59e0b"/>
+        <text class="obj-title" x="62" y="398">Endoso__c</text>
+        <text class="obj-api"   x="62" y="410">Usado como "Ampliación"</text>
+        <text class="obj-muted" x="62" y="432">Fianza__c (Lookup)</text>
+        <text class="obj-muted" x="62" y="446">⚠ Colisión: nombre reservado</text>
+        <text class="obj-muted" x="62" y="460">para Endoso de Seguro</text>
+
+        <!-- PRECALIFICACION -->
+        <rect class="obj-box" x="50" y="510" width="190" height="90" rx="8" stroke="#1e73be" stroke-width="1.5"/>
+        <rect x="50" y="510" width="190" height="30" rx="8" fill="#1e73be"/>
+        <rect x="50" y="528" width="190" height="12" fill="#1e73be"/>
+        <text class="obj-title" x="62" y="528">Precalificacion__c</text>
+        <text class="obj-api"   x="62" y="540">Custom · bien implementado</text>
+        <text class="obj-muted" x="62" y="562">Score ICP · Capital Contable</text>
+        <text class="obj-muted" x="62" y="576">Capacidad Afianzamiento</text>
+        <text class="obj-muted" x="62" y="590">ContratistaPrecalificacion__c</text>
+
+        <!-- PROYECTO -->
+        <rect class="obj-box" x="380" y="430" width="180" height="80" rx="8" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="380" y="430" width="180" height="30" rx="8" fill="#10b981"/>
+        <rect x="380" y="448" width="180" height="12" fill="#10b981"/>
+        <text class="obj-title" x="392" y="448">Proyecto__c</text>
+        <text class="obj-api"   x="392" y="460">Custom</text>
+        <text class="obj-muted" x="392" y="480">Name · Contrato__r.Name</text>
+        <text class="obj-muted" x="392" y="494">Lookup a Contrato__c</text>
+
+        <!-- STANDARD CONTRACT (WRONG) -->
+        <rect class="obj-box" x="700" y="90" width="180" height="80" rx="8" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 3"/>
+        <rect x="700" y="90" width="180" height="30" rx="8" fill="#dc2626"/>
+        <rect x="700" y="108" width="180" height="12" fill="#dc2626"/>
+        <text class="obj-title" x="712" y="108">Contract (estándar)</text>
+        <text class="obj-api"   x="712" y="120">Prefijo 800 ❌</text>
+        <text class="obj-muted" x="712" y="142">No_Contrato__c apunta aquí</text>
+        <text class="obj-muted" x="712" y="156">OBJETO EQUIVOCADO</text>
+
+        <!-- LINES -->
+        <!-- Fianza → Contract (WRONG - red dashed) -->
+        <path class="rel-bad" d="M 545,250 Q 620,170 700,145" stroke-dasharray="5 3" marker-end="url(#arr-red)"/>
+        <rect class="rel-lbl-bg" x="570" y="188" width="80" height="14" rx="3"/>
+        <text class="rel-lbl" x="610" y="198" text-anchor="middle" fill="#dc2626">Lookup INCORRECTO</text>
+
+        <!-- Contratista → Fianza -->
+        <line class="rel-line" x1="240" y1="170" x2="380" y2="260" marker-end="url(#arr)"/>
+        <rect class="rel-lbl-bg" x="278" y="202" width="60" height="13" rx="3"/>
+        <text class="rel-lbl" x="308" y="212" text-anchor="middle">Lookup</text>
+
+        <!-- Beneficiario → Fianza -->
+        <line class="rel-line" x1="240" y1="300" x2="380" y2="300" marker-end="url(#arr)"/>
+        <rect class="rel-lbl-bg" x="278" y="287" width="60" height="13" rx="3"/>
+        <text class="rel-lbl" x="308" y="297" text-anchor="middle">Lookup</text>
+
+        <!-- Endoso → Fianza -->
+        <line class="rel-line" x1="240" y1="420" x2="380" y2="350" marker-end="url(#arr)"/>
+        <rect class="rel-lbl-bg" x="272" y="378" width="60" height="13" rx="3"/>
+        <text class="rel-lbl" x="302" y="388" text-anchor="middle">Lookup</text>
+
+        <!-- Precalificacion → Contratista -->
+        <line class="rel-line" x1="145" y1="510" x2="145" y2="220" marker-end="url(#arr)"/>
+        <rect class="rel-lbl-bg" x="100" y="360" width="40" height="13" rx="3"/>
+        <text class="rel-lbl" x="120" y="370" text-anchor="middle">Lookup</text>
+
+        <!-- Tech_Relacion → Fianza (junction) -->
+        <path class="rel-dash" d="M 700,380 Q 650,370 600,300" marker-end="url(#arr-dash)"/>
+        <rect class="rel-lbl-bg" x="614" y="335" width="60" height="13" rx="3"/>
+        <text class="rel-lbl" x="644" y="345" text-anchor="middle">Junction</text>
+
+        <!-- Tech_Relacion → Contrato -->
+        <line class="rel-dash" d="M 800,330 L 800,290" marker-end="url(#arr-dash)"/>
+
+        <!-- Proyecto → Contrato -->
+        <line class="rel-dash" d="M 540,470 Q 650,470 700,260" marker-end="url(#arr-dash)"/>
+
+        <!-- LEGEND -->
+        <rect x="20" y="570" width="500" height="44" fill="white" stroke="#e2e8f0" rx="6"/>
+        <line x1="34" y1="584" x2="60" y2="584" stroke="#1e293b" stroke-width="2.5"/>
+        <text class="obj-muted" x="66" y="588">Relación correcta</text>
+        <line x1="140" y1="584" x2="166" y2="584" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 3"/>
+        <text class="obj-muted" x="172" y="588">Relación incorrecta</text>
+        <line x1="276" y1="584" x2="302" y2="584" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text class="obj-muted" x="308" y="588">Relación via Junction</text>
+        <rect x="34" y="600" width="10" height="10" fill="#8b5cf6" rx="2"/>
+        <text class="obj-muted" x="50" y="610">Objeto debería ser Account</text>
+        <rect x="180" y="600" width="10" height="10" fill="#64748b" rx="2"/>
+        <text class="obj-muted" x="196" y="610">Objeto no en arquitectura cliente</text>
+        <rect x="358" y="600" width="10" height="10" fill="#dc2626" rx="2"/>
+        <text class="obj-muted" x="374" y="610">Objeto / campo incorrecto</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 5. DIAGRAMA OBJETIVO -->
+  <section class="section" id="diagrama-objetivo">
+    <div class="section-head">
+      <h2>5. Diagrama: Estado objetivo — Módulo Fianzas</h2>
+      <span class="pill pill-blue">To-Be</span>
+    </div>
+    <p class="lead">Arquitectura objetivo para el módulo de Fianzas según el documento del cliente. Todas las relaciones son directas (M-D o Lookup), sin junction object.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1080 660" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="a2"    markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#475569"/></marker>
+          <marker id="a2-md" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#222F39"/></marker>
+          <marker id="a2-d"  markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#94a3b8"/></marker>
+        </defs>
+
+        <rect x="20" y="10" width="1040" height="18" fill="#dcfce7" rx="4"/>
+        <text x="540" y="24" text-anchor="middle" class="sec-label" fill="#16a34a">MODELO OBJETIVO — TO-BE (arquitectura del cliente)</text>
+
+        <!-- CONTRATO (parent top) -->
+        <rect class="obj-box" x="380" y="50" width="300" height="190" rx="8" stroke="#10b981" stroke-width="2.5"/>
+        <rect x="380" y="50" width="300" height="36" rx="8" fill="#10b981"/>
+        <rect x="380" y="74" width="300" height="12" fill="#10b981"/>
+        <text class="obj-title" x="392" y="72" font-size="14">Contrato__c</text>
+        <text class="obj-api"   x="392" y="85">Contrato__c · PADRE</text>
+        <text class="obj-field" x="392" y="108">No. Contrato · Estatus</text>
+        <text class="obj-field" x="392" y="123">Valor · Inicio · Fin (original)</text>
+        <text class="obj-field" x="392" y="138">Cliente (Contratista) → Account</text>
+        <text class="obj-field" x="392" y="153">Beneficiario → Account</text>
+        <text class="obj-field" x="392" y="168">Institución · Vendedor · Proyecto</text>
+        <text class="obj-muted" x="392" y="186">Valor_Contrato_Vigente__c (rollup)</text>
+        <text class="obj-muted" x="392" y="200">Suma_Fianzas__c (rollup)</text>
+        <text class="obj-muted" x="392" y="215">Exposicion_Pct__c (fórmula)</text>
+
+        <!-- FIANZA (MD child) -->
+        <rect class="obj-box" x="100" y="310" width="260" height="200" rx="8" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="100" y="310" width="260" height="34" rx="8" fill="#10b981"/>
+        <rect x="100" y="332" width="260" height="12" fill="#10b981"/>
+        <text class="obj-title" x="112" y="330">Fianza__c</text>
+        <text class="obj-api"   x="112" y="344">HIJO M-D de Contrato__c</text>
+        <text class="obj-field" x="112" y="366">Número · Tipo de riesgo</text>
+        <text class="obj-field" x="112" y="381">Monto afianzado · Prima neta</text>
+        <text class="obj-field" x="112" y="396">Vigencia (emision → vencimiento)</text>
+        <text class="obj-muted" x="112" y="414">Monto_Afianzado_Vigente__c</text>
+        <text class="obj-muted" x="112" y="428">Prima_Vigente__c</text>
+        <text class="obj-muted" x="112" y="442">Fecha_Vencimiento_Vigente__c</text>
+        <text class="obj-muted" x="112" y="456">Días para vencer · Exposición %</text>
+        <text class="obj-muted" x="112" y="470">Hereda Institución, Beneficiario,</text>
+        <text class="obj-muted" x="112" y="484">Cliente y Vendedor del Contrato</text>
+        <text class="obj-muted" x="112" y="498">PlazoReclamacion__c · DiasReclamo</text>
+
+        <!-- CONVENIO (MD child) -->
+        <rect class="obj-box" x="700" y="310" width="260" height="160" rx="8" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="700" y="310" width="260" height="34" rx="8" fill="#10b981"/>
+        <rect x="700" y="332" width="260" height="12" fill="#10b981"/>
+        <text class="obj-title" x="712" y="330">Convenio_Modificatorio__c</text>
+        <text class="obj-api"   x="712" y="344">HIJO M-D de Contrato__c</text>
+        <text class="obj-field" x="712" y="366">No. Convenio · Fecha</text>
+        <text class="obj-field" x="712" y="381">Tipo: Ampliación / Reducción</text>
+        <text class="obj-field" x="712" y="396">Nuevo valor del contrato</text>
+        <text class="obj-field" x="712" y="411">Nueva fecha de fin</text>
+        <text class="obj-muted" x="712" y="429">Diferencia (fórmula)</text>
+        <text class="obj-muted" x="712" y="443">Dispara recálculo en Contrato</text>
+
+        <!-- ENDOSO FIANZA (child of convenio) -->
+        <rect class="obj-box" x="700" y="510" width="260" height="120" rx="8" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="700" y="510" width="260" height="34" rx="8" fill="#059669"/>
+        <rect x="700" y="532" width="260" height="12" fill="#059669"/>
+        <text class="obj-title" x="712" y="530">Endoso_de_Fianza__c</text>
+        <text class="obj-api"   x="712" y="542">Lookup a Convenio_Modificatorio__c</text>
+        <text class="obj-field" x="712" y="564">Tipo · Nuevo monto · Nueva prima</text>
+        <text class="obj-field" x="712" y="579">Nueva fecha de vencimiento</text>
+        <text class="obj-muted" x="712" y="597">Auto-actualiza campos Vigente__c</text>
+        <text class="obj-muted" x="712" y="611">de Fianza y Contrato</text>
+
+        <!-- PLAN PAGOS (child of fianza) -->
+        <rect class="obj-box" x="100" y="550" width="120" height="90" rx="8" stroke="#3b82f6" stroke-width="1.5"/>
+        <rect x="100" y="550" width="120" height="28" rx="8" fill="#3b82f6"/>
+        <rect x="100" y="566" width="120" height="12" fill="#3b82f6"/>
+        <text class="obj-title" x="108" y="566" font-size="11">Plan_de_Pagos__c</text>
+        <text class="obj-api"   x="108" y="578" font-size="9">M-D de Fianza</text>
+        <text class="obj-muted" x="108" y="596">Frecuencia · N recibos</text>
+        <text class="obj-muted" x="108" y="610">Domiciliación</text>
+        <text class="obj-muted" x="108" y="624">Lee Prima de Fianza</text>
+
+        <!-- RECIBO -->
+        <rect class="obj-box" x="240" y="550" width="120" height="90" rx="8" stroke="#3b82f6" stroke-width="1.5"/>
+        <rect x="240" y="550" width="120" height="28" rx="8" fill="#3b82f6"/>
+        <rect x="240" y="566" width="120" height="12" fill="#3b82f6"/>
+        <text class="obj-title" x="248" y="566" font-size="11">Recibo__c</text>
+        <text class="obj-api"   x="248" y="578" font-size="9">M-D de Plan</text>
+        <text class="obj-muted" x="248" y="596">Fecha · Monto</text>
+        <text class="obj-muted" x="248" y="610">Estatus cobro</text>
+        <text class="obj-muted" x="248" y="624">Libera Comisión</text>
+
+        <!-- COMISION -->
+        <rect class="obj-box" x="390" y="550" width="160" height="90" rx="8" stroke="#ec4899" stroke-width="1.5"/>
+        <rect x="390" y="550" width="160" height="28" rx="8" fill="#ec4899"/>
+        <rect x="390" y="566" width="160" height="12" fill="#ec4899"/>
+        <text class="obj-title" x="400" y="566" font-size="11">Comision__c</text>
+        <text class="obj-api"   x="400" y="578" font-size="9">M-D de Fianza</text>
+        <text class="obj-muted" x="400" y="596">% · Monto Ollin</text>
+        <text class="obj-muted" x="400" y="610">Monto Vendedor</text>
+        <text class="obj-muted" x="400" y="624">Estado: Deveng → Liber → Pagada</text>
+
+        <!-- ACCOUNT (cliente/contratista) -->
+        <rect class="obj-box" x="20" y="50" width="180" height="90" rx="8" stroke="#8b5cf6" stroke-width="1.5"/>
+        <rect x="20" y="50" width="180" height="28" rx="8" fill="#8b5cf6"/>
+        <rect x="20" y="66" width="180" height="12" fill="#8b5cf6"/>
+        <text class="obj-title" x="30" y="66" font-size="11">Cliente (Contratista)</text>
+        <text class="obj-api"   x="30" y="78" font-size="9">Account (estándar)</text>
+        <text class="obj-muted" x="30" y="100">Persona física o moral</text>
+        <text class="obj-muted" x="30" y="114">que contrata la fianza</text>
+
+        <!-- ACCOUNT (beneficiario) -->
+        <rect class="obj-box" x="820" y="50" width="180" height="90" rx="8" stroke="#8b5cf6" stroke-width="1.5"/>
+        <rect x="820" y="50" width="180" height="28" rx="8" fill="#8b5cf6"/>
+        <rect x="820" y="66" width="180" height="12" fill="#8b5cf6"/>
+        <text class="obj-title" x="832" y="66" font-size="11">Beneficiario</text>
+        <text class="obj-api"   x="832" y="78" font-size="9">Account (estándar)</text>
+        <text class="obj-muted" x="832" y="100">Recibe el pago</text>
+        <text class="obj-muted" x="832" y="114">si hay reclamación</text>
+
+        <!-- INSTITUCION -->
+        <rect class="obj-box" x="580" y="50" width="200" height="80" rx="8" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="580" y="50" width="200" height="28" rx="8" fill="#f59e0b"/>
+        <rect x="580" y="66" width="200" height="12" fill="#f59e0b"/>
+        <text class="obj-title" x="592" y="66" font-size="11">Institucion__c</text>
+        <text class="obj-api"   x="592" y="78" font-size="9">Custom · Catálogo</text>
+        <text class="obj-muted" x="592" y="100">Afianzadora</text>
+        <text class="obj-muted" x="592" y="114">Tipo: Afianzadora / Ambas</text>
+
+        <!-- RELATIONS -->
+        <!-- Account (cliente) → Contrato -->
+        <line class="rel-line" x1="200" y1="100" x2="380" y2="130" marker-end="url(#a2)"/>
+        <rect class="rel-lbl-bg" x="250" y="102" width="50" height="12" rx="3"/>
+        <text class="rel-lbl" x="275" y="112" text-anchor="middle">Lookup</text>
+
+        <!-- Institucion → Contrato -->
+        <line class="rel-line" x1="680" y1="110" x2="680" y2="120" marker-end="url(#a2)"/>
+        <rect class="rel-lbl-bg" x="625" y="112" width="50" height="12" rx="3"/>
+        <text class="rel-lbl" x="650" y="122" text-anchor="middle">Lookup</text>
+
+        <!-- Account (beneficiario) → Contrato -->
+        <line class="rel-line" x1="820" y1="100" x2="680" y2="130" marker-end="url(#a2)"/>
+        <rect class="rel-lbl-bg" x="730" y="102" width="50" height="12" rx="3"/>
+        <text class="rel-lbl" x="755" y="112" text-anchor="middle">Lookup</text>
+
+        <!-- Contrato → Fianza (M-D) -->
+        <path class="rel-md" d="M 450,240 L 280,310" marker-end="url(#a2-md)"/>
+        <rect class="rel-lbl-bg" x="316" y="263" width="56" height="12" rx="3"/>
+        <text class="rel-lbl" x="344" y="273" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Contrato → Convenio (M-D) -->
+        <path class="rel-md" d="M 620,240 L 780,310" marker-end="url(#a2-md)"/>
+        <rect class="rel-lbl-bg" x="660" y="263" width="56" height="12" rx="3"/>
+        <text class="rel-lbl" x="688" y="273" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Convenio → Endoso Fianza (Lookup) -->
+        <path class="rel-line" d="M 830,470 L 830,510" marker-end="url(#a2)"/>
+        <rect class="rel-lbl-bg" x="836" y="484" width="50" height="12" rx="3"/>
+        <text class="rel-lbl" x="861" y="494" text-anchor="middle">Lookup</text>
+
+        <!-- Fianza → Plan (M-D) -->
+        <path class="rel-md" d="M 160,510 L 160,550" marker-end="url(#a2-md)"/>
+        <rect class="rel-lbl-bg" x="114" y="525" width="56" height="12" rx="3"/>
+        <text class="rel-lbl" x="142" y="535" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Plan → Recibo (M-D) -->
+        <path class="rel-md" d="M 220,590 L 240,590" marker-end="url(#a2-md)"/>
+        <rect class="rel-lbl-bg" x="220" y="576" width="56" height="12" rx="3"/>
+        <text class="rel-lbl" x="248" y="586" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Fianza → Comision (M-D) -->
+        <path class="rel-md" d="M 300,500 Q 360,540 390,580" marker-end="url(#a2-md)"/>
+        <rect class="rel-lbl-bg" x="298" y="536" width="56" height="12" rx="3"/>
+        <text class="rel-lbl" x="326" y="546" text-anchor="middle">M-D 1:N</text>
+
+        <!-- Recibo releases Comision (dashed) -->
+        <path class="rel-dash" d="M 360,595 Q 375,635 390,610" marker-end="url(#a2-d)"/>
+        <rect class="rel-lbl-bg" x="330" y="632" width="86" height="12" rx="3"/>
+        <text class="rel-lbl" x="373" y="642" text-anchor="middle">Cobrado → libera</text>
+
+        <!-- LEGEND -->
+        <rect x="20" y="620" width="440" height="38" fill="white" stroke="#e2e8f0" rx="6"/>
+        <line x1="34" y1="632" x2="60" y2="632" stroke="#1e293b" stroke-width="2.5"/>
+        <text class="obj-muted" x="66" y="636">Master-Detail (cascada al borrar padre)</text>
+        <line x1="260" y1="632" x2="286" y2="632" stroke="#475569" stroke-width="1.5"/>
+        <text class="obj-muted" x="292" y="636">Lookup</text>
+        <line x1="34" y1="650" x2="60" y2="650" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text class="obj-muted" x="66" y="654">Automatización (libera comisión)</text>
+        <rect x="260" y="642" width="10" height="10" fill="#8b5cf6" rx="2"/>
+        <text class="obj-muted" x="276" y="652">Account estándar (no objeto custom)</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 6. DELTA -->
+  <section class="section" id="delta">
+    <div class="section-head">
+      <h2>6. Análisis de brechas por módulo</h2>
+      <span class="pill pill-gray">GAP Analysis</span>
+    </div>
+    <p class="lead">Comparación visual del estado actual vs. el estado objetivo por cada módulo del sistema.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 1040 440" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- GRID LINES -->
+        <line x1="260" y1="30" x2="260" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="460" y1="30" x2="460" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="660" y1="30" x2="660" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="860" y1="30" x2="860" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+        <line x1="1020" y1="30" x2="1020" y2="400" stroke="#e2e8f0" stroke-width="1"/>
+
+        <!-- HEADERS -->
+        <rect x="0" y="0" width="1040" height="28" fill="#f1f5f9" rx="4"/>
+        <text x="20"   y="18" class="sec-label" fill="#475569" font-size="10">MÓDULO</text>
+        <text x="260"  y="18" class="sec-label" fill="#475569" font-size="10" text-anchor="middle">TENEMOS</text>
+        <text x="460"  y="18" class="sec-label" fill="#475569" font-size="10" text-anchor="middle">CLIENTE QUIERE</text>
+        <text x="660"  y="18" class="sec-label" fill="#475569" font-size="10" text-anchor="middle">COMPLETITUD</text>
+        <text x="860"  y="18" class="sec-label" fill="#475569" font-size="10" text-anchor="middle">PRIORIDAD</text>
+        <text x="1020" y="18" class="sec-label" fill="#475569" font-size="10" text-anchor="middle">DELTA</text>
+
+        <!-- ROW HELPER macro: y-base for each row -->
+        <!-- Row 1: y=28 -->
+        <rect x="0" y="28" width="1040" height="40" fill="white"/>
+        <text x="20"  y="50" class="obj-field">Fianzas (base)</text>
+        <text x="20"  y="63" class="obj-muted">Fianza__c · Contrato__c</text>
+        <text x="260" y="50" class="obj-muted" text-anchor="middle">Existe (relaciones mal)</text>
+        <text x="460" y="50" class="obj-muted" text-anchor="middle">M-D Contrato→Fianza</text>
+        <!-- Bar 40% -->
+        <rect x="580" y="38" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="38" width="64"  height="14" rx="7" fill="#d97706"/>
+        <text x="660" y="62" class="obj-muted" text-anchor="middle">40%</text>
+        <text x="860" y="50" class="obj-muted" text-anchor="middle" fill="#dc2626" font-weight="700">🔴 Crítico</text>
+        <text x="1020" y="50" class="obj-muted" text-anchor="middle" fill="#d97706">-60%</text>
+        <line x1="0" y1="68" x2="1040" y2="68" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 2 -->
+        <rect x="0" y="68" width="1040" height="40" fill="#fafafa"/>
+        <text x="20"  y="90" class="obj-field">Fianzas (Convenio + EndosoFianza)</text>
+        <text x="260" y="90" class="obj-muted" text-anchor="middle">Endoso__c (naming colisionado)</text>
+        <text x="460" y="90" class="obj-muted" text-anchor="middle">Convenio_Mod + Endoso_de_Fianza</text>
+        <rect x="580" y="78" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="78" width="20"  height="14" rx="7" fill="#dc2626"/>
+        <text x="660" y="102" class="obj-muted" text-anchor="middle">12%</text>
+        <text x="860" y="90" class="obj-muted" text-anchor="middle" fill="#dc2626" font-weight="700">🔴 Crítico</text>
+        <text x="1020" y="90" class="obj-muted" text-anchor="middle" fill="#dc2626">-88%</text>
+        <line x1="0" y1="108" x2="1040" y2="108" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 3 -->
+        <rect x="0" y="108" width="1040" height="40" fill="white"/>
+        <text x="20"  y="130" class="obj-field">Instituciones</text>
+        <text x="20"  y="143" class="obj-muted">Afianzadora solo como campo texto</text>
+        <text x="260" y="130" class="obj-muted" text-anchor="middle">Campo texto en Fianza</text>
+        <text x="460" y="130" class="obj-muted" text-anchor="middle">Institucion__c + 2 hijos M-D</text>
+        <rect x="580" y="118" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="118" width="8"   height="14" rx="7" fill="#dc2626"/>
+        <text x="660" y="142" class="obj-muted" text-anchor="middle">5%</text>
+        <text x="860" y="130" class="obj-muted" text-anchor="middle" fill="#dc2626" font-weight="700">🔴 Alto</text>
+        <text x="1020" y="130" class="obj-muted" text-anchor="middle" fill="#dc2626">-95%</text>
+        <line x1="0" y1="148" x2="1040" y2="148" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 4 -->
+        <rect x="0" y="148" width="1040" height="40" fill="#fafafa"/>
+        <text x="20"  y="170" class="obj-field">Seguros</text>
+        <text x="20"  y="183" class="obj-muted">Seguro__c · Endoso de Seguro</text>
+        <text x="260" y="170" class="obj-muted" text-anchor="middle">— No implementado —</text>
+        <text x="460" y="170" class="obj-muted" text-anchor="middle">Seguro__c unificado + Endoso M-D</text>
+        <rect x="580" y="158" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <text x="660" y="182" class="obj-muted" text-anchor="middle">0%</text>
+        <text x="860" y="170" class="obj-muted" text-anchor="middle" fill="#dc2626" font-weight="700">🔴 Alto</text>
+        <text x="1020" y="170" class="obj-muted" text-anchor="middle" fill="#dc2626">-100%</text>
+        <line x1="0" y1="188" x2="1040" y2="188" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 5 -->
+        <rect x="0" y="188" width="1040" height="40" fill="white"/>
+        <text x="20"  y="210" class="obj-field">Cobranza (Plan de Pagos · Recibo)</text>
+        <text x="260" y="210" class="obj-muted" text-anchor="middle">— No implementado —</text>
+        <text x="460" y="210" class="obj-muted" text-anchor="middle">Plan_de_Pagos__c + Recibo__c</text>
+        <rect x="580" y="198" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <text x="660" y="222" class="obj-muted" text-anchor="middle">0%</text>
+        <text x="860" y="210" class="obj-muted" text-anchor="middle" fill="#d97706" font-weight="700">🟡 Medio</text>
+        <text x="1020" y="210" class="obj-muted" text-anchor="middle" fill="#dc2626">-100%</text>
+        <line x1="0" y1="228" x2="1040" y2="228" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 6 -->
+        <rect x="0" y="228" width="1040" height="40" fill="#fafafa"/>
+        <text x="20"  y="250" class="obj-field">Comisiones (Comision__c · Tabla)</text>
+        <text x="260" y="250" class="obj-muted" text-anchor="middle">— No implementado —</text>
+        <text x="460" y="250" class="obj-muted" text-anchor="middle">Comision__c + Tabla_de_Comisiones__c</text>
+        <rect x="580" y="238" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <text x="660" y="262" class="obj-muted" text-anchor="middle">0%</text>
+        <text x="860" y="250" class="obj-muted" text-anchor="middle" fill="#d97706" font-weight="700">🟡 Medio</text>
+        <text x="1020" y="250" class="obj-muted" text-anchor="middle" fill="#dc2626">-100%</text>
+        <line x1="0" y1="268" x2="1040" y2="268" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 7 -->
+        <rect x="0" y="268" width="1040" height="40" fill="white"/>
+        <text x="20"  y="290" class="obj-field">Flujo de Ventas (Lead · Opp · Account)</text>
+        <text x="260" y="290" class="obj-muted" text-anchor="middle">— No implementado —</text>
+        <text x="460" y="290" class="obj-muted" text-anchor="middle">Lead + Opportunity + Person Account</text>
+        <rect x="580" y="278" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <text x="660" y="302" class="obj-muted" text-anchor="middle">0%</text>
+        <text x="860" y="290" class="obj-muted" text-anchor="middle" fill="#94a3b8" font-weight="700">⬜ Fase 4</text>
+        <text x="1020" y="290" class="obj-muted" text-anchor="middle" fill="#dc2626">-100%</text>
+        <line x1="0" y1="308" x2="1040" y2="308" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 8 — EXTRAS que tenemos -->
+        <rect x="0" y="308" width="1040" height="40" fill="#f0fdf4"/>
+        <text x="20"  y="330" class="obj-field" fill="#16a34a">Precalificacion__c (extra valioso)</text>
+        <text x="260" y="330" class="obj-muted" text-anchor="middle" fill="#16a34a">Implementado · completo</text>
+        <text x="460" y="330" class="obj-muted" text-anchor="middle">No en doc, sí en negocio</text>
+        <rect x="580" y="318" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="318" width="152" height="14" rx="7" fill="#16a34a"/>
+        <text x="660" y="342" class="obj-muted" text-anchor="middle">95%</text>
+        <text x="860" y="330" class="obj-muted" text-anchor="middle" fill="#16a34a" font-weight="700">✅ Preservar</text>
+        <text x="1020" y="330" class="obj-muted" text-anchor="middle" fill="#16a34a">+valor</text>
+        <line x1="0" y1="348" x2="1040" y2="348" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <!-- Row 9 -->
+        <rect x="0" y="348" width="1040" height="40" fill="#f0fdf4"/>
+        <text x="20"  y="370" class="obj-field" fill="#16a34a">LWC Airtable UI (extra valioso)</text>
+        <text x="260" y="370" class="obj-muted" text-anchor="middle" fill="#16a34a">20 componentes funcionales</text>
+        <text x="460" y="370" class="obj-muted" text-anchor="middle">No especificado en doc</text>
+        <rect x="580" y="358" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="358" width="144" height="14" rx="7" fill="#16a34a"/>
+        <text x="660" y="382" class="obj-muted" text-anchor="middle">90%</text>
+        <text x="860" y="370" class="obj-muted" text-anchor="middle" fill="#16a34a" font-weight="700">✅ Migrar</text>
+        <text x="1020" y="370" class="obj-muted" text-anchor="middle" fill="#16a34a">+valor</text>
+        <line x1="0" y1="388" x2="1040" y2="388" stroke="#e2e8f0" stroke-width="0.8"/>
+
+        <rect x="0" y="388" width="1040" height="28" fill="#f8fafc" rx="4"/>
+        <text x="20" y="406" class="sec-label" fill="#475569" font-size="10">PROMEDIO GENERAL (MÓDULOS DEL CLIENTE)</text>
+        <rect x="580" y="396" width="160" height="14" rx="7" fill="#e2e8f0"/>
+        <rect x="580" y="396" width="26"  height="14" rx="7" fill="#dc2626"/>
+        <text x="660" y="420" class="obj-muted" text-anchor="middle" font-weight="700" fill="#dc2626">~16%</text>
+        <text x="1020" y="406" class="obj-muted" text-anchor="middle" fill="#dc2626" font-weight="700">-84%</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 7. DECISION -->
+  <section class="section" id="decision">
+    <div class="section-head">
+      <h2>7. ¿Nuevo sandbox o modificar lo existente?</h2>
+      <span class="pill pill-blue">Decisión estratégica</span>
+    </div>
+    <p class="lead">Evaluación de las dos opciones con sus ventajas, riesgos y recomendación final.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="border:1.5px solid var(--bad);border-radius:10px;padding:18px;background:#fff">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--bad);margin-bottom:10px">❌ Opción A — Modificar org actual</div>
+        <ul style="font-size:12px;color:var(--tv-mid);padding-left:16px;line-height:2">
+          <li>Cambiar <code>No_Contrato__c</code> (Lookup estándar → M-D custom) requiere migración destructiva</li>
+          <li>Mover Contratista/Beneficiario de custom a Account implica merge de registros</li>
+          <li>Separar <code>Endoso__c</code> en dos objetos rompe datos existentes</li>
+          <li>Añadir 7 módulos nuevos sobre base incorrecta genera deuda técnica</li>
+          <li>Riesgo alto de inconsistencias en datos de producción</li>
+        </ul>
+      </div>
+      <div style="border:1.5px solid var(--ok);border-radius:10px;padding:18px;background:#fff">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ok);margin-bottom:10px">✅ Opción B — Nuevo sandbox + migración selectiva</div>
+        <ul style="font-size:12px;color:var(--tv-mid);padding-left:16px;line-height:2">
+          <li>Data model correcto desde el inicio, sin compromisos</li>
+          <li>El sandbox actual sirve como referencia y laboratorio</li>
+          <li>Arquitectura Apex (Controller/Selector/Wrapper) se migra: ~20% refactor</li>
+          <li>20 LWC se migran: ~30% refactor por componente (solo cambia el Apex de fondo)</li>
+          <li>Precalificacion__c se copia definición completa al nuevo sandbox</li>
+          <li>Cero riesgo para datos existentes en producción</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-blue">
+      <strong>Recomendación: Nuevo sandbox con migración selectiva de código</strong>
+      La relación Fianza→Contrato incorrecta, los objetos custom que deberían ser Accounts, y la ausencia de 7 módulos completos hacen que construir sobre la base actual sea más costoso y riesgoso que empezar limpio con el 70% del código ya escrito reutilizable.
+    </div>
+
+    <table>
+      <thead><tr><th>Artefacto</th><th>¿Se rescata?</th><th>Esfuerzo de migración</th></tr></thead>
+      <tbody>
+        <tr><td>Arquitectura Apex Controller/Selector/Wrapper</td><td><span class="badge badge-ok">Sí, completo</span></td><td>~20% refactor — actualizar queries a nuevo modelo</td></tr>
+        <tr><td>20 LWC Airtable UI (HTML/CSS/JS)</td><td><span class="badge badge-ok">Sí, casi completo</span></td><td>~30% por componente — solo cambia Apex de fondo</td></tr>
+        <tr><td><code>Precalificacion__c</code> campos y lógica</td><td><span class="badge badge-ok">Sí, completo</span></td><td>Copiar definición de campos al nuevo sandbox</td></tr>
+        <tr><td><code>Tech_Relacion__c</code></td><td><span class="badge badge-warn">Parcial</span></td><td>Mantener en transición, deprecar al tener M-D nativos</td></tr>
+        <tr><td>Seed scripts / datos demo</td><td><span class="badge badge-warn">Reescribir</span></td><td>Adaptar al nuevo modelo de datos</td></tr>
+        <tr><td><code>No_Contrato__c</code> (Lookup a Contract estándar)</td><td><span class="badge badge-bad">No</span></td><td>Eliminar — reemplazar por M-D a Contrato__c custom</td></tr>
+        <tr><td><code>Contratista__c</code> y <code>Beneficiario__c</code> custom</td><td><span class="badge badge-bad">No</span></td><td>Resolver con Account directo o con decisión del cliente</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8. BLOQUEANTE -->
+  <section class="section" id="bloqueante">
+    <div class="section-head">
+      <h2>8. Decisión bloqueante</h2>
+      <span class="pill pill-red">Confirmar con cliente antes de Fase 1</span>
+    </div>
+    <div class="alert alert-warn">
+      <strong>¿Contratista__c queda como objeto propio o se fusiona en Account?</strong>
+      Esta decisión afecta la estructura de Fianza__c, Precalificacion__c y toda la UI de contratistas. Debe confirmarse antes de empezar la Fase 1.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+      <div class="note note-blue">
+        <strong>Opción A — Contratista__c como objeto propio</strong>
+        <code>Contratista__c</code> con Lookup a Account. <code>Fianza__c</code> → Lookup a <code>Contratista__c</code>. <code>Precalificacion__c</code> → M-D de <code>Contratista__c</code>. El modelo actual es cercano a esto. Permite campos propios de contratista (capacidad, antigüedad, ICP score) sin contaminar Account.
+      </div>
+      <div class="note note-warn">
+        <strong>Opción B — Account puro</strong>
+        Todo sube a Account. <code>Precalificacion__c</code> → M-D de Account. Más alineado con el doc del cliente pero requiere más trabajo de migración y el 360° de cliente en Account se mezcla con datos de contratista.
+      </div>
+    </div>
+    <div class="notes" style="margin-top:12px">
+      <div class="note note-blue">
+        <strong>Segunda decisión: Proyecto__c</strong>
+        ¿Queda como objeto propio o como campo lookup en Contrato__c? El cliente lo menciona como campo de Contrato, no como objeto. Confirmar si el alcance de los proyectos requiere objeto propio.
+      </div>
+      <div class="note note-blue">
+        <strong>Tercera decisión: SPIFF</strong>
+        Integrar, migrar o solo enlazar. Impacta el diseño de <code>Comision__c</code> y <code>Tabla_de_Comisiones__c</code> en Fase 2.
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. PLAN -->
+  <section class="section" id="plan">
+    <div class="section-head">
+      <h2>9. Plan de acción por fases</h2>
+      <span class="pill pill-blue">Roadmap</span>
+    </div>
+
+    <!-- TIMELINE SVG -->
+    <div class="diagram" style="padding:16px 20px">
+      <svg viewBox="0 0 1040 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#1e73be"/></marker>
+        </defs>
+        <!-- Timeline bar -->
+        <line x1="20" y1="50" x2="1020" y2="50" stroke="#e2e8f0" stroke-width="3"/>
+        <line x1="20" y1="50" x2="1020" y2="50" stroke="url(#tl)" stroke-width="3" marker-end="url(#at)"/>
+        <defs>
+          <linearGradient id="tl" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#64748b"/>
+            <stop offset="15%"  stop-color="#1e73be"/>
+            <stop offset="32%"  stop-color="#3b82f6"/>
+            <stop offset="52%"  stop-color="#6366f1"/>
+            <stop offset="68%"  stop-color="#8b5cf6"/>
+            <stop offset="84%"  stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#f59e0b"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Phase dots & labels -->
+        <!-- F0 -->
+        <circle cx="60"   cy="50" r="10" fill="#64748b"/>
+        <text x="60"   y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F0</text>
+        <text x="60"   y="74" text-anchor="middle" font-size="9" fill="#64748b" font-weight="600">Prep.</text>
+        <text x="60"   y="86" text-anchor="middle" font-size="8" fill="#94a3b8">1 sem</text>
+        <!-- F1 -->
+        <circle cx="220"  cy="50" r="10" fill="#1e73be"/>
+        <text x="220"  y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F1</text>
+        <text x="220"  y="74" text-anchor="middle" font-size="9" fill="#1e73be" font-weight="600">Fianzas core</text>
+        <text x="220"  y="86" text-anchor="middle" font-size="8" fill="#94a3b8">2 sem</text>
+        <!-- F2 -->
+        <circle cx="400"  cy="50" r="10" fill="#3b82f6"/>
+        <text x="400"  y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F2</text>
+        <text x="400"  y="74" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="600">Cobranza</text>
+        <text x="400"  y="86" text-anchor="middle" font-size="8" fill="#94a3b8">2 sem</text>
+        <!-- F3 -->
+        <circle cx="580"  cy="50" r="10" fill="#6366f1"/>
+        <text x="580"  y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F3</text>
+        <text x="580"  y="74" text-anchor="middle" font-size="9" fill="#6366f1" font-weight="600">Seguros</text>
+        <text x="580"  y="86" text-anchor="middle" font-size="8" fill="#94a3b8">2 sem</text>
+        <!-- F4 -->
+        <circle cx="740"  cy="50" r="10" fill="#8b5cf6"/>
+        <text x="740"  y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F4</text>
+        <text x="740"  y="74" text-anchor="middle" font-size="9" fill="#8b5cf6" font-weight="600">Ventas</text>
+        <text x="740"  y="86" text-anchor="middle" font-size="8" fill="#94a3b8">2 sem</text>
+        <!-- F5 -->
+        <circle cx="880"  cy="50" r="10" fill="#10b981"/>
+        <text x="880"  y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F5</text>
+        <text x="880"  y="74" text-anchor="middle" font-size="9" fill="#10b981" font-weight="600">Gestión</text>
+        <text x="880"  y="86" text-anchor="middle" font-size="8" fill="#94a3b8">ongoing</text>
+        <!-- F6 -->
+        <circle cx="1000" cy="50" r="10" fill="#d97706"/>
+        <text x="1000" y="54" text-anchor="middle" font-size="9" fill="white" font-weight="700">F6</text>
+        <text x="1000" y="74" text-anchor="middle" font-size="9" fill="#d97706" font-weight="600">LWC Migr.</text>
+        <text x="1000" y="86" text-anchor="middle" font-size="8" fill="#94a3b8">paralelo</text>
+
+        <!-- Parallel indicator for F6 -->
+        <rect x="920" y="20" width="120" height="14" fill="#fef3c7" stroke="#fbbf24" stroke-width="0.7" rx="4"/>
+        <text x="980" y="31" text-anchor="middle" font-size="8" fill="#b45309" font-weight="600">⬇ PARALELO CON F1–F3</text>
+      </svg>
+    </div>
+
+    <div class="phases">
+      <div class="phase-card phase-0">
+        <div class="phase-num">Fase 0 · Preparación</div>
+        <h4>Sentar las bases</h4>
+        <div class="duration">⏱ 1 semana</div>
+        <ul>
+          <li>Crear sandbox nuevo (Developer o Partial Copy)</li>
+          <li>Exportar seed data del org actual</li>
+          <li>Documentar campos de Precalificacion__c</li>
+          <li>Confirmar decisión bloqueante: Contratista__c vs Account</li>
+          <li>Confirmar Proyecto__c vs campo en Contrato</li>
+          <li>Definir estrategia SPIFF (integrar / migrar / enlazar)</li>
+        </ul>
+      </div>
+      <div class="phase-card phase-1">
+        <div class="phase-num">Fase 1 · Core de Fianzas</div>
+        <h4>Modelo de datos correcto</h4>
+        <div class="duration">⏱ 2 semanas · Prioridad máxima</div>
+        <ul>
+          <li>Crear Institucion__c + EjecutivoContacto__c + AccesoPortal__c</li>
+          <li>Redefinir Contrato__c con todos los campos del cliente</li>
+          <li>Crear Fianza__c como hijo M-D de Contrato__c</li>
+          <li>Crear Convenio_Modificatorio__c (M-D de Contrato)</li>
+          <li>Crear Endoso_de_Fianza__c (Lookup a Convenio)</li>
+          <li>Renombrar Vendedores__c → Vendedor__c</li>
+          <li>Migrar Apex Selectors y Wrappers al nuevo modelo</li>
+          <li>Migrar LWC techFianzas, techContratistas, techContratos</li>
+        </ul>
+      </div>
+      <div class="phase-card phase-2">
+        <div class="phase-num">Fase 2 · Cobranza y Comisiones</div>
+        <h4>Capa financiera operativa</h4>
+        <div class="duration">⏱ 2 semanas</div>
+        <ul>
+          <li>Crear Plan_de_Pagos__c (M-D de Fianza)</li>
+          <li>Crear Recibo__c (M-D de Plan)</li>
+          <li>Crear Tabla_de_Comisiones__c (maestra, Admin-only)</li>
+          <li>Crear Comision__c (M-D de Fianza)</li>
+          <li>Automatización: liberar comisión al cobrar recibo</li>
+          <li>Automatización: clawback proporcional al cancelar Fianza</li>
+          <li>Automatización: ajuste de recibos si Endoso afecta prima</li>
+          <li>Sub-módulo Admin: edición inline + carga CSV + auditoría</li>
+        </ul>
+      </div>
+      <div class="phase-card phase-3">
+        <div class="phase-num">Fase 3 · Módulo Seguros</div>
+        <h4>Objeto central unificado</h4>
+        <div class="duration">⏱ 2 semanas</div>
+        <ul>
+          <li>Crear Seguro__c (ramos, vigencia, primas, path de estatus)</li>
+          <li>Crear Endoso__c de Seguro (M-D de Seguro)</li>
+          <li>Reutilizar Plan_de_Pagos__c y Recibo__c de Fase 2</li>
+          <li>Auto: cálculo diario de Días para vencer</li>
+          <li>Auto: cambio de estatus "Por renovar" por ramo</li>
+          <li>Auto: cálculo % Comisión desde Tabla_de_Comisiones__c</li>
+          <li>Auto: Prima total = Subtotal + IVA + Ajuste</li>
+          <li>LWC: techSeguros en el Airtable UI</li>
+        </ul>
+      </div>
+      <div class="phase-card phase-4">
+        <div class="phase-num">Fase 4 · Flujo de Ventas</div>
+        <h4>Lead → Oportunidad → Producto</h4>
+        <div class="duration">⏱ 2 semanas</div>
+        <ul>
+          <li>Lead estándar con scoring 0–100 (60+25+15)</li>
+          <li>Conversión automática Lead → Oportunidad</li>
+          <li>Oportunidad: estados, cierre ganado/perdido, reciclaje</li>
+          <li>Auto cierre Ganado: crear Seguro o Contrato, heredar datos</li>
+          <li>Auto reciclaje: Lead "Reciclado" a 10–11 meses</li>
+          <li>Person Account habilitado para personas físicas</li>
+          <li>Vendedor__c con asignación desde Oportunidad</li>
+          <li>LWC techProspeccion (ya existe, conectar)</li>
+        </ul>
+      </div>
+      <div class="phase-card phase-5">
+        <div class="phase-num">Fase 5 · Gestión avanzada</div>
+        <h4>Renovaciones · Remarketing · Reportes</h4>
+        <div class="duration">⏱ Ongoing</div>
+        <ul>
+          <li>Capa Renovaciones: alertas por ramo, Oportunidad de renovación</li>
+          <li>Capa Remarketing: cadencias 7d·30d·60d·90d, cross-sell</li>
+          <li>Digital Engagement: WhatsApp, SMS, Messenger (reemplaza Respond.io)</li>
+          <li>5 tableros: Ventas, Marketing, Operaciones, Promotoría, IA</li>
+          <li>Integración / migración de SPIFF</li>
+          <li>Configuración Agentforce para captura y cierre autónomo</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card phase-6" style="margin-top:14px">
+      <div class="phase-num">Fase 6 · Migración LWC Airtable UI · Paralelo a Fases 1–3</div>
+      <h4>Rescatar los 20 componentes existentes</h4>
+      <div class="duration">⏱ Paralelo · Estimar ~30% refactor por componente</div>
+      <table style="margin-top:8px">
+        <thead><tr><th>Componente</th><th>Esfuerzo</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td><code>techFianzas</code> · <code>techContratos</code></td><td><span class="badge badge-warn">Medio</span></td><td>Actualizar Selector/Wrapper al nuevo M-D</td></tr>
+          <tr><td><code>techContratistas</code> · <code>techContratistaInterfaces</code></td><td><span class="badge badge-warn">Medio</span></td><td>Ajustar según decisión Contratista__c vs Account</td></tr>
+          <tr><td><code>techAmpliaciones</code></td><td><span class="badge badge-bad">Alto</span></td><td>Separar en EndosoFianza + EndosoSeguro</td></tr>
+          <tr><td><code>techBeneficiarios</code> · <code>techAfianzados</code></td><td><span class="badge badge-warn">Medio</span></td><td>Resolver con Account, actualizar queries</td></tr>
+          <tr><td><code>techProyectos</code> · <code>techPrecalificacionPanel</code></td><td><span class="badge badge-ok">Bajo</span></td><td>Verificar lookups y adaptar</td></tr>
+          <tr><td>Nuevos: Seguros · Cobranza · Comisiones · Instituciones</td><td><span class="badge badge-bad">Alto</span></td><td>Implementar desde cero (UI nueva)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 10. SPEC DETALLADA -->
+  <section class="section" id="spec">
+    <div class="section-head">
+      <h2>10. Especificación Detallada: Objetos, Campos y Relaciones</h2>
+      <span class="pill pill-blue">Plan de Implementación</span>
+    </div>
+    <p class="lead">Catálogo completo de objetos a crear o modificar en el nuevo sandbox. Para cada objeto se especifica: nombre API, etiqueta, modelo de compartición, campos (nombre API / tipo / requerido / descripción), relaciones y reglas clave de validación.</p>
+
+    <div class="alert alert-blue" style="margin-bottom:20px">
+      <strong>Convenciones de tipos</strong>
+      <code>T</code> = Text · <code>N</code> = Number · <code>C$</code> = Currency · <code>%</code> = Percent · <code>D</code> = Date · <code>DT</code> = DateTime · <code>CB</code> = Checkbox · <code>PL</code> = Picklist · <code>ML</code> = Multi-select Picklist · <code>LU</code> = Lookup · <code>MD</code> = Master-Detail · <code>AU</code> = Auto-Number · <code>FA</code> = Formula · <code>TA</code> = Text Area (Long) · <code>EM</code> = Email · <code>PH</code> = Phone · <code>URL</code> = URL
+    </div>
+
+    <!-- ── OBJ 1: Institucion__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#222F39,#1e73be);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Institucion__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Institución Afianzadora / Aseguradora</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Private</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Catálogo de instituciones de fianzas y seguros (GNP, Chubb, Mapfre, etc.). Objeto de referencia; la mayoría de objetos operativos apuntan a él.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>Nombre</td><td>T(80)</td><td>✓</td><td>Nombre comercial de la institución</td></tr>
+            <tr><td><code>RFC__c</code></td><td>RFC</td><td>T(13)</td><td>✓</td><td>RFC fiscal, 12 o 13 caracteres. VR: regex alfanumérico</td></tr>
+            <tr><td><code>Clave_CNBV__c</code></td><td>Clave CNBV</td><td>T(10)</td><td></td><td>Clave de registro ante la CNBV</td></tr>
+            <tr><td><code>Tipo_Institucion__c</code></td><td>Tipo</td><td>PL</td><td>✓</td><td>Afianzadora · Aseguradora · Afianzadora y Aseguradora</td></tr>
+            <tr><td><code>Activa__c</code></td><td>Activa</td><td>CB</td><td>✓</td><td>Default: true. Filtro en lookups</td></tr>
+            <tr><td><code>Razon_Social__c</code></td><td>Razón Social</td><td>T(120)</td><td></td><td>Nombre legal completo</td></tr>
+            <tr><td><code>Email_Oficial__c</code></td><td>Email Oficial</td><td>EM</td><td></td><td>Contacto institucional general</td></tr>
+            <tr><td><code>Telefono_Oficial__c</code></td><td>Teléfono</td><td>PH</td><td></td><td></td></tr>
+            <tr><td><code>Sitio_Web__c</code></td><td>Sitio Web</td><td>URL</td><td></td><td></td></tr>
+            <tr><td><code>Porcentaje_Reserva__c</code></td><td>% Reserva Técnica</td><td>%(5,2)</td><td></td><td>Porcentaje que cobra la institución como reserva</td></tr>
+            <tr><td><code>Notas__c</code></td><td>Notas</td><td>TA</td><td></td><td>Condiciones especiales, contactos, etc.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:#7c3aed;margin-top:8px;font-weight:600">Sin relaciones padre. Es referenciado por: Fianza__c, Seguro__c, Tabla_de_Comisiones__c.</p>
+      </div>
+    </div>
+
+    <!-- ── OBJ 2: Contrato__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#1e3a52,#1e73be);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">MODIFICAR</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Contrato__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Contrato Marco</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Private · Padre de Fianza__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Objeto maestro del modelo. El cliente manda explícitamente que <strong>Fianza__c sea hijo M-D de Contrato__c</strong>. Actualmente solo tiene Name; se amplía con todos los campos del modelo cliente.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Contrato</td><td>AU</td><td>✓</td><td>Autonumérico: CONT-{0000} o heredar No_Contrato__c</td></tr>
+            <tr><td><code>No_Contrato__c</code></td><td>Número de Contrato</td><td>T(30)</td><td></td><td>Número asignado por la institución (si difiere del autonumérico)</td></tr>
+            <tr><td><code>Fecha_Firma__c</code></td><td>Fecha de Firma</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Fecha_Inicio_Vigencia__c</code></td><td>Inicio de Vigencia</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Fecha_Fin_Vigencia__c</code></td><td>Fin de Vigencia</td><td>D</td><td></td><td></td></tr>
+            <tr><td><code>Tipo_Contrato__c</code></td><td>Tipo de Contrato</td><td>PL</td><td>✓</td><td>Fianzas · Seguros · Mixto · Marco</td></tr>
+            <tr><td><code>Monto_Total__c</code></td><td>Monto Total</td><td>C$(16,2)</td><td></td><td>Suma de montos de fianzas/seguros hijos (puede ser fórmula)</td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Borrador · Activo · Vencido · Cancelado</td></tr>
+            <tr><td><code>Contratista__c</code></td><td>Contratista</td><td>LU → Account</td><td>✓</td><td>Si se migra a Account (Person Account). RelName: Contratos_Contratista</td></tr>
+            <tr><td><code>Beneficiario__c</code></td><td>Beneficiario</td><td>LU → Account</td><td></td><td>Puede haber varios → considerar M-D intermedia o campo texto</td></tr>
+            <tr><td><code>Proyecto__c</code></td><td>Proyecto</td><td>LU → Proyecto__c</td><td></td><td>Proyecto de construcción u obra relacionado</td></tr>
+            <tr><td><code>Vendedor__c</code></td><td>Vendedor / Agente</td><td>LU → Vendedor__c</td><td></td><td>Agente que generó el contrato</td></tr>
+            <tr><td><code>Notas_Internas__c</code></td><td>Notas Internas</td><td>TA</td><td></td><td></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:#1e73be;margin-top:8px;font-weight:600">Relaciones hijo: Fianza__c (M-D), Seguro__c (Lookup o M-D), Convenio_Modificatorio__c (M-D si aplica al contrato directamente).</p>
+      </div>
+    </div>
+
+    <!-- ── OBJ 3: Fianza__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#1e3a52,#3b82f6);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">REDEFINIR</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Fianza__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Fianza de Obra / Fidelidad</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Controlled by Parent (M-D) · Hijo de Contrato__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Cambia relación padre de <code>Contract</code> (estándar) a <code>Contrato__c</code> (custom). La relación M-D elimina la necesidad de <code>Tech_Relacion__c</code> para el vínculo principal.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Fianza</td><td>AU</td><td>✓</td><td>Autonumérico: FIANZ-{00000}</td></tr>
+            <tr><td><code>No_Fianza__c</code></td><td>No. Fianza Institución</td><td>T(40)</td><td></td><td>Número asignado por la afianzadora</td></tr>
+            <tr><td><code>Contrato__c</code></td><td>Contrato</td><td>MD → Contrato__c</td><td>✓</td><td>RelName: Fianzas. On-delete: Restrict (preservar historia)</td></tr>
+            <tr><td><code>Institucion__c</code></td><td>Institución</td><td>LU → Institucion__c</td><td>✓</td><td>Afianzadora emisora</td></tr>
+            <tr><td><code>Tipo_Fianza__c</code></td><td>Tipo de Fianza</td><td>PL</td><td>✓</td><td>Cumplimiento · Anticipo · Oculto · Vicios · Fidelidad · Otro</td></tr>
+            <tr><td><code>Monto__c</code></td><td>Monto Afianzado</td><td>C$(16,2)</td><td>✓</td><td></td></tr>
+            <tr><td><code>Porcentaje__c</code></td><td>% del Contrato</td><td>%(5,2)</td><td></td><td>Porcentaje que representa del contrato marco</td></tr>
+            <tr><td><code>Fecha_Inicio__c</code></td><td>Inicio de Vigencia</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Fecha_Vigencia__c</code></td><td>Fin de Vigencia</td><td>D</td><td>✓</td><td>VR: debe ser mayor a Fecha_Inicio__c</td></tr>
+            <tr><td><code>Dias_Para_Vencer__c</code></td><td>Días para Vencer</td><td>FA(N)</td><td></td><td><code>Fecha_Vigencia__c - TODAY()</code>. Usado en alertas</td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Vigente · Por Vencer (≤30d) · Vencida · Cancelada · Reclamada</td></tr>
+            <tr><td><code>Afianzado__c</code></td><td>Afianzado (Contratista)</td><td>LU → Account</td><td>✓</td><td>Persona u empresa que cubre la fianza</td></tr>
+            <tr><td><code>Observaciones__c</code></td><td>Observaciones</td><td>TA</td><td></td><td></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">Relaciones hijo: Convenio_Modificatorio__c (M-D), Endoso_de_Fianza__c (M-D), Plan_de_Pagos__c (M-D), Comision__c (Lookup).</p>
+        <div class="alert alert-warn" style="margin-top:10px"><strong>Automatización recomendada</strong>Flow tipo Scheduled que actualice Status__c a "Por Vencer" cuando Dias_Para_Vencer__c &lt;= 30. Notificación al Vendedor y al propietario del Contrato.</div>
+      </div>
+    </div>
+
+    <!-- ── OBJ 4: Convenio_Modificatorio__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#3730a3,#6366f1);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Convenio_Modificatorio__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Convenio Modificatorio de Fianza</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Controlled by Parent · Hijo de Fianza__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Registra cambios formales al monto, plazo o condiciones de una fianza. Reemplaza el objeto <code>Endoso__c</code> actual (mal nombrado como Ampliación).</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Convenio</td><td>AU</td><td>✓</td><td>CONV-{0000}</td></tr>
+            <tr><td><code>Fianza__c</code></td><td>Fianza</td><td>MD → Fianza__c</td><td>✓</td><td>RelName: Convenios_Modificatorios. On-delete: Restrict</td></tr>
+            <tr><td><code>Fecha__c</code></td><td>Fecha del Convenio</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Tipo__c</code></td><td>Tipo de Modificación</td><td>PL</td><td>✓</td><td>Ampliación de Monto · Prórroga · Reducción · Cancelación Parcial · Otro</td></tr>
+            <tr><td><code>Monto_Anterior__c</code></td><td>Monto Anterior</td><td>C$(16,2)</td><td></td><td>Valor antes del convenio (puede ser fórmula desde Fianza)</td></tr>
+            <tr><td><code>Monto_Nuevo__c</code></td><td>Monto Nuevo</td><td>C$(16,2)</td><td></td><td>Monto resultante tras el convenio</td></tr>
+            <tr><td><code>Nueva_Fecha_Vigencia__c</code></td><td>Nueva Fecha Vigencia</td><td>D</td><td></td><td>Solo si Tipo = Prórroga</td></tr>
+            <tr><td><code>Descripcion__c</code></td><td>Descripción</td><td>TA</td><td></td><td>Detalles del cambio</td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Borrador · Pendiente Aprobación · Aprobado · Rechazado</td></tr>
+            <tr><td><code>Aprobado_Por__c</code></td><td>Aprobado Por</td><td>LU → User</td><td></td><td>Usuario Salesforce que aprueba el cambio</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-blue" style="margin-top:10px"><strong>Automatización</strong>Flow de Aprobación: al cambiar Status a "Aprobado", actualizar Monto__c y/o Fecha_Vigencia__c en Fianza__c padre.</div>
+      </div>
+    </div>
+
+    <!-- ── OBJ 5: Endoso_de_Fianza__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#4c1d95,#8b5cf6);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Endoso_de_Fianza__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Endoso / Modificación Oficial Institución</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Controlled by Parent · Hijo de Fianza__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Documento formal emitido por la institución que modifica la fianza. Diferente al Convenio_Modificatorio (que es interno). El objeto <code>Endoso__c</code> actual mezcla ambos conceptos.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Endoso</td><td>AU</td><td>✓</td><td>END-{00000}</td></tr>
+            <tr><td><code>Fianza__c</code></td><td>Fianza</td><td>MD → Fianza__c</td><td>✓</td><td>RelName: Endosos_Fianza. On-delete: Restrict</td></tr>
+            <tr><td><code>No_Endoso_Institucion__c</code></td><td>No. Endoso (Institución)</td><td>T(40)</td><td></td><td>Folio asignado por la afianzadora</td></tr>
+            <tr><td><code>Tipo_Endoso__c</code></td><td>Tipo</td><td>PL</td><td>✓</td><td>Aumento de Suma · Reducción · Prórroga · Cancelación · Sustitución · Otro</td></tr>
+            <tr><td><code>Fecha_Endoso__c</code></td><td>Fecha del Endoso</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Monto__c</code></td><td>Monto del Endoso</td><td>C$(16,2)</td><td></td><td>Diferencia aplicada (positivo = aumento, negativo = reducción)</td></tr>
+            <tr><td><code>Nueva_Fecha_Vigencia__c</code></td><td>Nueva Fecha Vigencia</td><td>D</td><td></td><td></td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Emitido · Aplicado · Rechazado · Cancelado</td></tr>
+            <tr><td><code>Convenio_Relacionado__c</code></td><td>Convenio Modificatorio</td><td>LU → Convenio_Modificatorio__c</td><td></td><td>Convenio interno que originó este endoso</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── OBJ 6: Seguro__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#065f46,#059669);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Seguro__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Póliza de Seguro</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Private</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Módulo paralelo a Fianzas para gestión de pólizas de seguro. Comparte el catálogo de Instituciones pero tiene ciclo de vida propio.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Póliza</td><td>AU</td><td>✓</td><td>POL-{00000}</td></tr>
+            <tr><td><code>No_Poliza__c</code></td><td>No. Póliza (Institución)</td><td>T(40)</td><td></td><td>Folio de la aseguradora</td></tr>
+            <tr><td><code>Contrato__c</code></td><td>Contrato</td><td>LU → Contrato__c</td><td>✓</td><td>RelName: Seguros. (Lookup, no M-D, para independencia)</td></tr>
+            <tr><td><code>Institucion__c</code></td><td>Institución</td><td>LU → Institucion__c</td><td>✓</td><td>Aseguradora emisora</td></tr>
+            <tr><td><code>Tipo_Seguro__c</code></td><td>Tipo de Seguro</td><td>PL</td><td>✓</td><td>Vida · Gastos Médicos · RC · Daños · Robo · Transporte · Otro</td></tr>
+            <tr><td><code>Suma_Asegurada__c</code></td><td>Suma Asegurada</td><td>C$(16,2)</td><td>✓</td><td></td></tr>
+            <tr><td><code>Prima__c</code></td><td>Prima Anual</td><td>C$(16,2)</td><td></td><td>Costo del seguro al año</td></tr>
+            <tr><td><code>Fecha_Inicio__c</code></td><td>Inicio de Vigencia</td><td>D</td><td>✓</td><td></td></tr>
+            <tr><td><code>Fecha_Fin__c</code></td><td>Fin de Vigencia</td><td>D</td><td>✓</td><td>VR: mayor a Fecha_Inicio__c</td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Vigente · Por Vencer · Vencida · Cancelada · Siniestrada</td></tr>
+            <tr><td><code>Asegurado__c</code></td><td>Asegurado</td><td>LU → Account</td><td>✓</td><td>Titular de la póliza</td></tr>
+            <tr><td><code>Beneficiario_Seguro__c</code></td><td>Beneficiario</td><td>LU → Account</td><td></td><td>Quien cobra en caso de siniestro</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── OBJ 7: Plan_de_Pagos__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#78350f,#d97706);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Plan_de_Pagos__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Plan de Pagos (cabecera)</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Controlled by Parent · Hijo de Fianza__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Define el calendario de pago de primas de una fianza. Cada plan genera N registros <code>Recibo__c</code> hijos.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>Plan de Pagos</td><td>AU</td><td>✓</td><td>PLAN-{0000}</td></tr>
+            <tr><td><code>Fianza__c</code></td><td>Fianza</td><td>MD → Fianza__c</td><td>✓</td><td>RelName: Planes_de_Pago. On-delete: Restrict</td></tr>
+            <tr><td><code>Periodicidad__c</code></td><td>Periodicidad</td><td>PL</td><td>✓</td><td>Mensual · Bimestral · Trimestral · Semestral · Anual · Único</td></tr>
+            <tr><td><code>No_Pagos__c</code></td><td>Número de Pagos</td><td>N(2,0)</td><td>✓</td><td>Total de recibos a generar</td></tr>
+            <tr><td><code>Fecha_Primer_Pago__c</code></td><td>Fecha Primer Pago</td><td>D</td><td>✓</td><td>Base para calcular fechas subsecuentes</td></tr>
+            <tr><td><code>Monto_Total__c</code></td><td>Monto Total</td><td>C$(16,2)</td><td>✓</td><td>Suma total a pagar en el plan</td></tr>
+            <tr><td><code>Monto_Por_Pago__c</code></td><td>Monto por Pago</td><td>FA(C$)</td><td></td><td><code>Monto_Total__c / No_Pagos__c</code></td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Activo · Completado · Cancelado</td></tr>
+            <tr><td><code>Pagos_Realizados__c</code></td><td>Pagos Realizados</td><td>FA(N)</td><td></td><td>Count de Recibo__c hijos con Status = Pagado</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-blue" style="margin-top:10px"><strong>Automatización</strong>Flow (After Insert/Update) en Plan_de_Pagos__c: al activar, crear automáticamente los N registros Recibo__c con fecha calculada según Periodicidad.</div>
+      </div>
+    </div>
+
+    <!-- ── OBJ 8: Recibo__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#7c2d12,#ea580c);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Recibo__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Recibo de Pago de Prima</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Controlled by Parent · Hijo de Plan_de_Pagos__c</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Cada recibo representa un pago individual dentro del plan. Es el objeto de cobranza operativa del día a día.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Recibo</td><td>AU</td><td>✓</td><td>REC-{000000}</td></tr>
+            <tr><td><code>Plan_de_Pagos__c</code></td><td>Plan de Pagos</td><td>MD → Plan_de_Pagos__c</td><td>✓</td><td>RelName: Recibos. On-delete: Cascade (si cancelas el plan)</td></tr>
+            <tr><td><code>No_Pago__c</code></td><td>No. de Pago</td><td>N(2,0)</td><td>✓</td><td>Número secuencial dentro del plan (1, 2, 3…)</td></tr>
+            <tr><td><code>Fecha_Vencimiento__c</code></td><td>Fecha de Vencimiento</td><td>D</td><td>✓</td><td>Fecha límite de pago</td></tr>
+            <tr><td><code>Fecha_Pago__c</code></td><td>Fecha de Pago</td><td>D</td><td></td><td>Se llena al registrar el pago. VR: no puede ser futura</td></tr>
+            <tr><td><code>Monto__c</code></td><td>Monto</td><td>C$(16,2)</td><td>✓</td><td>Copiado del Monto_Por_Pago del plan; editable para ajustes</td></tr>
+            <tr><td><code>Forma_Pago__c</code></td><td>Forma de Pago</td><td>PL</td><td></td><td>Transferencia · Cheque · Efectivo · Cargo Automático · OXXO Pay</td></tr>
+            <tr><td><code>Referencia__c</code></td><td>Referencia / Folio</td><td>T(60)</td><td></td><td>Número de operación bancaria</td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Pendiente · Pagado · Vencido · Cancelado · En Mora</td></tr>
+            <tr><td><code>Dias_Mora__c</code></td><td>Días en Mora</td><td>FA(N)</td><td></td><td><code>IF(Status__c='Pagado', 0, MAX(TODAY()-Fecha_Vencimiento__c, 0))</code></td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-warn" style="margin-top:10px"><strong>Automatización</strong>Scheduled Flow diario: cambiar Status de Pendiente → Vencido cuando TODAY() > Fecha_Vencimiento__c y no existe Fecha_Pago__c. Enviar notificación push al Vendedor y correo al contratista.</div>
+      </div>
+    </div>
+
+    <!-- ── OBJ 9: Tabla_de_Comisiones__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#1e1b4b,#4f46e5);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Tabla_de_Comisiones__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Catálogo de Tasas de Comisión</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Public Read Only</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Define los porcentajes de comisión por tipo de agente, tipo de fianza/seguro e institución. Se usa para calcular automáticamente Comision__c al registrar un pago.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>Nombre de Tabla</td><td>T(80)</td><td>✓</td><td>Ej: "Agente Independiente · Cumplimiento · GNP 2026"</td></tr>
+            <tr><td><code>Tipo_Agente__c</code></td><td>Tipo de Agente</td><td>PL</td><td>✓</td><td>Agente Independiente · Promotor · Subagente · Broker</td></tr>
+            <tr><td><code>Tipo_Producto__c</code></td><td>Tipo de Producto</td><td>PL</td><td>✓</td><td>Fianza · Seguro · Todos</td></tr>
+            <tr><td><code>Tipo_Fianza__c</code></td><td>Tipo de Fianza</td><td>PL</td><td></td><td>Solo aplica si Tipo_Producto = Fianza. Mismo catálogo que Fianza__c</td></tr>
+            <tr><td><code>Institucion__c</code></td><td>Institución</td><td>LU → Institucion__c</td><td></td><td>Si vacío, aplica a todas las instituciones</td></tr>
+            <tr><td><code>Porcentaje_Comision__c</code></td><td>% Comisión</td><td>%(5,2)</td><td>✓</td><td>Porcentaje sobre la prima cobrada</td></tr>
+            <tr><td><code>Porcentaje_Max__c</code></td><td>% Máximo</td><td>%(5,2)</td><td></td><td>Techo para comisiones con bonificación</td></tr>
+            <tr><td><code>Vigencia_Inicio__c</code></td><td>Vigencia Inicio</td><td>D</td><td></td><td>Permite versionar tarifas por fecha</td></tr>
+            <tr><td><code>Activa__c</code></td><td>Activa</td><td>CB</td><td>✓</td><td>Default: true. Filtro en lookups de cálculo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── OBJ 10: Comision__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#312e81,#6366f1);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">NUEVO</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Comision__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Comisión generada por cobro</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Private</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Se genera automáticamente (vía Flow) cada vez que un <code>Recibo__c</code> cambia a "Pagado". Calcula el monto usando la Tabla_de_Comisiones__c vigente.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>No. Comisión</td><td>AU</td><td>✓</td><td>COM-{000000}</td></tr>
+            <tr><td><code>Recibo__c</code></td><td>Recibo</td><td>LU → Recibo__c</td><td>✓</td><td>RelName: Comisiones. Recibo que generó esta comisión</td></tr>
+            <tr><td><code>Fianza__c</code></td><td>Fianza</td><td>LU → Fianza__c</td><td></td><td>Cross-link para reportes (formula: Plan_de_Pagos__r.Fianza__c)</td></tr>
+            <tr><td><code>Vendedor__c</code></td><td>Vendedor</td><td>LU → Vendedor__c</td><td>✓</td><td>RelName: Comisiones_Vendedor</td></tr>
+            <tr><td><code>Tabla_Comisiones__c</code></td><td>Tabla Aplicada</td><td>LU → Tabla_de_Comisiones__c</td><td></td><td>Registro que se usó para el cálculo</td></tr>
+            <tr><td><code>Monto_Prima__c</code></td><td>Monto Prima Cobrada</td><td>C$(16,2)</td><td>✓</td><td>Copia del Recibo__c.Monto__c al momento del cálculo</td></tr>
+            <tr><td><code>Porcentaje_Comision__c</code></td><td>% Comisión Aplicado</td><td>%(5,2)</td><td>✓</td><td>Copia del porcentaje de la tabla</td></tr>
+            <tr><td><code>Monto_Comision__c</code></td><td>Monto Comisión</td><td>FA(C$)</td><td></td><td><code>Monto_Prima__c * Porcentaje_Comision__c / 100</code></td></tr>
+            <tr><td><code>Status__c</code></td><td>Estatus</td><td>PL</td><td>✓</td><td>Calculada · Aprobada · Pagada · Retenida · Reversada</td></tr>
+            <tr><td><code>Fecha_Pago__c</code></td><td>Fecha de Pago al Agente</td><td>D</td><td></td><td>Fecha en que se liquidó al vendedor</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-blue" style="margin-top:10px"><strong>Automatización</strong>Flow (After Update) en Recibo__c: cuando Status cambia a "Pagado", buscar la Tabla_de_Comisiones__c vigente y crear automáticamente el registro Comision__c.</div>
+      </div>
+    </div>
+
+    <!-- ── OBJ 11: Vendedor__c ── -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:22px;overflow:hidden">
+      <div style="background:linear-gradient(90deg,#134e4a,#0d9488);padding:12px 18px;display:flex;align-items:center;gap:12px">
+        <span style="background:rgba(255,255,255,.15);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;color:white;letter-spacing:1px">RENOMBRAR</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:white">Vendedor__c</span>
+        <span style="color:rgba(255,255,255,.7);font-size:12px">· Vendedor / Agente de Ventas (antes: Vendedores__c)</span>
+        <span style="margin-left:auto;color:rgba(255,255,255,.55);font-size:11px">Sharing: Read/Write · OWD: Private</span>
+      </div>
+      <div style="padding:16px 18px">
+        <p style="font-size:12px;color:#475569;margin-bottom:10px">Renombrar <code>Vendedores__c</code> → <code>Vendedor__c</code> (singular, consistente con los demás objetos). Ampliar campos para soportar comisiones y acceso portal.</p>
+        <table>
+          <thead><tr><th>Campo API</th><th>Etiqueta</th><th>Tipo</th><th>Req.</th><th>Descripción / Valores</th></tr></thead>
+          <tbody>
+            <tr><td><code>Name</code></td><td>Nombre Completo</td><td>T(80)</td><td>✓</td><td></td></tr>
+            <tr><td><code>RFC__c</code></td><td>RFC</td><td>T(13)</td><td>✓</td><td>VR: regex RFC mexicano</td></tr>
+            <tr><td><code>Tipo_Agente__c</code></td><td>Tipo de Agente</td><td>PL</td><td>✓</td><td>Mismo catálogo que Tabla_de_Comisiones__c.Tipo_Agente__c</td></tr>
+            <tr><td><code>Clave_Agente__c</code></td><td>Clave de Agente</td><td>T(20)</td><td></td><td>Clave CNSF o interna</td></tr>
+            <tr><td><code>Email__c</code></td><td>Email</td><td>EM</td><td>✓</td><td>VR: unicidad por email</td></tr>
+            <tr><td><code>Telefono__c</code></td><td>Teléfono</td><td>PH</td><td></td><td></td></tr>
+            <tr><td><code>Activo__c</code></td><td>Activo</td><td>CB</td><td>✓</td><td>Default: true. Filtro en lookup de Contrato y Fianza</td></tr>
+            <tr><td><code>Porcentaje_Comision_Base__c</code></td><td>% Comisión Base</td><td>%(5,2)</td><td></td><td>Override individual (si vacío, usa Tabla_de_Comisiones__c)</td></tr>
+            <tr><td><code>Usuario_SF__c</code></td><td>Usuario Salesforce</td><td>LU → User</td><td></td><td>Para acceso al portal de agentes / Experience Cloud</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TABLA RESUMEN RELACIONES ── -->
+    <h3 style="font-size:14px;font-weight:700;color:#222F39;margin:24px 0 10px">Mapa de relaciones entre objetos</h3>
+    <table>
+      <thead><tr><th>Objeto Hijo</th><th>Campo Relación</th><th>Tipo</th><th>Objeto Padre</th><th>Nombre Relación (Child)</th><th>On Delete</th></tr></thead>
+      <tbody>
+        <tr><td><code>Fianza__c</code></td><td><code>Contrato__c</code></td><td><span class="badge badge-bad">M-D</span></td><td><code>Contrato__c</code></td><td>Fianzas</td><td>Restrict</td></tr>
+        <tr><td><code>Fianza__c</code></td><td><code>Institucion__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Institucion__c</code></td><td>Fianzas_Emitidas</td><td>Don't delete</td></tr>
+        <tr><td><code>Convenio_Modificatorio__c</code></td><td><code>Fianza__c</code></td><td><span class="badge badge-bad">M-D</span></td><td><code>Fianza__c</code></td><td>Convenios_Modificatorios</td><td>Restrict</td></tr>
+        <tr><td><code>Endoso_de_Fianza__c</code></td><td><code>Fianza__c</code></td><td><span class="badge badge-bad">M-D</span></td><td><code>Fianza__c</code></td><td>Endosos_Fianza</td><td>Restrict</td></tr>
+        <tr><td><code>Plan_de_Pagos__c</code></td><td><code>Fianza__c</code></td><td><span class="badge badge-bad">M-D</span></td><td><code>Fianza__c</code></td><td>Planes_de_Pago</td><td>Restrict</td></tr>
+        <tr><td><code>Recibo__c</code></td><td><code>Plan_de_Pagos__c</code></td><td><span class="badge badge-bad">M-D</span></td><td><code>Plan_de_Pagos__c</code></td><td>Recibos</td><td>Cascade</td></tr>
+        <tr><td><code>Comision__c</code></td><td><code>Recibo__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Recibo__c</code></td><td>Comisiones</td><td>Don't delete</td></tr>
+        <tr><td><code>Comision__c</code></td><td><code>Vendedor__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Vendedor__c</code></td><td>Comisiones_Vendedor</td><td>Don't delete</td></tr>
+        <tr><td><code>Seguro__c</code></td><td><code>Contrato__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Contrato__c</code></td><td>Seguros</td><td>Don't delete</td></tr>
+        <tr><td><code>Seguro__c</code></td><td><code>Institucion__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Institucion__c</code></td><td>Seguros_Emitidos</td><td>Don't delete</td></tr>
+        <tr><td><code>Contrato__c</code></td><td><code>Contratista__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td>Account</td><td>Contratos_Contratista</td><td>Don't delete</td></tr>
+        <tr><td><code>Tabla_de_Comisiones__c</code></td><td><code>Institucion__c</code></td><td><span class="badge badge-warn">Lookup</span></td><td><code>Institucion__c</code></td><td>Tablas_Comision</td><td>Don't delete</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ── TABLA RESUMEN AUTOMATIZACIONES ── -->
+    <h3 style="font-size:14px;font-weight:700;color:#222F39;margin:24px 0 10px">Automatizaciones (Flows) prioritarias</h3>
+    <table>
+      <thead><tr><th>Flow</th><th>Trigger</th><th>Acción</th><th>Fase</th></tr></thead>
+      <tbody>
+        <tr><td>Alerta Fianza Por Vencer</td><td>Scheduled · Diario</td><td>Fianza__c: Status → "Por Vencer" si Dias_Para_Vencer ≤ 30. Email + notif. in-app al Vendedor</td><td><span class="badge badge-ok">F1</span></td></tr>
+        <tr><td>Generar Recibos desde Plan</td><td>After Insert/Update en Plan_de_Pagos__c</td><td>Crear N registros Recibo__c con fechas calculadas según Periodicidad</td><td><span class="badge badge-ok">F2</span></td></tr>
+        <tr><td>Calcular Comisión al Pago</td><td>After Update en Recibo__c (Status = Pagado)</td><td>Buscar Tabla_de_Comisiones vigente, crear Comision__c con monto calculado</td><td><span class="badge badge-ok">F2</span></td></tr>
+        <tr><td>Aplicar Convenio a Fianza</td><td>After Update en Convenio_Modificatorio__c (Status = Aprobado)</td><td>Actualizar Monto y/o Fecha_Vigencia en Fianza__c padre</td><td><span class="badge badge-warn">F3</span></td></tr>
+        <tr><td>Vencer Recibos Pendientes</td><td>Scheduled · Diario</td><td>Recibo__c: Status Pendiente → Vencido si TODAY() > Fecha_Vencimiento y sin Fecha_Pago</td><td><span class="badge badge-ok">F2</span></td></tr>
+        <tr><td>Status Contrato Cascade</td><td>After Update en Contrato__c (Status = Cancelado)</td><td>Cancelar Fianzas y Seguros activos hijos, notificar al equipo</td><td><span class="badge badge-warn">F3</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <h3>Technovalue · "El mejor CRM del Mundo en México"</h3>
+    <p>Este documento es propiedad de Technovalue y fue preparado exclusivamente para el proyecto Ollin Protección. El análisis, los diagramas y el plan de acción reflejan el estado del org al 24 de abril de 2026 y están sujetos a actualización conforme avance la implementación. Para preguntas o aclaraciones contactar al equipo de proyecto.</p>
+  </div>
+
+</div>
+</body>
+</html>

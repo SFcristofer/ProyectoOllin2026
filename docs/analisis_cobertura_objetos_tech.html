@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Análisis de Cobertura — Objetos Tech vs Documento de Datos</title>
+<style>
+  :root {
+    --ink: #0f172a; --slate: #475569; --slate-soft: #f1f5f9; --line: #e2e8f0; --bg: #f8fafc;
+    --ok: #10b981; --ok-soft: #d1fae5; --warn: #f59e0b; --warn-soft: #fef3c7;
+    --err: #ef4444; --err-soft: #fee2e2;
+    --info: #6366f1; --info-soft: #eef2ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* HEADER */
+  header.top { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 40px 32px; border-radius: 16px; margin-bottom: 28px; box-shadow: 0 10px 30px rgba(15,23,42,0.2); }
+  header.top .eyebrow { text-transform: uppercase; letter-spacing: 2px; font-size: 12px; opacity: 0.6; margin-bottom: 8px; }
+  header.top h1 { margin: 0 0 10px; font-size: 28px; }
+  header.top p { margin: 0; opacity: 0.8; font-size: 14.5px; max-width: 820px; }
+  .meta { margin-top: 16px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .meta span { font-size: 12px; opacity: 0.65; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px; }
+
+  /* SCOREBOARD */
+  .scoreboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .score-card { background: white; border-radius: 12px; padding: 20px 22px; box-shadow: 0 2px 8px rgba(15,23,42,0.05); border-top: 4px solid var(--slate); text-align: center; }
+  .score-card.ok { border-top-color: var(--ok); }
+  .score-card.warn { border-top-color: var(--warn); }
+  .score-card.err { border-top-color: var(--err); }
+  .score-card .num { font-size: 38px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .score-card.ok .num { color: var(--ok); }
+  .score-card.warn .num { color: var(--warn); }
+  .score-card.err .num { color: var(--err); }
+  .score-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); font-weight: 600; }
+
+  /* RESUMEN TABLA */
+  .summary-table { background: white; border-radius: 14px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); }
+  .summary-table h2 { margin: 0 0 18px; font-size: 17px; color: var(--ink); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); padding: 8px 12px; border-bottom: 2px solid var(--line); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--slate-soft); }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.ok { background: var(--ok-soft); color: #047857; }
+  .badge.warn { background: var(--warn-soft); color: #b45309; }
+  .badge.err { background: var(--err-soft); color: #b91c1c; }
+  .badge.missing { background: #1e293b; color: white; }
+  .obj-name { font-family: "SF Mono", Consolas, monospace; font-size: 12.5px; font-weight: 600; color: var(--info); }
+  .field-count { font-size: 12px; color: var(--slate); }
+  .coverage-bar { width: 100%; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .coverage-fill { height: 100%; border-radius: 4px; }
+
+  /* OBJETO CARD */
+  .obj-section { background: white; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); overflow: hidden; }
+  .obj-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; cursor: pointer; user-select: none; }
+  .obj-header:hover { background: var(--slate-soft); }
+  .obj-header .left { display: flex; align-items: center; gap: 14px; }
+  .obj-header .obj-api { font-family: "SF Mono", Consolas, monospace; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .obj-header .obj-desc { font-size: 13px; color: var(--slate); margin-top: 2px; }
+  .obj-header .right { display: flex; align-items: center; gap: 10px; }
+  .status-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .status-dot.ok { background: var(--ok); }
+  .status-dot.warn { background: var(--warn); }
+  .status-dot.err { background: var(--err); }
+  .chevron { font-size: 18px; color: var(--slate); transition: transform 0.2s; }
+  .obj-body { padding: 0 24px 24px; border-top: 1px solid var(--line); }
+  .obj-body-inner { padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .col-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; }
+  .col-ok .col-title { color: var(--ok); }
+  .col-miss .col-title { color: var(--err); }
+  .field-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .field-item:last-child { border-bottom: none; }
+  .field-item .icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+  .field-item .fname { font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; color: var(--ink); font-weight: 600; }
+  .field-item .fdesc { font-size: 12px; color: var(--slate); }
+  .note-box { margin-top: 16px; background: var(--warn-soft); border-left: 3px solid var(--warn); border-radius: 6px; padding: 12px 14px; font-size: 13px; color: #78350f; grid-column: 1 / -1; }
+  .note-box.err { background: var(--err-soft); border-left-color: var(--err); color: #7f1d1d; }
+  .note-box.ok { background: var(--ok-soft); border-left-color: var(--ok); color: #064e3b; }
+  .note-box strong { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+  /* CRITICOS */
+  .critical-section { background: white; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); border-left: 5px solid var(--err); padding: 24px 28px; }
+  .critical-section h2 { margin: 0 0 16px; font-size: 17px; display: flex; align-items: center; gap: 10px; color: #b91c1c; }
+  .missing-obj { background: var(--err-soft); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .missing-obj:last-child { margin-bottom: 0; }
+  .missing-obj .obj-title { font-family: "SF Mono", Consolas, monospace; font-weight: 700; font-size: 13px; color: #991b1b; margin-bottom: 6px; }
+  .missing-obj .obj-why { font-size: 13px; color: #7f1d1d; }
+  .missing-obj ul { margin: 8px 0 0; padding-left: 18px; font-size: 12.5px; color: #7f1d1d; }
+
+  /* STANDARD OBJECTS */
+  .std-section { background: white; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); border-left: 5px solid var(--info); padding: 24px 28px; }
+  .std-section h2 { margin: 0 0 16px; font-size: 17px; display: flex; align-items: center; gap: 10px; color: #4338ca; }
+  .std-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .std-card { background: var(--info-soft); border-radius: 8px; padding: 14px 16px; }
+  .std-card .sobj { font-family: "SF Mono", Consolas, monospace; font-weight: 700; font-size: 13px; color: #4338ca; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .std-card ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: #1e1b4b; line-height: 1.8; }
+
+  /* PRIORIDADES */
+  .priority-section { background: white; border-radius: 14px; margin-bottom: 28px; box-shadow: 0 2px 10px rgba(15,23,42,0.05); padding: 24px 28px; }
+  .priority-section h2 { margin: 0 0 18px; font-size: 17px; }
+  .priority-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .priority-item:last-child { border-bottom: none; }
+  .pnum { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+  .p1 { background: #fee2e2; color: #b91c1c; }
+  .p2 { background: #fef3c7; color: #92400e; }
+  .p3 { background: #dbeafe; color: #1e40af; }
+  .priority-item .ptitle { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+  .priority-item .pdesc { font-size: 13px; color: var(--slate); }
+  .priority-item .ptags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .ptag { font-size: 11px; background: var(--slate-soft); color: var(--slate); padding: 2px 8px; border-radius: 4px; font-family: "SF Mono", Consolas, monospace; }
+
+  /* TOGGLE */
+  .obj-body { display: block; }
+  @media print { body { background: white; } .obj-section { page-break-inside: avoid; box-shadow: none; border: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Análisis Técnico · Ollin Protección · ProyectoOllin2026</div>
+    <h1>Cobertura de Objetos Tech_ vs Documento de Estructura de Datos</h1>
+    <p>Comparación entre los objetos <code style="background:rgba(255,255,255,0.15);padding:2px 6px;border-radius:4px;font-size:13px">Tech_</code> desplegados en el org y los requerimientos del documento de diseño del cliente. Identifica campos faltantes, objetos sin crear y discrepancias arquitectónicas.</p>
+    <div class="meta">
+      <span>Fecha: 27 de abril de 2026</span>
+      <span>Branch: implement-airtable-ProyectoOllin2026</span>
+      <span>Org: ProyectoOllin2026</span>
+      <span>Revisado por: Juan Luis Ruiz</span>
+    </div>
+  </header>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="score-card ok">
+      <div class="num">2</div>
+      <div class="label">Objetos completos ✅</div>
+    </div>
+    <div class="score-card warn">
+      <div class="num">4</div>
+      <div class="label">Objetos parciales ⚠️</div>
+    </div>
+    <div class="score-card err">
+      <div class="num">2</div>
+      <div class="label">Objetos incompletos ❌</div>
+    </div>
+    <div class="score-card err">
+      <div class="num">3</div>
+      <div class="label">Objetos faltantes 🚫</div>
+    </div>
+  </div>
+
+  <!-- TABLA RESUMEN -->
+  <div class="summary-table">
+    <h2>Resumen de cobertura por objeto</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Objeto</th>
+          <th>Campos actuales</th>
+          <th>Cobertura estimada</th>
+          <th>Estado</th>
+          <th>Impacto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="obj-name">Tech_Recibo_Pago__c</span></td>
+          <td><span class="field-count">11 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~80%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:80%;background:#10b981"></div></div>
+          </td>
+          <td><span class="badge ok">✅ Casi completo</span></td>
+          <td style="font-size:12px;color:#475569">Bajo — faltan 3 campos menores</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Convenio_Modificatorio__c</span></td>
+          <td><span class="field-count">9 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~85%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:85%;background:#10b981"></div></div>
+          </td>
+          <td><span class="badge ok">✅ Casi completo</span></td>
+          <td style="font-size:12px;color:#475569">Bajo — campo duplicado a revisar</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Endoso__c</span></td>
+          <td><span class="field-count">12 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~70%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:70%;background:#f59e0b"></div></div>
+          </td>
+          <td><span class="badge warn">⚠️ Parcial</span></td>
+          <td style="font-size:12px;color:#475569">Medio — mezcla endoso seguro y fianza</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Plan_de_Pago__c</span></td>
+          <td><span class="field-count">8 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~60%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:60%;background:#f59e0b"></div></div>
+          </td>
+          <td><span class="badge warn">⚠️ Parcial</span></td>
+          <td style="font-size:12px;color:#475569">Medio — faltan campos de domiciliación</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Vendedor__c</span></td>
+          <td><span class="field-count">7 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~55%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:55%;background:#f59e0b"></div></div>
+          </td>
+          <td><span class="badge warn">⚠️ Parcial</span></td>
+          <td style="font-size:12px;color:#475569">Medio — faltan campos de perfil comercial</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Seguro__c</span></td>
+          <td><span class="field-count">9 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~35%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:35%;background:#ef4444"></div></div>
+          </td>
+          <td><span class="badge err">❌ Incompleto</span></td>
+          <td style="font-size:12px;color:#475569">Alto — faltan ~15 campos core</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Fianza__c</span></td>
+          <td><span class="field-count">7 campos</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~25%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:25%;background:#ef4444"></div></div>
+          </td>
+          <td><span class="badge err">❌ Incompleto</span></td>
+          <td style="font-size:12px;color:#475569">Crítico — faltan ~13 campos + relación padre</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Tech_Comision__c</span></td>
+          <td><span class="field-count">—</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">0%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:0%;background:#ef4444"></div></div>
+          </td>
+          <td><span class="badge missing">🚫 No existe</span></td>
+          <td style="font-size:12px;color:#475569">Crítico — capa de comisiones inoperante</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">EjecutivoContacto__c</span></td>
+          <td><span class="field-count">—</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">0%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:0%;background:#ef4444"></div></div>
+          </td>
+          <td><span class="badge missing">🚫 No existe</span></td>
+          <td style="font-size:12px;color:#475569">Alto — catálogo de instituciones incompleto</td>
+        </tr>
+        <tr>
+          <td><span class="obj-name">Lead / Opportunity / Account / Contract</span></td>
+          <td><span class="field-count">0 campos custom</span></td>
+          <td>
+            <div style="font-size:12px;margin-bottom:3px;color:#475569">~10%</div>
+            <div class="coverage-bar"><div class="coverage-fill" style="width:10%;background:#ef4444"></div></div>
+          </td>
+          <td><span class="badge missing">🚫 Sin customizar</span></td>
+          <td style="font-size:12px;color:#475569">Alto — Flujo de Ventas sin soporte</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DETALLE POR OBJETO -->
+  <h2 style="font-size:18px;margin:0 0 16px;color:var(--ink)">Detalle por objeto</h2>
+
+  <!-- Tech_Seguro__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot err"></div>
+        <div>
+          <div class="obj-api">Tech_Seguro__c</div>
+          <div class="obj-desc">Seguro unificado — Módulo Seguros · 9 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge err">❌ Incompleto — ~35%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Aseguradora__c</div><div class="fdesc">Lookup a Institución</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Cliente__c</div><div class="fdesc">Lookup a Account</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Vendedor__c</div><div class="fdesc">Lookup a Tech_Vendedor__c</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Numero_poliza__c</div><div class="fdesc">Número de seguro</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Oportunidad__c</div><div class="fdesc">Lookup a Opportunity (origen)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Poliza_renovada__c</div><div class="fdesc">Lookup self (renovación)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Promotoria__c</div><div class="fdesc">Campo de promotoría</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Producto__c</div><div class="fdesc">Subproducto / ramo</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Descripcion__c</div><div class="fdesc">Descripción general</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Ramo__c</div><div class="fdesc">Auto / GMM / Vida / Fianzas / Daños</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Estatus__c</div><div class="fdesc">Path: Emitida → Vigente → Por renovar → Renovada/Vencida</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Inicio_del_seguro__c / Fin_del_seguro__c</div><div class="fdesc">Fechas de vigencia</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Frecuencia_de_pago__c</div><div class="fdesc">Mensual / Trimestral / Anual</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Forma_de_pago__c</div><div class="fdesc">Contado / Domiciliado / Manual</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Prima_neta__c, Descuento__c</div><div class="fdesc">Desglose de prima</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Recargos__c, Derechos__c, Subtotal__c</div><div class="fdesc">Desglose de prima (continuación)</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">IVA__c, Ajuste__c, Prima_total__c</div><div class="fdesc">Fórmula: Subtotal + IVA + Ajuste</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Canal__c</div><div class="fdesc">Digital / Consultivo / Promotoría</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Tipo_originador__c</div><div class="fdesc">Humano / IA / Externo</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Dias_para_vencer__c</div><div class="fdesc">Fórmula calculada diariamente</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Pct_Comision__c, Monto_Comision__c</div><div class="fdesc">% y monto calculados desde Tabla_Comision__c</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Semaforo_renovacion__c, Ventana_Renovacion__c</div><div class="fdesc">Para alertas de renovación</div></div></div>
+        </div>
+        <div class="note-box err"><strong>⚠️ Impacto alto</strong>Sin los campos de prima (desglose), vigencia y estatus, el módulo de Seguros no puede funcionar correctamente. La integración con Cobranza (Plan de Pagos) depende de Prima_total__c y Frecuencia_de_pago__c.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Fianza__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot err"></div>
+        <div>
+          <div class="obj-api">Tech_Fianza__c</div>
+          <div class="obj-desc">Fianza individual — Módulo Fianzas · 7 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge err">❌ Incompleto — ~25%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Estatus__c</div><div class="fdesc">Estado de la fianza</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Afianzadoras__c</div><div class="fdesc">Lookup a Institución (afianzadora)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Beneficiarios__c</div><div class="fdesc">Lookup a Account</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Contratistas__c</div><div class="fdesc">Lookup a Account</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Costo_de_fianza__c</div><div class="fdesc">Costo general</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">DiasReclamaci_n__c</div><div class="fdesc">Días para reclamación</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Endoso__c</div><div class="fdesc">Lookup a Tech_Endoso__c</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Numero_Fianza__c</div><div class="fdesc">Auto-number identificador</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Tipo_de_Riesgo__c</div><div class="fdesc">Cumplimiento / Anticipo / Vicios / Pasivos</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Fecha_de_Emision__c</div><div class="fdesc">Fecha de emisión original</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Fecha_de_Vencimiento__c</div><div class="fdesc">Vencimiento original</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Monto_Afianzado__c</div><div class="fdesc">Monto original afianzado</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Prima_neta__c</div><div class="fdesc">Prima original</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Monto_Afianzado_Vigente__c</div><div class="fdesc">Actualizado por endosos</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Prima_Vigente__c</div><div class="fdesc">Actualizada por endosos</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Fecha_Vencimiento_Vigente__c</div><div class="fdesc">Actualizada por endosos</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Dias_para_vencer__c</div><div class="fdesc">Fórmula desde Fecha_Vencimiento_Vigente__c</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Exposicion__c</div><div class="fdesc">% Monto / Valor_Contrato_Vigente</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Vendedor__c</div><div class="fdesc">Hereda de Contrato</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">PlazoReclamacion__c</div><div class="fdesc">Plazo en días/meses</div></div></div>
+        </div>
+        <div class="note-box err"><strong>🚨 Crítico — Relación padre con Contract no definida</strong>La jerarquía Contrato → Fianza es Master-Detail. Sin el campo M-D al objeto <code>Contract</code> (estándar), las fianzas no pueden colgar del contrato. Los rollups de suma y exposición % en Contract tampoco funcionarán.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Endoso__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot warn"></div>
+        <div>
+          <div class="obj-api">Tech_Endoso__c</div>
+          <div class="obj-desc">Endoso de Seguro y Fianza — 12 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge warn">⚠️ Parcial — ~70%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Afecta_prima__c</div><div class="fdesc">Checkbox clave para recálculo automático ✅</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Tipo_endoso__c</div><div class="fdesc">Tipo de modificación</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Nueva_prima__c</div><div class="fdesc">Prima tras el endoso</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fin_Vigencia__c, Fin_Contrato__c</div><div class="fdesc">Nuevas fechas</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Seguro__c</div><div class="fdesc">Lookup a Tech_Seguro__c</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fianza__c</div><div class="fdesc">Lookup a Tech_Fianza__c</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Estado__c, Motivo__c, Observaciones__c</div><div class="fdesc">Campos de gestión</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos / Issues que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Fecha_efectiva__c</div><div class="fdesc">Fecha de aplicación del endoso</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Diferencia_monto__c</div><div class="fdesc">Diferencia en monto afianzado (no solo prima)</div></div></div>
+          <div class="field-item"><span class="icon">⚠️</span><div><div class="fname">Objeto dual Seguro + Fianza</div><div class="fdesc">El documento los separa en Tech_Endoso__c (seguro) y Tech_Endoso_Fianza__c (fianza). Un solo objeto mezcla ambos, lo que complica validaciones y reportes por módulo.</div></div></div>
+        </div>
+        <div class="note-box"><strong>⚠️ Decisión arquitectónica pendiente</strong>Mantener un objeto único para ambos tipos de endoso simplifica el modelo pero requiere validaciones de campo obligatorio condicional (Seguro XOR Fianza). El documento original los separa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Plan_de_Pago__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot warn"></div>
+        <div>
+          <div class="obj-api">Tech_Plan_de_Pago__c</div>
+          <div class="obj-desc">Plan de pagos — Módulo Cobranza · 8 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge warn">⚠️ Parcial — ~60%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fecha_inicio__c</div><div class="fdesc">Inicio del plan</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Metodo_Pago__c</div><div class="fdesc">Forma de pago</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Num_recibos__c</div><div class="fdesc">Número de recibos a generar</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Periodo_Pago__c</div><div class="fdesc">Frecuencia (Mensual / Trimestral / Anual)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fianzas__c</div><div class="fdesc">Lookup a Tech_Fianza__c ✅</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Seguros__c</div><div class="fdesc">Lookup a Tech_Seguro__c ✅</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Monto_total__c</div><div class="fdesc">Total del plan de pagos</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Dia_cobro_mensual__c</div><div class="fdesc">Día del mes de cobro recurrente</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Domiciliacion_activa__c</div><div class="fdesc">Checkbox — activa flujo automático vs manual</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Ultimos_4_digitos__c</div><div class="fdesc">Para identificar la tarjeta domiciliada</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Referencia_domiciliacion__c</div><div class="fdesc">Token de pasarela de pago</div></div></div>
+          <div class="field-item"><span class="icon">⚠️</span><div><div class="fname">Estado__c y Estatus__c duplicados</div><div class="fdesc">Dos campos de estado — consolidar en uno</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Vendedor__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot warn"></div>
+        <div>
+          <div class="obj-api">Tech_Vendedor__c</div>
+          <div class="obj-desc">Vendedor custom — Módulo Ventas · 7 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge warn">⚠️ Parcial — ~55%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Email__c, Telefono__c</div><div class="fdesc">Datos de contacto</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Ramos__c</div><div class="fdesc">Productos asignados (multi-select)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Tipo_vendedor__c</div><div class="fdesc">Humano / IA / Externo ✅</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Estatus__c</div><div class="fdesc">Activo / Inactivo</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Usuario_Salesforce__c</div><div class="fdesc">Lookup a User ✅</div></div></div>
+          <div class="field-item"><span class="icon">⚠️</span><div><div class="fname">Name__c</div><div class="fdesc">Revisar si es redundante con el campo Name estándar del objeto</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Zona__c</div><div class="fdesc">Zona geográfica asignada</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Promotoria__c</div><div class="fdesc">Promotoría a la que pertenece</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Porcentaje_Comision_Ollin__c</div><div class="fdesc">% comisión sobre el ingreso Ollin</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Antiguedad__c</div><div class="fdesc">Fecha de inicio o años de servicio</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Carga_Trabajo__c</div><div class="fdesc">Para asignación automática de leads</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Recibo_Pago__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot ok"></div>
+        <div>
+          <div class="obj-api">Tech_Recibo_Pago__c</div>
+          <div class="obj-desc">Recibo de cobro — Módulo Cobranza · 11 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge ok">✅ Casi completo — ~80%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Numero__c</div><div class="fdesc">Auto-number</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fecha_programada__c, Fecha_pago__c</div><div class="fdesc">Fechas programada y real</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Monto_programado__c</div><div class="fdesc">Monto esperado</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Estado__c</div><div class="fdesc">Programado → Por cobrar → Cobrado/Vencido/Parcial</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Plan_de_Pagos__c</div><div class="fdesc">Lookup a Tech_Plan_de_Pago__c</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Metodo_pago__c, Intentos_Contacto__c</div><div class="fdesc">Gestión de cobranza</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Motivo_No_Pago__c, Poliza_numero__c</div><div class="fdesc">Campos de soporte</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">❌ Campos que FALTAN</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Monto_cobrado__c</div><div class="fdesc">Monto real recibido (para pagos parciales)</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Saldo__c</div><div class="fdesc">Saldo pendiente = Monto_programado - Monto_cobrado</div></div></div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Referencia_pago__c</div><div class="fdesc">Referencia bancaria o de pasarela</div></div></div>
+        </div>
+        <div class="note-box ok"><strong>✅ En buen estado</strong>Este objeto es el más completo del conjunto. Solo faltan 3 campos menores relacionados con pagos parciales y trazabilidad bancaria.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech_Convenio_Modificatorio__c -->
+  <div class="obj-section">
+    <div class="obj-header">
+      <div class="left">
+        <div class="status-dot ok"></div>
+        <div>
+          <div class="obj-api">Tech_Convenio_Modificatorio__c</div>
+          <div class="obj-desc">Convenio Modificatorio — Módulo Fianzas · 9 campos actuales</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge ok">✅ Casi completo — ~85%</span>
+      </div>
+    </div>
+    <div class="obj-body">
+      <div class="obj-body-inner">
+        <div class="col-ok">
+          <div class="col-title">✅ Campos que SÍ existen</div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Contract__c</div><div class="fdesc">M-D / Lookup a Contract estándar (padre)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Tipo_de_Modificacion__c</div><div class="fdesc">Ampliación / Reducción / Cambio alcance</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Fecha_del_Convenio__c, Descripcion__c</div><div class="fdesc">Datos del convenio</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Nuevo_Valor_Contrato__c</div><div class="fdesc">Valor actualizado del contrato</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Nueva_Fecha_Fin_Contrato__c</div><div class="fdesc">Nueva fecha de fin</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Diferencia_Monto__c</div><div class="fdesc">Diferencia = Nuevo - Original (fórmula)</div></div></div>
+          <div class="field-item"><span class="icon">✅</span><div><div class="fname">Motivo__c</div><div class="fdesc">Razón del convenio</div></div></div>
+        </div>
+        <div class="col-miss">
+          <div class="col-title">⚠️ Puntos a revisar</div>
+          <div class="field-item"><span class="icon">❌</span><div><div class="fname">Numero_Convenio__c</div><div class="fdesc">Auto-number para identificar el convenio</div></div></div>
+          <div class="field-item"><span class="icon">⚠️</span><div><div class="fname">Nueva_Fecha_Fin__c vs Nueva_Fecha_Fin_Contrato__c</div><div class="fdesc">Dos campos con el mismo propósito — consolidar en uno</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJETOS FALTANTES -->
+  <div class="critical-section">
+    <h2>🚫 Objetos requeridos que NO existen en el org</h2>
+
+    <div class="missing-obj">
+      <div class="obj-title">Tech_Comision__c — CRÍTICO</div>
+      <div class="obj-why">Sin este objeto la Capa 2 de Gestión (Comisiones) es completamente inoperante. No hay forma de rastrear qué comisión corresponde a cada póliza ni su estado de pago (Devengada → Liberada → Pagada).</div>
+      <ul>
+        <li>Seguro__c / Fianza__c (lookup al padre)</li>
+        <li>Vendedor__c (a quién se le paga)</li>
+        <li>Pct_Aplicado__c (snapshot del % al momento de emitir)</li>
+        <li>Monto_Ollin__c, Monto_Vendedor__c</li>
+        <li>Estatus__c: Devengada → Liberada → Pagada</li>
+        <li>Trigger: liberación al cobrar Recibo de Cobro</li>
+        <li>Clawback automático al cancelar póliza</li>
+      </ul>
+    </div>
+
+    <div class="missing-obj">
+      <div class="obj-title">EjecutivoContacto__c — ALTO</div>
+      <div class="obj-why">El catálogo de Instituciones requiere N ejecutivos de contacto por institución (M-D hijo). Actualmente Institución__c tiene Email/Teléfono a nivel raíz, lo cual solo permite un contacto y contradice el documento de diseño.</div>
+      <ul>
+        <li>Institucion__c (M-D parent)</li>
+        <li>Nombre_completo__c, Puesto__c, Area__c</li>
+        <li>Es_Contacto_Principal__c (solo 1 por institución)</li>
+        <li>Email__c, Telefono__c, Celular__c</li>
+      </ul>
+    </div>
+
+    <div class="missing-obj">
+      <div class="obj-title">Tech_Endoso_Fianza__c — MEDIO (o refactorizar Tech_Endoso__c)</div>
+      <div class="obj-why">El documento separa el Endoso de Seguro del Endoso de Fianza porque tienen campos distintos y distintos objetos padre. Actualmente Tech_Endoso__c mezcla ambos. Debe decidirse si se crea un objeto separado o se mantiene uno con validaciones condicionales.</div>
+      <ul>
+        <li>Convenio_Modificatorio__c (Lookup — lo que originó el endoso)</li>
+        <li>Fianza__c (M-D parent)</li>
+        <li>Nuevo_Monto_Afianzado__c, Nueva_Prima__c, Nueva_Fecha_Vencimiento__c</li>
+        <li>Tipo_Endoso__c específico de fianzas</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STANDARD OBJECTS -->
+  <div class="std-section">
+    <h2>📋 Objetos estándar — Sin campos custom desplegados</h2>
+    <p style="font-size:13.5px;color:#475569;margin:0 0 18px">Ninguno de los 5 objetos estándar tiene carpeta en el proyecto local, lo que significa que no se han desplegado campos custom. El Flujo de Ventas depende completamente de estos objetos.</p>
+    <div class="std-grid">
+      <div class="std-card">
+        <div class="sobj">Lead (Prospecto) <span class="badge err" style="font-size:10px">Sin campos</span></div>
+        <ul>
+          <li>Score__c (0–100) — calificación Agentforce</li>
+          <li>Puede_Reactivarse__c — para reciclaje 10–11 meses</li>
+          <li>Origen__c — Web / Referido / Llamada / Redes</li>
+          <li>Motivo_No_Calificacion__c</li>
+          <li>Datos_minimos_completos__c (fórmula)</li>
+        </ul>
+      </div>
+      <div class="std-card">
+        <div class="sobj">Opportunity (Oportunidades) <span class="badge err" style="font-size:10px">Sin campos</span></div>
+        <ul>
+          <li>Ramo__c, Subproducto__c</li>
+          <li>Vendedor__c (lookup a Tech_Vendedor__c)</li>
+          <li>Tipo_Originador__c (Digital / Consultivo / Promotoría)</li>
+          <li>Motivo_Cierre_Perdido__c, Aseguradora_Competidora__c</li>
+          <li>Puede_Reactivarse__c, Notas_Vendedor__c</li>
+        </ul>
+      </div>
+      <div class="std-card">
+        <div class="sobj">Account (Cuentas) <span class="badge warn" style="font-size:10px">Verificar Person Account</span></div>
+        <ul>
+          <li>Confirmar que Person Account está habilitado en el org</li>
+          <li>Definir Record Types: Cliente / Contratista / Beneficiario</li>
+          <li>Campos de segmentación según arquitectura definitiva</li>
+        </ul>
+      </div>
+      <div class="std-card">
+        <div class="sobj">Contract (Contrato) <span class="badge warn" style="font-size:10px">Usado como padre</span></div>
+        <ul>
+          <li>Tech_Fianza__c y Tech_Convenio_Modificatorio__c apuntan a Contract</li>
+          <li>Confirmar campos de Valor, Vigencia, Contratista, Beneficiario</li>
+          <li>Suma_Fianzas__c (rollup desde Tech_Fianza__c)</li>
+          <li>Exposicion__c (fórmula %)</li>
+          <li>Vendedor__c (lookup a Tech_Vendedor__c)</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:14px;background:#dbeafe;border-left:3px solid #6366f1;border-radius:6px;padding:12px 14px;font-size:13px;color:#1e1b4b">
+      <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Nota sobre Product2</strong>
+      Si se usa Product2 para modelar los subproductos de seguros/fianzas, se necesita configurar el catálogo con Price Book y los campos de Ramo / Tipo. Sin esto, los lookups a Product2 desde Tech_Seguro__c o Opportunity no tienen sentido.
+    </div>
+  </div>
+
+  <!-- PRIORIDADES -->
+  <div class="priority-section">
+    <h2>🚦 Orden de implementación recomendado</h2>
+
+    <div class="priority-item">
+      <div class="pnum p1">1</div>
+      <div>
+        <div class="ptitle">Crear Tech_Comision__c</div>
+        <div class="pdesc">Sin este objeto la capa de Gestión de Comisiones no existe. Debe crearse antes de probar el flujo de cobro → liberación de comisión.</div>
+        <div class="ptags"><span class="ptag">Tech_Comision__c</span><span class="ptag">Tabla_Comision__c</span><span class="ptag">Tech_Recibo_Pago__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p1">2</div>
+      <div>
+        <div class="ptitle">Completar Tech_Fianza__c — campos de montos y fechas vigentes</div>
+        <div class="pdesc">El objeto más crítico del módulo Fianzas solo tiene 7 de ~20 campos requeridos. Sin Monto_Afianzado__c, Prima_neta__c y la relación M-D con Contract, las fianzas no pueden ser funcionales.</div>
+        <div class="ptags"><span class="ptag">Tech_Fianza__c</span><span class="ptag">Contract</span><span class="ptag">Tech_Endoso_Fianza__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p1">3</div>
+      <div>
+        <div class="ptitle">Completar Tech_Seguro__c — desglose de primas y vigencia</div>
+        <div class="pdesc">Faltan ~15 campos. Los más urgentes son Prima_neta__c, Prima_total__c, Estatus__c (con path), Inicio/Fin vigencia y Frecuencia_de_pago__c porque de ellos depende el Plan de Pagos.</div>
+        <div class="ptags"><span class="ptag">Tech_Seguro__c</span><span class="ptag">Tech_Plan_de_Pago__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p2">4</div>
+      <div>
+        <div class="ptitle">Agregar campos custom a Lead y Opportunity</div>
+        <div class="pdesc">El Flujo de Ventas (Agentforce → Lead → Oportunidad → Cierre) no puede operar sin Score, Puede_Reactivarse, Ramo, Vendedor__c y Tipo_Originador__c.</div>
+        <div class="ptags"><span class="ptag">Lead</span><span class="ptag">Opportunity</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p2">5</div>
+      <div>
+        <div class="ptitle">Crear EjecutivoContacto__c + completar Institución</div>
+        <div class="pdesc">El catálogo de instituciones necesita soportar múltiples ejecutivos de contacto. El Email/Teléfono debe moverse de Institución__c al ejecutivo.</div>
+        <div class="ptags"><span class="ptag">EjecutivoContacto__c</span><span class="ptag">Institucion__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p2">6</div>
+      <div>
+        <div class="ptitle">Completar Tech_Plan_de_Pago__c — domiciliación</div>
+        <div class="pdesc">Agregar campos de domiciliación (activa, últimos 4 dígitos, referencia) y consolidar Estado/Estatus duplicados. Necesario para el Caso 3 del documento.</div>
+        <div class="ptags"><span class="ptag">Tech_Plan_de_Pago__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p3">7</div>
+      <div>
+        <div class="ptitle">Completar Tech_Vendedor__c y Tech_Recibo_Pago__c</div>
+        <div class="pdesc">Campos menores de perfil comercial en Vendedor y campos de pagos parciales en Recibo. Pueden hacerse en paralelo a los puntos anteriores.</div>
+        <div class="ptags"><span class="ptag">Tech_Vendedor__c</span><span class="ptag">Tech_Recibo_Pago__c</span></div>
+      </div>
+    </div>
+
+    <div class="priority-item">
+      <div class="pnum p3">8</div>
+      <div>
+        <div class="ptitle">Verificar y configurar Contract + Account (Person Account + Record Types)</div>
+        <div class="pdesc">Confirmar que Person Account está habilitado. Definir Record Types en Account para Cliente / Contratista / Beneficiario según la arquitectura definitiva.</div>
+        <div class="ptags"><span class="ptag">Account</span><span class="ptag">Contract</span><span class="ptag">Product2</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#1e293b,#0f172a);color:white;border-radius:12px;padding:26px 30px;margin-top:8px">
+    <h2 style="margin:0 0 10px;font-size:17px">Conclusión</h2>
+    <p style="margin:0;font-size:14px;opacity:0.85;max-width:900px">Con los objetos <code style="background:rgba(255,255,255,0.15);padding:2px 5px;border-radius:3px">Tech_</code> actuales <strong>no se cumple</strong> el documento de estructura de datos. La cobertura promedio es del ~55%. Los módulos de Seguros y Fianzas tienen los objetos base pero les faltan entre el 25% y 75% de sus campos. La capa de Comisiones no existe. Los objetos estándar (Lead, Opportunity) no tienen campos custom. La prioridad inmediata es <code style="background:rgba(255,255,255,0.15);padding:2px 5px;border-radius:3px">Tech_Comision__c</code>, completar <code style="background:rgba(255,255,255,0.15);padding:2px 5px;border-radius:3px">Tech_Fianza__c</code> y <code style="background:rgba(255,255,255,0.15);padding:2px 5px;border-radius:3px">Tech_Seguro__c</code>, y agregar campos a Lead y Opportunity.</p>
+  </div>
+
+</div>
+</body>
+</html>

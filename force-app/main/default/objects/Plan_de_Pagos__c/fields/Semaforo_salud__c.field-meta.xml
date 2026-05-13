@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Semaforo_salud__c</fullName>
+    <description>Semaforo visual de la salud del plan de pagos. Verde=activo/pagado, Amarillo=pausado, Rojo=en mora, Blanco=cancelado.</description>
+    <externalId>false</externalId>
+    <formula>IF(
+  ISPICKVAL(Estado__c, &quot;Pagado&quot;),
+  &quot;🟢 Pagado&quot;,
+  IF(
+    ISPICKVAL(Estado__c, &quot;Cancelado&quot;),
+    &quot;⚪ Cancelado&quot;,
+    IF(
+      ISPICKVAL(Estado__c, &quot;En_mora&quot;),
+      &quot;🔴 En mora&quot;,
+      IF(
+        ISPICKVAL(Estado__c, &quot;Pausado&quot;),
+        &quot;🟡 Pausado&quot;,
+        &quot;🟢 Activo&quot;
+      )
+    )
+  )
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Semaforo salud</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

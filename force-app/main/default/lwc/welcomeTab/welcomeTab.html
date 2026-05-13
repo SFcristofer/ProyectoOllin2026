@@ -1,0 +1,32 @@
+<template>
+    <lightning-card title="Bienvenido al Proyecto Ollin" icon-name="custom:custom1">
+        <div class="slds-m-around_medium">
+            <div class="slds-text-heading_large slds-text-align_center slds-m-bottom_medium">
+                ¡El desarrollo ha comenzado! 🚀
+            </div>
+            
+            <div class="slds-align_absolute-center slds-m-vertical_large">
+                <lightning-icon icon-name="utility:setup" size="large" alternative-text="Setup"></lightning-icon>
+            </div>
+
+            <p class="slds-text-body_regular slds-text-align_center slds-m-bottom_medium">
+                Este es tu componente base para la pestaña de inicio. Desde aquí puedes comenzar a construir
+                la funcionalidad de OmniConnect.
+            </p>
+
+            <div class="slds-grid slds-grid_align-center">
+                <lightning-button 
+                    variant="brand" 
+                    label="Explorar Documentación" 
+                    title="Explorar" 
+                    onclick={handleClick} 
+                    icon-name="utility:info">
+                </lightning-button>
+            </div>
+        </div>
+
+        <footer class="slds-card__footer">
+            OmniConnect v1.0 | Salesforce + Asterisk + WhatsApp
+        </footer>
+    </lightning-card>
+</template>

@@ -1,9 +1,10 @@
 public with sharing class TechBeneficiarioSelector {
-    public static List<Beneficiario__c> getRecentBeneficiarios() {
+    public static List<Account> getRecentBeneficiarios() {
         return [
-            SELECT Id, Name, CreatedDate,
-                   (SELECT Tipo__c, Fianza__r.Name FROM Relaciones_Tecnicas_Beneficiario__r)
-            FROM Beneficiario__c
+            SELECT Id, Name, RFC__c, CreatedDate,
+                   (SELECT Id, Name FROM Fianzas2__r ORDER BY CreatedDate DESC LIMIT 10)
+            FROM Account
+            WHERE RecordType.DeveloperName = 'Beneficiario'
             ORDER BY CreatedDate DESC
             LIMIT 50
         ];

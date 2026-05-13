@@ -2,7 +2,7 @@ public with sharing class TechFianzaFieldsController {
     @AuraEnabled(cacheable=true)
     public static List<FieldInfo> getFianzaFields() {
         List<FieldInfo> fieldList = new List<FieldInfo>();
-        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Fianza__c.fields.getMap();
+        Map<String, Schema.SObjectField> fieldsMap = Schema.SObjectType.Tech_Fianza__c.fields.getMap();
         
         for (Schema.SObjectField field : fieldsMap.values()) {
             Schema.DescribeFieldResult descField = field.getDescribe();

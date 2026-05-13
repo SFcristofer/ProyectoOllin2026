@@ -1,64 +1,42 @@
 <template>
     <template if:true={showModal}>
-        <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open slds-modal_large">
-            <div class="slds-modal__container">
-                <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Cerrar" onclick={closeModal}>
-                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse" size="small"></lightning-icon>
-                    </button>
-                    <h2 class="slds-text-heading_medium">Creación de Proyecto - Estilo Airtable</h2>
-                </header>
-                
-                <div class="slds-modal__content slds-p-around_medium">
-                    <template if:true={isLoading}>
-                        <lightning-spinner alternative-text="Guardando..." size="medium"></lightning-spinner>
-                    </template>
-
-                    <lightning-record-edit-form object-api-name="Proyecto__c" onsubmit={handleSubmit}>
-                        <div class="slds-grid slds-wrap slds-gutters">
-                            <template for:each={fields} for:item="f">
-                                <div key={f.apiName} class="slds-col slds-size_1-of-2">
-                                    
-                                    <!-- Contrato (Multi-Lookup) -->
+        <div class="at-overlay" onclick={handleOverlayClick}></div>
+        <div class="at-modal-panel">
+            <div class="at-modal-header">
+                <button class="at-modal-close" onclick={closeModal} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                <span class="at-modal-title">Nuevo Proyecto</span>
+                <span class="at-modal-object-badge">Proyecto__c</span>
+            </div>
+            <div class="at-modal-body">
+                <template if:true={isLoading}><div class="at-modal-loading"><lightning-spinner alternative-text="Guardando..." size="small"></lightning-spinner></div></template>
+                <lightning-record-edit-form object-api-name="Proyecto__c" onsubmit={handleSubmit}>
+                    <div class="at-modal-fields">
+                        <template for:each={fields} for:item="f">
+                            <div key={f.apiName} class="at-modal-field-row">
+                                <div class="at-modal-field-label">
+                                    <lightning-icon icon-name={f.typeIcon} size="xx-small" alternative-text={f.label} class="at-modal-field-icon"></lightning-icon>
+                                    <span>{f.label}</span>
+                                </div>
+                                <div class="at-modal-field-input">
                                     <template if:true={f.isContrato}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Contrato__c" 
-                                                onselectionchange={handleContratoChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
-                                        </div>
+                                        <c-tech-multi-lookup label="" object-api-name="Contract" onselectionchange={handleContratoChange} oncreatenew={handleQuickCreate}></c-tech-multi-lookup>
                                     </template>
-
-                                    <!-- Beneficiario (Multi-Lookup) -->
                                     <template if:true={f.isBeneficiario}>
-                                        <div class="slds-m-bottom_small">
-                                            <c-tech-multi-lookup 
-                                                label={f.label} 
-                                                object-api-name="Account" 
-                                                onselectionchange={handleBeneficiarioChange}
-                                                oncreatenew={handleQuickCreate}>
-                                            </c-tech-multi-lookup>
-                                        </div>
+                                        <c-tech-multi-lookup label="" object-api-name="Beneficiario__c" onselectionchange={handleBeneficiarioChange} oncreatenew={handleQuickCreate}></c-tech-multi-lookup>
                                     </template>
-
-                                    <!-- Otros campos -->
                                     <template if:false={f.isSpecial}>
-                                        <lightning-input-field field-name={f.apiName}></lightning-input-field>
+                                        <lightning-input-field field-name={f.apiName} variant="label-hidden"></lightning-input-field>
                                     </template>
                                 </div>
-                            </template>
-                        </div>
-
-                        <div class="slds-m-top_medium slds-text-align_right">
-                            <lightning-button label="Cancelar" onclick={closeModal} class="slds-m-right_small" disabled={isLoading}></lightning-button>
-                            <lightning-button type="submit" label="Guardar Proyecto" variant="brand" disabled={isLoading}></lightning-button>
-                        </div>
-                    </lightning-record-edit-form>
-                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="at-modal-footer">
+                        <lightning-button label="Cancelar" onclick={closeModal} disabled={isLoading}></lightning-button>
+                        <lightning-button type="submit" label="Guardar" variant="brand" disabled={isLoading}></lightning-button>
+                    </div>
+                </lightning-record-edit-form>
             </div>
-        </section>
-        <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
     </template>
 </template>

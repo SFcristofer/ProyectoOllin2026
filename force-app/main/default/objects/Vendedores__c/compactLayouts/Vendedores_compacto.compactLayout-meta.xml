@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vendedores_compacto</fullName>
+    <fields>Name</fields>
+    <fields>CorreoElectronico__c</fields>
+    <fields>Telefono__c</fields>
+    <fields>Rol__c</fields>
+    <label>Vendedores compacto</label>
+</CompactLayout>

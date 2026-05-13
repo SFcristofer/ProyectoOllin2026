@@ -1,0 +1,808 @@
+<template>
+    <div class="pp-wrap">
+
+        <!-- ── Subtab bar ── -->
+        <div class="pp-subtabbar" role="tablist">
+            <button class={stClassPolizas}     data-tab="polizas"     onclick={handlePolizasSubTab} role="tab">Pólizas</button>
+            <button class={stClassInstitucion} data-tab="institucion" onclick={handlePolizasSubTab} role="tab">Institución</button>
+        </div>
+
+        <template if:true={isTabPolizas}>
+
+        <!-- Filter toolbar -->
+        <div class="pp-filter-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+        </div>
+
+        <!-- Filter Panel -->
+        <template if:true={showFilters}>
+            <div class="pp-filter-panel">
+                <div class="pp-filter-panel-hdr">
+                    <span class="pp-filter-panel-title">Filtros avanzados</span>
+                    <div class="pp-filter-panel-actions">
+                        <button class="pp-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="pp-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="pp-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="pp-filter-rule">
+                                <select class="pp-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="pp-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="pp-flt-value" type="text" data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="pp-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="pp-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="pp-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Main content area: table + slide-in panel -->
+        <div class="pp-content">
+
+            <!-- Loading -->
+            <template if:true={isLoading}>
+                <div class="pp-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando pólizas" size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Error -->
+            <template if:true={error}>
+                <div class="pp-error-msg">{error}</div>
+            </template>
+
+            <!-- Empty -->
+            <template if:true={isEmpty}>
+                <div class="pp-empty-msg">No hay pólizas registradas.</div>
+            </template>
+
+            <!-- Table -->
+            <template if:true={showTable}>
+                <div class="pp-table-scroll">
+                    <table class="pp-table">
+                        <thead>
+                            <tr>
+                                <template for:each={ppHeaders} for:item="h">
+                                    <th key={h.key} class={h.thClass}
+                                        data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="pp-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={flatRows} for:item="row">
+                                <tr key={row.rowKey} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+
+                                    <!-- ── Póliza row ── -->
+                                    <template if:true={row.isPoliza}>
+                                        <td class="pp-td-name">
+                                            <button class="pp-expand-btn" data-id={row.id} onclick={handleToggle}>
+                                                <lightning-icon icon-name={row.toggleIcon} size="xx-small"></lightning-icon>
+                                            </button>
+                                            <span class="pp-poliza-name">{row.name}</span>
+                                            <template if:true={row.showRenovBadge}>
+                                                <span class={row.renovBadgeClass}>{row.renovDias}d</span>
+                                            </template>
+                                        </td>
+                                        <td>{row.cliente}</td>
+                                        <td>{row.aseguradora}</td>
+                                        <td>{row.ramo}</td>
+                                        <td class="pp-td-num">{row.primaFmt}</td>
+                                        <td>{row.vigenciaFin}</td>
+                                        <td class="pp-td-num">{row.diasParaVencer}</td>
+                                        <td><span class={row.estatusBadgeClass}>{row.estatus}</span></td>
+                                        <td class="pp-td-act"></td>
+                                    </template>
+
+                                    <!-- ── Section header ── -->
+                                    <template if:true={row.isSectionHeader}>
+                                        <td colspan="9" class="pp-td-section-hdr">{row.sectionLabel}</td>
+                                    </template>
+
+                                    <!-- ── Endoso row ── -->
+                                    <template if:true={row.isEndoso}>
+                                        <td class="pp-td-child" colspan="2">
+                                            <span class="pp-indent"></span>
+                                            <lightning-icon icon-name="utility:document" size="xx-small" class="pp-row-icon"></lightning-icon>
+                                            {row.name}
+                                        </td>
+                                        <td colspan="2">{row.fechaEfectiva}</td>
+                                        <td class="pp-td-num">{row.diferenciaMonto}</td>
+                                        <td colspan="2"></td>
+                                        <td><span class={row.estadoBadgeClass}>{row.estado}</span></td>
+                                        <td></td>
+                                    </template>
+
+                                    <!-- ── Plan de Pago row ── -->
+                                    <template if:true={row.isPlan}>
+                                        <td class="pp-td-child" colspan="2">
+                                            <span class="pp-indent"></span>
+                                            <button class="pp-expand-btn" data-id={row.id} onclick={handlePlanToggle}>
+                                                <lightning-icon icon-name={row.planToggleIcon} size="xx-small"></lightning-icon>
+                                            </button>
+                                            <lightning-icon icon-name="utility:money" size="xx-small" class="pp-row-icon"></lightning-icon>
+                                            {row.name}
+                                        </td>
+                                        <td colspan="2">{row.periodoPago}</td>
+                                        <td>{row.metodoPago}</td>
+                                        <td>{row.fechaInicio}</td>
+                                        <td class="pp-td-num">{row.numRecibos} rec.</td>
+                                        <td><span class={row.estadoBadgeClass}>{row.estado}</span></td>
+                                        <td></td>
+                                    </template>
+
+                                    <!-- ── Recibo row ── -->
+                                    <template if:true={row.isRecibo}>
+                                        <td class="pp-td-child pp-td-recibo" colspan="3">
+                                            <span class="pp-indent2"></span>
+                                            Recibo #<strong>{row.numero}</strong>
+                                        </td>
+                                        <td></td>
+                                        <td class="pp-td-num">
+                                            <template if:true={row.showFechaPago}>
+                                                <span class="pp-recibo-monto-cobrado">{row.montoCobradoFmt}</span>
+                                                <span class="pp-recibo-monto-prog"> / {row.montoFmt}</span>
+                                            </template>
+                                            <template if:false={row.showFechaPago}>
+                                                {row.montoFmt}
+                                            </template>
+                                        </td>
+                                        <td>
+                                            <template if:true={row.showFechaPago}>
+                                                <span class="pp-fecha-cobro">{row.fechaPago}</span>
+                                            </template>
+                                            <template if:false={row.showFechaPago}>
+                                                {row.fechaVencimiento}
+                                            </template>
+                                        </td>
+                                        <td colspan="2"><span class={row.estadoBadgeClass}>{row.estado}</span></td>
+                                        <td>
+                                            <template if:true={row.showMarcarPagado}>
+                                                <button class="pp-btn-pagado"
+                                                    data-id={row.id}
+                                                    onclick={handleAbrirPanel}>
+                                                    Registrar cobro
+                                                </button>
+                                            </template>
+                                        </td>
+                                    </template>
+
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- ── Detail panel (slide-in) ── -->
+            <template if:true={showPanel}>
+                <div class="pp-panel">
+
+                    <!-- Panel header -->
+                    <div class="pp-panel-header">
+                        <span class="pp-panel-title">{panelPoliza.name}</span>
+                        <button class="pp-panel-close" onclick={handleClosePanel}>
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <!-- Panel sub-tabs -->
+                    <div class="pp-panel-tabbar">
+                        <button class={panelTabClassDetalles}  data-tab="detalles"  onclick={handlePanelTab}>Detalles</button>
+                        <button class={panelTabClassEndosos}   data-tab="endosos"   onclick={handlePanelTab}>Endosos</button>
+                        <button class={panelTabClassPlan}      data-tab="plan"      onclick={handlePanelTab}>Plan</button>
+                    </div>
+
+                    <!-- Detalles -->
+                    <template if:true={showPanelDetalles}>
+                        <div class="pp-panel-body">
+
+                            <!-- Basic fields -->
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Estatus</span>
+                                <span>{panelPoliza.estatus}</span>
+                            </div>
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Ramo / Riesgo</span>
+                                <span>{panelPoliza.ramo}</span>
+                            </div>
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Prima neta</span>
+                                <span class="pp-detail-money">{panelPoliza.primaFmt}</span>
+                            </div>
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Inicio vigencia</span>
+                                <span>{panelPoliza.vigenciaInicio}</span>
+                            </div>
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Fin vigencia</span>
+                                <span>{panelPoliza.vigenciaFin}</span>
+                            </div>
+                            <div class="pp-detail-row">
+                                <span class="pp-detail-label">Días para vencer</span>
+                                <span>{panelPoliza.diasLabel}</span>
+                            </div>
+
+                            <!-- Vendedor -->
+                            <div class="pp-section-label">Vendedor</div>
+                                <template if:false={panelPoliza.editVendedor}>
+                                    <div class="pp-detail-row pp-detail-row-editable">
+                                        <span class="pp-detail-label">Nombre</span>
+                                        <span class="pp-detail-val-grow">{panelPoliza.vendedorNombre}</span>
+                                        <button class="pp-pencil"
+                                            data-field="vendedor"
+                                            data-value={panelPoliza.vendedorId}
+                                            onclick={handlePolizaPencilClick}
+                                            title="Cambiar vendedor">
+                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                        </button>
+                                    </div>
+                                </template>
+                                <template if:true={panelPoliza.editVendedor}>
+                                    <div class="pp-rf-row">
+                                        <span class="pp-rf-label">Nombre</span>
+                                        <div class="pp-rf-edit">
+                                            <lightning-combobox
+                                                value={panelPoliza.polizaFieldValue}
+                                                options={vendedorOptions}
+                                                variant="label-hidden"
+                                                onchange={handlePolizaFieldChange}>
+                                            </lightning-combobox>
+                                            <button class="pp-rf-save" onclick={handlePolizaFieldSave} disabled={panelPoliza.isSavingVendedor}>
+                                                <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                            </button>
+                                            <button class="pp-rf-cancel" onclick={handlePolizaFieldCancel}>
+                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="pp-detail-row">
+                                    <span class="pp-detail-label">Email</span>
+                                    <span>{panelPoliza.vendedorEmail}</span>
+                                </div>
+
+                        </div>
+                    </template>
+
+                    <!-- Endosos -->
+                    <template if:true={showPanelEndosos}>
+                        <div class="pp-panel-body">
+
+                            <div class="pp-endoso-toolbar">
+                                <button class="pp-btn-new-endoso" onclick={handleNewEndoso}>
+                                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                    Nuevo endoso
+                                </button>
+                            </div>
+
+                            <template if:true={hasPanelEndosos}>
+                                <template for:each={panelEndosos} for:item="e">
+                                    <div key={e.id} class="pp-endoso-card">
+                                        <div class="pp-endoso-hdr">
+                                            <span class="pp-endoso-name">{e.name}</span>
+                                            <span class={e.badgeClass}>{e.estado}</span>
+                                            <div class="pp-endoso-actions">
+                                                <button class="pp-pencil" data-id={e.id} onclick={handleEditEndoso} title="Editar">
+                                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                </button>
+                                                <template if:false={e.isAplicado}>
+                                                    <button class="pp-pencil pp-pencil-danger" data-id={e.id} onclick={handleDeleteEndoso} title="Eliminar">
+                                                        <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <template if:true={e.tipoEndoso}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Tipo</span>
+                                                <span>{e.tipoEndoso}</span>
+                                            </div>
+                                        </template>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Fecha efectiva</span>
+                                            <span>{e.fechaEfectiva}</span>
+                                        </div>
+                                        <template if:true={e.diferenciaMonto}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Diferencia monto</span>
+                                                <span class="pp-detail-money">{e.diferenciaMonto}</span>
+                                            </div>
+                                        </template>
+                                        <template if:true={e.hasNuevoMonto}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Nuevo monto</span>
+                                                <span class="pp-detail-money">{e.nuevoMontoFmt}</span>
+                                            </div>
+                                        </template>
+                                        <template if:true={e.hasFinVigencia}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Nuevo vencimiento</span>
+                                                <span>{e.finVigenciaFmt}</span>
+                                            </div>
+                                        </template>
+                                        <template if:true={e.hasConvenio}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Convenio</span>
+                                                <span>{e.convenioNombre}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={hasPanelEndosos}>
+                                <div class="pp-panel-empty">Sin endosos registrados</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Convenios Modificatorios -->
+                    <template if:true={showPanelConvenios}>
+                        <div class="pp-panel-body">
+                            <template if:true={hasPanelConvenios}>
+                                <template for:each={panelConvenios} for:item="cv">
+                                    <div key={cv.id} class="pp-endoso-card">
+                                        <div class="pp-endoso-hdr">
+                                            <span class="pp-endoso-name">{cv.name}</span>
+                                            <span class="pp-badge pp-badge-blue">{cv.tipo}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Fecha</span>
+                                            <span>{cv.fechaFmt}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Nuevo valor</span>
+                                            <span class="pp-detail-money">{cv.nuevoValorFmt}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Nueva fecha fin</span>
+                                            <span>{cv.nuevaFechaFinFmt}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Diferencia</span>
+                                            <span class="pp-detail-money">{cv.diferenciaFmt}</span>
+                                        </div>
+                                        <template if:true={cv.hasDescripcion}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Descripción</span>
+                                                <span>{cv.descripcion}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:true={hasNoPanelConvenios}>
+                                <div class="pp-panel-empty">Sin convenios modificatorios</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Comisiones -->
+                    <template if:true={showPanelComisiones}>
+                        <div class="pp-panel-body">
+                            <template if:true={hasPanelComisiones}>
+                                <template for:each={panelComisiones} for:item="com">
+                                    <div key={com.id} class="pp-comision-card">
+                                        <div class="pp-endoso-hdr">
+                                            <span class="pp-endoso-name">{com.name}</span>
+                                            <span class={com.badgeClass}>{com.estatus}</span>
+                                        </div>
+                                        <template if:true={com.hasVendedor}>
+                                            <div class="pp-detail-row">
+                                                <span class="pp-detail-label">Vendedor</span>
+                                                <span>{com.vendedor}</span>
+                                            </div>
+                                        </template>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">% Aplicado</span>
+                                            <span>{com.pctFmt}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Monto Ollin</span>
+                                            <span class="pp-detail-money">{com.montoOllinFmt}</span>
+                                        </div>
+                                        <div class="pp-detail-row">
+                                            <span class="pp-detail-label">Monto vendedor</span>
+                                            <span class="pp-detail-money">{com.montoVendedorFmt}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:true={hasNoPanelComisiones}>
+                                <div class="pp-panel-empty">Sin comisiones registradas</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Plan de pago -->
+                    <template if:true={showPanelPlan}>
+                        <div class="pp-panel-body">
+                            <template if:true={hasPanelPlan}>
+                                <div class="pp-plan-info">
+                                    <div class="pp-detail-row">
+                                        <span class="pp-detail-label">Método de pago</span>
+                                        <span>{panelPlan.metodoPago}</span>
+                                    </div>
+                                    <div class="pp-detail-row">
+                                        <span class="pp-detail-label">Periodicidad</span>
+                                        <span>{panelPlan.periodoPago}</span>
+                                    </div>
+                                    <div class="pp-detail-row">
+                                        <span class="pp-detail-label">Fecha inicio</span>
+                                        <span>{panelPlan.fechaInicio}</span>
+                                    </div>
+                                    <div class="pp-detail-row">
+                                        <span class="pp-detail-label">Núm. recibos</span>
+                                        <span>{panelPlan.numRecibos}</span>
+                                    </div>
+                                    <div class="pp-detail-row">
+                                        <span class="pp-detail-label">Estado del plan</span>
+                                        <span>{panelPlan.estado}</span>
+                                    </div>
+                                </div>
+
+                                <div class="pp-recibos-list">
+                                    <template for:each={panelPlan.recibos} for:item="r">
+                                        <div key={r.id} class="pp-recibo-card">
+
+                                            <!-- Recibo header -->
+                                            <div class="pp-recibo-hdr">
+                                                <span class="pp-recibo-num">Recibo #{r.numero}</span>
+                                                <span class={r.badgeClass}>{r.estado}</span>
+                                            </div>
+
+                                            <!-- Estado -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Estado</span>
+                                                <template if:false={r.editEstado}>
+                                                    <span class="pp-rf-val">{r.estado}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="estado"
+                                                        data-value={r.rawEstado}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editEstado}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-combobox
+                                                            value={r.cellValue}
+                                                            options={estatusOptions}
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-combobox>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Fecha programada -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Fecha programada</span>
+                                                <template if:false={r.editFechaProg}>
+                                                    <span class="pp-rf-val">{r.fechaVencFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="fechaProgramada"
+                                                        data-value={r.rawFechaVenc}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editFechaProg}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-input
+                                                            type="date"
+                                                            value={r.cellValue}
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-input>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Fecha de pago -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Fecha de pago</span>
+                                                <template if:false={r.editFechaPago}>
+                                                    <span class="pp-rf-val pp-rf-green">{r.fechaPagoFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="fechaPago"
+                                                        data-value={r.rawFechaPago}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editFechaPago}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-input
+                                                            type="date"
+                                                            value={r.cellValue}
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-input>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Monto programado (read-only) -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Monto programado</span>
+                                                <span class="pp-rf-val pp-rf-money">{r.montoFmt}</span>
+                                            </div>
+
+                                            <!-- Monto cobrado -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Monto cobrado</span>
+                                                <template if:false={r.editMonto}>
+                                                    <span class="pp-rf-val pp-rf-cobrado">{r.montoCobradoFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="montoCobrado"
+                                                        data-value={r.rawMontoCobrado}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editMonto}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-input
+                                                            type="number"
+                                                            value={r.cellValue}
+                                                            step="0.01"
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-input>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Saldo pendiente (read-only) -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Saldo pendiente</span>
+                                                <span class="pp-rf-val pp-rf-saldo">{r.saldoFmt}</span>
+                                            </div>
+
+                                            <!-- Método de pago -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Método de pago</span>
+                                                <template if:false={r.editMetodo}>
+                                                    <span class="pp-rf-val">{r.metodoPagoFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="metodoPago"
+                                                        data-value={r.rawMetodoPago}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editMetodo}>
+                                                    <div class="pp-rf-edit pp-rf-edit-col">
+                                                        <lightning-combobox
+                                                            value={r.cellValue}
+                                                            options={metodoPagoOptions}
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-combobox>
+                                                        <template if:true={r.needsReferencia}>
+                                                            <lightning-input
+                                                                type="text"
+                                                                value={r.refValue}
+                                                                placeholder="No. autorización / referencia *"
+                                                                variant="label-hidden"
+                                                                onchange={handleRefValueChange}>
+                                                            </lightning-input>
+                                                        </template>
+                                                        <div class="pp-rf-edit-btns">
+                                                            <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                                <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                            </button>
+                                                            <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Referencia de pago -->
+                                            <template if:true={r.showReferencia}>
+                                                <div class="pp-rf-row">
+                                                    <span class="pp-rf-label">Referencia pago</span>
+                                                    <template if:false={r.editReferencia}>
+                                                        <span class="pp-rf-val">{r.referenciaPagoFmt}</span>
+                                                        <button class="pp-pencil"
+                                                            data-recibo-id={r.id}
+                                                            data-field="referenciaPago"
+                                                            data-value={r.rawReferenciaPago}
+                                                            onclick={handlePencilClick}
+                                                            title="Editar referencia">
+                                                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </template>
+                                                    <template if:true={r.editReferencia}>
+                                                        <div class="pp-rf-edit">
+                                                            <lightning-input
+                                                                type="text"
+                                                                value={r.cellValue}
+                                                                placeholder="No. autorización / transferencia"
+                                                                variant="label-hidden"
+                                                                onchange={handleCellValueChange}>
+                                                            </lightning-input>
+                                                            <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                                <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                            </button>
+                                                            <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+
+                                            <!-- Intentos de contacto -->
+                                            <div class="pp-rf-row">
+                                                <span class="pp-rf-label">Intentos contacto</span>
+                                                <template if:false={r.editIntentos}>
+                                                    <span class="pp-rf-val">{r.intentosFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="intentosContacto"
+                                                        data-value={r.rawIntentos}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editIntentos}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-input
+                                                            type="number"
+                                                            value={r.cellValue}
+                                                            min="0"
+                                                            step="1"
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-input>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Motivo de no pago -->
+                                            <div class="pp-rf-row pp-rf-row-last">
+                                                <span class="pp-rf-label">Motivo no pago</span>
+                                                <template if:false={r.editMotivo}>
+                                                    <span class="pp-rf-val">{r.motivoFmt}</span>
+                                                    <button class="pp-pencil"
+                                                        data-recibo-id={r.id}
+                                                        data-field="motivoNoPago"
+                                                        data-value={r.rawMotivo}
+                                                        onclick={handlePencilClick}
+                                                        title="Editar">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <template if:true={r.editMotivo}>
+                                                    <div class="pp-rf-edit">
+                                                        <lightning-combobox
+                                                            value={r.cellValue}
+                                                            options={motivoNoPagoOptions}
+                                                            variant="label-hidden"
+                                                            onchange={handleCellValueChange}>
+                                                        </lightning-combobox>
+                                                        <button class="pp-rf-save" onclick={handleCellSave} disabled={r.isSaving}>
+                                                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                        <button class="pp-rf-cancel" onclick={handleCellCancel}>
+                                                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:true={hasNoPanelPlan}>
+                                <div class="pp-panel-empty">Sin plan de pago registrado</div>
+                            </template>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+
+        </div>
+
+        <!-- Modal endoso — fuera del panel para evitar overflow clipping -->
+        <template if:true={showEndosoModal}>
+            <c-tech-endoso-modal
+                record-id={editingEndosoId}
+                seguro-id={endosoSeguroId}
+                fianza-id={endosoFianzaId}
+                context-label={selectedPoliza.name}
+                onclose={handleEndosoModalClose}
+                onsuccess={handleEndosoModalSuccess}>
+            </c-tech-endoso-modal>
+        </template>
+
+        </template><!-- end isTabPolizas -->
+
+        <template if:true={isTabInstitucion}>
+            <div class="pp-inst-wrap">
+                <c-tech-ventas-instituciones></c-tech-ventas-instituciones>
+            </div>
+        </template>
+
+    </div>
+
+</template>
