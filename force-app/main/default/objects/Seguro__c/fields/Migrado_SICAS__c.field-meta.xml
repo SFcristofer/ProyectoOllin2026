@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Migrado_SICAS__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Marca registros cargados desde migracion historica SICAS. Las automatizaciones (generacion de planes/recibos, creacion de Opportunity de renovacion) se saltan cuando este checkbox es true.</description>
+    <inlineHelpText>Seguros cargados desde el sistema legado SICAS. No disparan generacion automatica de plan de pagos/recibos.</inlineHelpText>
+    <label>Migrado SICAS</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

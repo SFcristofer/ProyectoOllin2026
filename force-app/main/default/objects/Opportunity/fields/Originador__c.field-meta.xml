@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Originador__c</fullName>
+    <description>Origen/canal que originó la oportunidad. Reemplaza Fuente_Original__c para alinear con la nomenclatura del Módulo de Gestión (tres caminos de entrada: Digital, Consultivo, Promotoría).</description>
+    <label>Originador</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Meta Ads</fullName>
+                <default>false</default>
+                <label>Meta Ads</label>
+            </value>
+            <value>
+                <fullName>Google Ads</fullName>
+                <default>false</default>
+                <label>Google Ads</label>
+            </value>
+            <value>
+                <fullName>Tiktok Ads</fullName>
+                <default>false</default>
+                <label>Tiktok Ads</label>
+            </value>
+            <value>
+                <fullName>Organico Web</fullName>
+                <default>false</default>
+                <label>Organico Web</label>
+            </value>
+            <value>
+                <fullName>Referido</fullName>
+                <default>false</default>
+                <label>Referido</label>
+            </value>
+            <value>
+                <fullName>Llamada Directa</fullName>
+                <default>false</default>
+                <label>Llamada Directa</label>
+            </value>
+            <value>
+                <fullName>WhatsApp Directo</fullName>
+                <default>false</default>
+                <label>WhatsApp Directo</label>
+            </value>
+            <value>
+                <fullName>Renovacion</fullName>
+                <default>false</default>
+                <label>Renovacion</label>
+            </value>
+            <value>
+                <fullName>Cross-sell</fullName>
+                <default>false</default>
+                <label>Cross-sell</label>
+            </value>
+            <value>
+                <fullName>Vendedor Humano</fullName>
+                <default>false</default>
+                <label>Vendedor Humano</label>
+            </value>
+            <value>
+                <fullName>Agente AI</fullName>
+                <default>false</default>
+                <label>Agente AI</label>
+            </value>
+            <value>
+                <fullName>Agente Externo</fullName>
+                <default>false</default>
+                <label>Agente Externo</label>
+            </value>
+            <value>
+                <fullName>Promotoria Allianz</fullName>
+                <default>false</default>
+                <label>Promotoria Allianz</label>
+            </value>
+            <value>
+                <fullName>Otro</fullName>
+                <default>false</default>
+                <label>Otro</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

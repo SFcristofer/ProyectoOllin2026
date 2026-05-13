@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_Endoso__c</fullName>
+    <label>Tipo de endoso</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Aumento de monto</fullName>
+                <default>false</default>
+                <label>Aumento de monto</label>
+            </value>
+            <value>
+                <fullName>Reduccion de monto</fullName>
+                <default>false</default>
+                <label>Reduccion de monto</label>
+            </value>
+            <value>
+                <fullName>Extension de vigencia</fullName>
+                <default>false</default>
+                <label>Extension de vigencia</label>
+            </value>
+            <value>
+                <fullName>Cambio de prima</fullName>
+                <default>false</default>
+                <label>Cambio de prima</label>
+            </value>
+            <value>
+                <fullName>Cambio de datos</fullName>
+                <default>false</default>
+                <label>Cambio de datos</label>
+            </value>
+            <value>
+                <fullName>Cancelacion</fullName>
+                <default>false</default>
+                <label>Cancelacion</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

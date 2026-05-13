@@ -1,0 +1,727 @@
+<template>
+<div class="tfi-wrap">
+
+    <!-- ── Toolbar ── -->
+    <div class="tfi-toolbar">
+        <input class="tfi-search" type="text" placeholder="Buscar fianza, tipo, contratista..."
+            value={filterText} oninput={handleFilterInput} />
+        <div class="tfi-toolbar-spacer"></div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="tfi-spinner-wrap">
+            <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+        </div>
+    </template>
+    <template if:true={hasError}>
+        <div class="tfi-error-msg">{error}</div>
+    </template>
+    <template if:true={isEmpty}>
+        <div class="tfi-empty-msg">No hay fianzas registradas.</div>
+    </template>
+
+    <template if:true={showTable}>
+    <div class="tfi-content">
+
+        <!-- ════ TABLA ACORDEÓN ════ -->
+        <div class="tfi-table-scroll">
+            <table class="tfi-table">
+                <thead>
+                    <tr>
+                        <template for:each={headers} for:item="h">
+                            <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                {h.label}
+                                <template if:true={h.icon}>
+                                    <span class="tfi-sort-icon">{h.icon}</span>
+                                </template>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={flatRows} for:item="row">
+
+                        <template if:true={row.isFianza}>
+                            <tr key={row.rowKey} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+                                <td class="tfi-td-tog">
+                                    <button class="tfi-toggle-btn" data-id={row.id} onclick={handleToggle}>
+                                        <lightning-icon icon-name={row.toggleIcon} size="xx-small"></lightning-icon>
+                                    </button>
+                                </td>
+                                <td class="tfi-td-name">{row.name}</td>
+                                <td><span class="tfi-chip tfi-chip-teal">{row.tipoRiesgo}</span></td>
+                                <td class="tfi-td-secondary">{row.contratista}</td>
+                                <td class="tfi-td-secondary">{row.institucion}</td>
+                                <td class="tfi-td-num">{row.montoFmt}</td>
+                                <td class="tfi-td-num tfi-td-vigente">{row.montoVigenteFmt}</td>
+                                <td class="tfi-td-num">{row.primaNetaFmt}</td>
+                                <td class="tfi-td-date">{row.fechaVencimiento}</td>
+                                <td><span class={row.estatusClass}>{row.estatus}</span></td>
+                            </tr>
+                        </template>
+
+                        <template if:true={row.isSectionHeader}>
+                            <tr key={row.rowKey} class={row.trClass}>
+                                <td colspan="10" class="tfi-td-section-hdr">{row.sectionLabel}</td>
+                            </tr>
+                        </template>
+
+                        <template if:true={row.isEndoso}>
+                            <tr key={row.rowKey} class={row.trClass}>
+                                <td class="tfi-td-indent"></td>
+                                <td class="tfi-td-child-name">
+                                    <lightning-icon icon-name="utility:shift" size="xx-small" class="tfi-child-icon"></lightning-icon>
+                                    {row.name}
+                                </td>
+                                <td colspan="2"><span class="tfi-chip tfi-chip-purple">{row.tipo}</span></td>
+                                <td colspan="2"><span class={row.estadoClass}>{row.estado}</span></td>
+                                <td colspan="2" class="tfi-td-date">{row.fechaEfectiva}</td>
+                                <td colspan="2" class="tfi-td-num">{row.diferenciaMonto}</td>
+                            </tr>
+                        </template>
+
+                        <template if:true={row.isPlan}>
+                            <tr key={row.rowKey} class={row.trClass}>
+                                <td class="tfi-td-indent">
+                                    <button class="tfi-toggle-btn tfi-toggle-plan" data-id={row.id} onclick={handlePlanToggle}>
+                                        <lightning-icon icon-name={row.planToggleIcon} size="xx-small"></lightning-icon>
+                                    </button>
+                                </td>
+                                <td class="tfi-td-child-name">
+                                    <lightning-icon icon-name="utility:money" size="xx-small" class="tfi-child-icon tfi-icon-teal"></lightning-icon>
+                                    {row.name}
+                                </td>
+                                <td colspan="2" class="tfi-td-secondary">{row.periodo} · {row.metodo}</td>
+                                <td colspan="2"><span class={row.estatusClass}>{row.estatus}</span></td>
+                                <td colspan="2" class="tfi-td-secondary">{row.numRecibos} recibos</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </template>
+
+                        <template if:true={row.isRecibo}>
+                            <tr key={row.rowKey} class={row.trClass}>
+                                <td colspan="2" class="tfi-td-recibo-indent"></td>
+                                <td class="tfi-td-secondary tfi-td-recibo-num">#{row.numero}</td>
+                                <td colspan="2"><span class={row.estadoClass}>{row.estado}</span></td>
+                                <td colspan="2" class="tfi-td-date">{row.fechaProg}</td>
+                                <td colspan="3" class="tfi-td-num">{row.montoProgFmt}</td>
+                            </tr>
+                        </template>
+
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ════ PANEL LATERAL ════ -->
+        <template if:true={showPanel}>
+        <div class="tfi-panel">
+
+            <!-- Panel header -->
+            <div class="tfi-panel-hdr">
+                <span class="tfi-panel-title">{panelFianza.name}</span>
+                <template if:false={isEditingFianza}>
+                    <button class="tfi-panel-edit-btn" onclick={handleEditFianza} title="Editar fianza">
+                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                    </button>
+                </template>
+                <button class="tfi-panel-close" onclick={handleClosePanel}>
+                    <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                </button>
+            </div>
+
+            <div class="tfi-panel-status-bar">
+                <span class={panelFianza.estatusClass}>{panelFianza.estatus}</span>
+                <span class="tfi-panel-tipo">{panelFianza.tipoRiesgo}</span>
+            </div>
+
+            <!-- Panel tabs -->
+            <div class="tfi-panel-tabbar">
+                <button class={ptClsDetalles}   data-tab="detalles"   onclick={handlePanelTab}>Detalles</button>
+                <button class={ptClsEndosos}     data-tab="endosos"    onclick={handlePanelTab}>Endosos</button>
+                <button class={ptClsPlanes}      data-tab="planes"     onclick={handlePanelTab}>Plan de Pagos</button>
+                <button class={ptClsComisiones}  data-tab="comisiones" onclick={handlePanelTab}>Comisiones</button>
+            </div>
+
+            <!-- ── Tab: Detalles ── -->
+            <template if:true={showPtDetalles}>
+                <div class="tfi-panel-body">
+
+                    <!-- Modo lectura -->
+                    <template if:false={isEditingFianza}>
+                        <template for:each={panelDetails} for:item="f">
+                            <div key={f.key} class="tfi-detail-row">
+                                <span class="tfi-detail-label">{f.label}</span>
+                                <template if:true={f.isMoney}>
+                                    <span class="tfi-detail-money">{f.value}</span>
+                                </template>
+                                <template if:true={f.isBadge}>
+                                    <span class={f.badgeClass}>{f.value}</span>
+                                </template>
+                                <template if:false={f.isMoney}>
+                                    <template if:false={f.isBadge}>
+                                        <span class="tfi-detail-value">{f.value}</span>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Modo edición -->
+                    <template if:true={isEditingFianza}>
+                        <div class="tfi-edit-form">
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Tipo de riesgo</label>
+                                <select class="tfi-edit-select" data-field="tipoRiesgo" onchange={handleFianzaEditField}>
+                                    <option value="">— Selecciona —</option>
+                                    <template for:each={tipoRiesgoOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Estatus</label>
+                                <select class="tfi-edit-select" data-field="estatus" onchange={handleFianzaEditField}>
+                                    <template for:each={estatusFianzaOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Monto afianzado (MXN)</label>
+                                <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="monto"
+                                    value={fianzaEdit.monto} oninput={handleFianzaEditField} />
+                            </div>
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Prima neta (MXN)</label>
+                                <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="primaNeta"
+                                    value={fianzaEdit.primaNeta} oninput={handleFianzaEditField} />
+                            </div>
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Fecha de emisión</label>
+                                <input class="tfi-edit-input" type="date" data-field="fechaEmision"
+                                    value={fianzaEdit.fechaEmision} onchange={handleFianzaEditField} />
+                            </div>
+                            <div class="tfi-edit-field">
+                                <label class="tfi-edit-label">Fecha de vencimiento</label>
+                                <input class="tfi-edit-input" type="date" data-field="fechaVencimiento"
+                                    value={fianzaEdit.fechaVencimiento} onchange={handleFianzaEditField} />
+                            </div>
+                            <div class="tfi-edit-footer">
+                                <button class="tfi-btn-cancel-edit" onclick={handleCancelFianzaEdit} disabled={isSavingFianza}>Cancelar</button>
+                                <button class="tfi-btn-save-edit" onclick={handleSaveFianza} disabled={isSavingFianza}>
+                                    <template if:true={isSavingFianza}>Guardando...</template>
+                                    <template if:false={isSavingFianza}>Guardar</template>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+
+            <!-- ── Tab: Endosos ── -->
+            <template if:true={showPtEndosos}>
+                <div class="tfi-panel-body">
+                    <div class="tfi-panel-section-hdr">
+                        <span class="tfi-panel-section-count">Endosos ({panelEndosos.length})</span>
+                        <button class="tfi-btn-add-sub" onclick={handleNewEndoso}>
+                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                            Nuevo endoso
+                        </button>
+                    </div>
+                    <template if:true={hasPanelEndosos}>
+                        <template for:each={panelEndosos} for:item="en">
+                            <div key={en.id} class="tfi-mini-card">
+                                <div class="tfi-mini-card-hdr">
+                                    <span class="tfi-mini-card-name">{en.name}</span>
+                                    <span class={en.estadoClass}>{en.estado}</span>
+                                    <button class="tfi-mini-edit-btn" data-id={en.id} onclick={handleEditEndoso} title="Editar">
+                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    </button>
+                                    <template if:false={en.isAplicado}>
+                                        <button class="tfi-mini-del-btn" data-id={en.id} onclick={handleDeleteEndoso} title="Eliminar">
+                                            <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                        </button>
+                                    </template>
+                                </div>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">Tipo</span>
+                                    <span class="tfi-chip tfi-chip-purple">{en.tipo}</span>
+                                </div>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">Fecha efectiva</span>
+                                    <span>{en.fechaEfectivaFmt}</span>
+                                </div>
+                                <template if:true={en.hasNuevoMonto}>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Nuevo monto</span>
+                                        <span class="tfi-detail-money">{en.nuevoMontoFmt}</span>
+                                    </div>
+                                </template>
+                                <template if:true={en.hasNuevaPrima}>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Nueva prima</span>
+                                        <span class="tfi-detail-money">{en.nuevaPrimaFmt}</span>
+                                    </div>
+                                </template>
+                                <template if:true={en.hasFinVigencia}>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Fin vigencia</span>
+                                        <span>{en.finVigenciaFmt}</span>
+                                    </div>
+                                </template>
+                                <template if:true={en.hasConvenio}>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Convenio</span>
+                                        <span class="tfi-chip tfi-chip-blue">{en.convenio}</span>
+                                    </div>
+                                </template>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">Diferencia</span>
+                                    <span class="tfi-detail-money">{en.diferenciaMonto}</span>
+                                </div>
+                                <template if:true={en.motivo}>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Motivo</span>
+                                        <span class="tfi-mini-desc">{en.motivo}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasPanelEndosos}>
+                        <div class="tfi-panel-empty">Sin endosos registrados</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- ── Tab: Plan de Pagos ── -->
+            <template if:true={showPtPlanes}>
+                <div class="tfi-panel-body">
+                    <div class="tfi-panel-section-hdr">
+                        <span class="tfi-panel-section-count">Planes ({panelPlanes.length})</span>
+                        <button class="tfi-btn-add-sub" onclick={handleNewPlan}>
+                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                            Nuevo plan
+                        </button>
+                    </div>
+                    <template if:true={hasPanelPlanes}>
+                        <template for:each={panelPlanes} for:item="pl">
+                            <div key={pl.id} class="tfi-plan-card">
+                                <div class="tfi-plan-card-hdr">
+                                    <lightning-icon icon-name="utility:money" size="xx-small" class="tfi-icon-teal"></lightning-icon>
+                                    <span class="tfi-mini-card-name">{pl.name}</span>
+                                    <span class={pl.estatusClass}>{pl.estatus}</span>
+                                    <button class="tfi-mini-edit-btn" data-id={pl.id} onclick={handleEditPlan} title="Editar plan">
+                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    </button>
+                                    <button class="tfi-mini-del-btn" data-id={pl.id} onclick={handleDeletePlan} title="Eliminar plan">
+                                        <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                    </button>
+                                </div>
+                                <div class="tfi-plan-meta">
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Periodo</span>
+                                        <span>{pl.periodo}</span>
+                                    </div>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Método</span>
+                                        <span>{pl.metodo}</span>
+                                    </div>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Inicio</span>
+                                        <span>{pl.fechaInicio}</span>
+                                    </div>
+                                    <div class="tfi-mini-card-row">
+                                        <span class="tfi-mini-label">Monto total</span>
+                                        <span class="tfi-detail-money">{pl.montoTotalFmt}</span>
+                                    </div>
+                                </div>
+                                <!-- Recibos encabezado + botón nuevo -->
+                                <div class="tfi-recibos-hdr">
+                                    <span class="tfi-recibos-title">Recibos ({pl.recibos.length})</span>
+                                    <button class="tfi-btn-new-recibo" data-planid={pl.id} onclick={handleNewRecibo}>
+                                        <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                        Nuevo
+                                    </button>
+                                </div>
+                                <template if:true={pl.hasRecibos}>
+                                    <div class="tfi-recibos-list">
+                                        <template for:each={pl.recibos} for:item="r">
+                                            <div key={r.id} class="tfi-recibo-block">
+                                                <div class="tfi-recibo-row">
+                                                    <span class="tfi-recibo-num">#{r.numero}</span>
+                                                    <span class={r.estadoClass}>{r.estado}</span>
+                                                    <span class="tfi-recibo-fecha">{r.fechaProg}</span>
+                                                    <span class="tfi-recibo-monto">{r.montoProgFmt}</span>
+                                                    <button class="tfi-recibo-icon-btn" data-id={r.id} data-planid={pl.id} onclick={handleEditRecibo} title="Editar recibo">
+                                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                    <button class="tfi-recibo-icon-btn tfi-recibo-del-btn" data-id={r.id} onclick={handleDeleteRecibo} title="Eliminar recibo">
+                                                        <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                    <template if:false={r.isCobrado}>
+                                                        <template if:false={r.isCobroEdit}>
+                                                            <button class="tfi-btn-cobrar" data-id={r.id} onclick={handleIniciarCobro}>
+                                                                Cobrar
+                                                            </button>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                                <!-- Inline cobro form -->
+                                                <template if:true={r.isCobroEdit}>
+                                                    <div class="tfi-cobro-form" onclick={stopProp}>
+                                                        <div class="tfi-cobro-fields">
+                                                            <div class="tfi-cobro-field">
+                                                                <label class="tfi-edit-label">Monto cobrado (MXN)</label>
+                                                                <input class="tfi-edit-input" type="number" min="0" step="0.01"
+                                                                    value={r.cobroMonto} data-field="monto"
+                                                                    oninput={handleCobroField} placeholder="0.00" />
+                                                            </div>
+                                                            <div class="tfi-cobro-field">
+                                                                <label class="tfi-edit-label">Fecha de pago</label>
+                                                                <input class="tfi-edit-input" type="date"
+                                                                    value={r.cobroFecha} data-field="fecha"
+                                                                    onchange={handleCobroField} />
+                                                            </div>
+                                                        </div>
+                                                        <div class="tfi-cobro-actions">
+                                                            <button class="tfi-btn-cancel-edit" onclick={handleCancelCobro}
+                                                                disabled={r.isSavingCobro}>Cancelar</button>
+                                                            <button class="tfi-btn-save-edit" data-id={r.id} onclick={handleSaveCobro}
+                                                                disabled={r.isSavingCobro}>
+                                                                <template if:true={r.isSavingCobro}>Guardando...</template>
+                                                                <template if:false={r.isSavingCobro}>Confirmar cobro</template>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasPanelPlanes}>
+                        <div class="tfi-panel-empty">Sin planes de pago</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- ── Tab: Comisiones ── -->
+            <template if:true={showPtComisiones}>
+                <div class="tfi-panel-body">
+                    <div class="tfi-panel-section-hdr">
+                        <span class="tfi-panel-section-count">Comisiones ({panelComisiones.length})</span>
+                        <button class="tfi-btn-add-sub" onclick={handleNewComision}>
+                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                            Agregar
+                        </button>
+                    </div>
+                    <template if:true={hasPanelComisiones}>
+                        <template for:each={panelComisiones} for:item="c">
+                            <div key={c.id} class="tfi-mini-card">
+                                <div class="tfi-mini-card-hdr">
+                                    <span class="tfi-mini-card-name">{c.vendedor}</span>
+                                    <span class={c.estatusClass}>{c.estatus}</span>
+                                    <button class="tfi-mini-edit-btn" data-id={c.id} onclick={handleEditComision} title="Editar">
+                                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    </button>
+                                    <button class="tfi-mini-del-btn" data-id={c.id} onclick={handleDeleteComision} title="Eliminar">
+                                        <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                    </button>
+                                </div>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">% Aplicado</span>
+                                    <span>{c.pct}</span>
+                                </div>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">Monto Ollin</span>
+                                    <span class="tfi-detail-money">{c.montoOllinFmt}</span>
+                                </div>
+                                <div class="tfi-mini-card-row">
+                                    <span class="tfi-mini-label">Monto Vendedor</span>
+                                    <span class="tfi-detail-money">{c.montoVendedorFmt}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={panelTotales}>
+                            <div class="tfi-totales-bar">
+                                <div class="tfi-total-item">
+                                    <span class="tfi-total-label">Total Ollin</span>
+                                    <span class="tfi-total-value">{panelTotales.ollinFmt}</span>
+                                </div>
+                                <div class="tfi-total-item">
+                                    <span class="tfi-total-label">Total Vendedor</span>
+                                    <span class="tfi-total-value">{panelTotales.vendedorFmt}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasPanelComisiones}>
+                        <div class="tfi-panel-empty">Sin comisiones registradas</div>
+                    </template>
+                </div>
+            </template>
+
+        </div>
+        </template><!-- end showPanel -->
+
+    </div>
+    </template><!-- end showTable -->
+
+    <!-- ════ MODAL ENDOSO ════ -->
+    <template if:true={showEndosoModal}>
+        <div class="tfi-modal-overlay" onclick={handleCloseEndosoModal}>
+            <div class="tfi-modal" onclick={stopProp}>
+                <div class="tfi-modal-hdr">
+                    <span class="tfi-modal-title">
+                        <template if:true={endosoEdit.id}>Editar endoso</template>
+                        <template if:false={endosoEdit.id}>Nuevo endoso</template>
+                    </span>
+                    <button class="tfi-modal-close" onclick={handleCloseEndosoModal}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="tfi-modal-body">
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Tipo de endoso</label>
+                            <select class="tfi-edit-select" data-field="tipo" onchange={handleEndosoField}>
+                                <template for:each={tipoEndosoOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Estado</label>
+                            <select class="tfi-edit-select" data-field="estado" onchange={handleEndosoField}>
+                                <template for:each={estadoEndosoOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Fecha efectiva</label>
+                            <input class="tfi-edit-input" type="date" data-field="fechaEfectiva"
+                                value={endosoEdit.fechaEfectiva} onchange={handleEndosoField} />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Fin de vigencia</label>
+                            <input class="tfi-edit-input" type="date" data-field="finVigencia"
+                                value={endosoEdit.finVigencia} onchange={handleEndosoField} />
+                        </div>
+                    </div>
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Nuevo monto (MXN)</label>
+                            <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="nuevoMonto"
+                                value={endosoEdit.nuevoMonto} oninput={handleEndosoField} placeholder="Vacío si no aplica" />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Nueva prima (MXN)</label>
+                            <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="nuevaPrima"
+                                value={endosoEdit.nuevaPrima} oninput={handleEndosoField} placeholder="Vacío si no aplica" />
+                        </div>
+                    </div>
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">Motivo</label>
+                        <textarea class="tfi-edit-textarea" data-field="motivo" oninput={handleEndosoField}>{endosoEdit.motivo}</textarea>
+                    </div>
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">Observaciones</label>
+                        <textarea class="tfi-edit-textarea" data-field="observaciones" oninput={handleEndosoField}>{endosoEdit.observaciones}</textarea>
+                    </div>
+                </div>
+                <div class="tfi-modal-footer">
+                    <button class="tfi-btn-cancel-edit" onclick={handleCloseEndosoModal} disabled={isSavingEndoso}>Cancelar</button>
+                    <button class="tfi-btn-save-edit" onclick={handleSaveEndoso} disabled={isSavingEndoso}>
+                        <template if:true={isSavingEndoso}>Guardando...</template>
+                        <template if:false={isSavingEndoso}>Guardar endoso</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ════ MODAL COMISIÓN ════ -->
+    <template if:true={showComisionModal}>
+        <div class="tfi-modal-overlay" onclick={handleCloseComisionModal}>
+            <div class="tfi-modal tfi-modal-sm" onclick={stopProp}>
+                <div class="tfi-modal-hdr">
+                    <span class="tfi-modal-title">
+                        <template if:true={comisionEdit.id}>Editar comisión</template>
+                        <template if:false={comisionEdit.id}>Agregar comisión</template>
+                    </span>
+                    <button class="tfi-modal-close" onclick={handleCloseComisionModal}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="tfi-modal-body">
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">Estatus</label>
+                        <select class="tfi-edit-select" data-field="estatus" onchange={handleComisionField}>
+                            <template for:each={estatusComisionOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">% Aplicado</label>
+                        <input class="tfi-edit-input" type="number" min="0" max="100" step="0.01" data-field="pct"
+                            value={comisionEdit.pct} oninput={handleComisionField} placeholder="Ej. 3.5" />
+                    </div>
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Monto Ollin (MXN)</label>
+                            <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="montoOllin"
+                                value={comisionEdit.montoOllin} oninput={handleComisionField} placeholder="0.00" />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Monto Vendedor (MXN)</label>
+                            <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="montoVendedor"
+                                value={comisionEdit.montoVendedor} oninput={handleComisionField} placeholder="0.00" />
+                        </div>
+                    </div>
+                </div>
+                <div class="tfi-modal-footer">
+                    <button class="tfi-btn-cancel-edit" onclick={handleCloseComisionModal} disabled={isSavingComision}>Cancelar</button>
+                    <button class="tfi-btn-save-edit" onclick={handleSaveComision} disabled={isSavingComision}>
+                        <template if:true={isSavingComision}>Guardando...</template>
+                        <template if:false={isSavingComision}>Guardar comisión</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ════ MODAL PLAN DE PAGO ════ -->
+    <template if:true={showPlanModal}>
+        <div class="tfi-modal-overlay" onclick={handleClosePlanModal}>
+            <div class="tfi-modal tfi-modal-sm" onclick={stopProp}>
+                <div class="tfi-modal-hdr">
+                    <span class="tfi-modal-title">
+                        <template if:true={planEdit.id}>Editar plan de pago</template>
+                        <template if:false={planEdit.id}>Nuevo plan de pago</template>
+                    </span>
+                    <button class="tfi-modal-close" onclick={handleClosePlanModal}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="tfi-modal-body">
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Estatus</label>
+                            <select class="tfi-edit-select" data-field="estatus" onchange={handlePlanField}>
+                                <template for:each={estatusPlanOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Periodo de pago</label>
+                            <select class="tfi-edit-select" data-field="periodo" onchange={handlePlanField}>
+                                <option value="">— Selecciona —</option>
+                                <template for:each={periodoPlanOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">Método de pago</label>
+                        <select class="tfi-edit-select" data-field="metodo" onchange={handlePlanField}>
+                            <option value="">— Selecciona —</option>
+                            <template for:each={metodoPlanOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Fecha de inicio</label>
+                            <input class="tfi-edit-input" type="date" data-field="fechaInicio"
+                                value={planEdit.fechaInicio} onchange={handlePlanField} />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Núm. de recibos</label>
+                            <input class="tfi-edit-input" type="number" min="1" step="1" data-field="numRecibos"
+                                value={planEdit.numRecibos} oninput={handlePlanField} placeholder="Ej. 12" />
+                        </div>
+                    </div>
+                    <div class="tfi-edit-field">
+                        <label class="tfi-edit-label">Monto total (MXN)</label>
+                        <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="montoTotal"
+                            value={planEdit.montoTotal} oninput={handlePlanField} placeholder="0.00" />
+                    </div>
+                </div>
+                <div class="tfi-modal-footer">
+                    <button class="tfi-btn-cancel-edit" onclick={handleClosePlanModal} disabled={isSavingPlan}>Cancelar</button>
+                    <button class="tfi-btn-save-edit" onclick={handleSavePlan} disabled={isSavingPlan}>
+                        <template if:true={isSavingPlan}>Guardando...</template>
+                        <template if:false={isSavingPlan}>Guardar plan</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ════ MODAL RECIBO ════ -->
+    <template if:true={showReciboModal}>
+        <div class="tfi-modal-overlay" onclick={handleCloseReciboModal}>
+            <div class="tfi-modal tfi-modal-sm" onclick={stopProp}>
+                <div class="tfi-modal-hdr">
+                    <span class="tfi-modal-title">
+                        <template if:true={reciboEdit.id}>Editar recibo</template>
+                        <template if:false={reciboEdit.id}>Nuevo recibo</template>
+                    </span>
+                    <button class="tfi-modal-close" onclick={handleCloseReciboModal}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="tfi-modal-body">
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Número</label>
+                            <input class="tfi-edit-input" type="number" min="1" step="1" data-field="numero"
+                                value={reciboEdit.numero} oninput={handleReciboField} placeholder="1" />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Estado</label>
+                            <select class="tfi-edit-select" data-field="estado" onchange={handleReciboField}>
+                                <template for:each={estadoReciboOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="tfi-modal-row2">
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Fecha programada</label>
+                            <input class="tfi-edit-input" type="date" data-field="fechaProg"
+                                value={reciboEdit.fechaProg} onchange={handleReciboField} />
+                        </div>
+                        <div class="tfi-edit-field">
+                            <label class="tfi-edit-label">Monto programado (MXN)</label>
+                            <input class="tfi-edit-input" type="number" min="0" step="0.01" data-field="montoProg"
+                                value={reciboEdit.montoProg} oninput={handleReciboField} placeholder="0.00" />
+                        </div>
+                    </div>
+                </div>
+                <div class="tfi-modal-footer">
+                    <button class="tfi-btn-cancel-edit" onclick={handleCloseReciboModal} disabled={isSavingRecibo}>Cancelar</button>
+                    <button class="tfi-btn-save-edit" onclick={handleSaveRecibo} disabled={isSavingRecibo}>
+                        <template if:true={isSavingRecibo}>Guardando...</template>
+                        <template if:false={isSavingRecibo}>Guardar recibo</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</div>
+</template>

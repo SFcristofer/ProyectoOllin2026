@@ -1,0 +1,59 @@
+<template>
+    <div class="ot-wrap" onleadeditropen={handleLeadEditOpen}>
+
+        <!-- ── Tab bar ── -->
+        <div class="ot-tabbar" role="tablist">
+            <button class={tabClass0} data-tab="dashboard"     onclick={handleTab} role="tab">Dashboard</button>
+            <button class={tabClass1} data-tab="leads"         onclick={handleTab} role="tab">Prospectos</button>
+            <button class={tabClass2} data-tab="oportunidades" onclick={handleTab} role="tab">Oportunidades</button>
+            <button class={tabClass3} data-tab="polizas"       onclick={handleTab} role="tab">Pólizas</button>
+            <button class={tabClass4} data-tab="fianzas"    onclick={handleTab} role="tab">Fianzas</button>
+            <button class={tabClass5} data-tab="catalogos" onclick={handleTab} role="tab">Catálogos</button>
+        </div>
+
+        <!-- ── Panels ── -->
+        <div class={panelClass0}>
+            <div class="ot-dash-wrap">
+                <div class="ot-dash-subtabs">
+                    <button class={dshTabClass0} data-subtab="gestion" onclick={handleDashSubTab}>Gestión</button>
+                    <button class={dshTabClass1} data-subtab="embudo"  onclick={handleDashSubTab}>Embudo de ventas</button>
+                </div>
+                <div class={dshPanelClass0}><c-tech-gestion onnavigateinternal={handleInternalNav}></c-tech-gestion></div>
+                <div class={dshPanelClass1}><c-tech-ventas-dashboard></c-tech-ventas-dashboard></div>
+            </div>
+        </div>
+        <div class={panelClass1}>
+            <c-tech-ventas-leads
+                onnuevolead={handleNuevoLead}
+                onconvertirleadaopp={handleConvertirLeadAOpp}>
+            </c-tech-ventas-leads>
+        </div>
+        <div class={panelClass2}>
+            <c-tech-ventas-pipeline
+                onnuevaopp={handleNuevaOpp}
+                oneditopen={handleEditOpen}>
+            </c-tech-ventas-pipeline>
+        </div>
+        <div class={panelClass3}>
+            <c-tech-ventas-polizas focus-record={polizasFocus}></c-tech-ventas-polizas>
+        </div>
+        <div class={panelClass4}>
+            <c-tech-ventas-fianzas></c-tech-ventas-fianzas>
+        </div>
+        <div class={panelClass5}>
+            <c-tech-ventas-catalogos></c-tech-ventas-catalogos>
+        </div>
+
+        <!-- ── Modal ── -->
+        <c-tech-ventas-create-modal
+            is-open={modalOpen}
+            initial-type={modalInitialType}
+            edit-record={editRecord}
+            edit-lead-record={editLeadRecord}
+            prefill-lead-data={prefillLeadData}
+            onclose={handleModalClose}
+            onsaved={handleSaved}>
+        </c-tech-ventas-create-modal>
+
+    </div>
+</template>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Estado__c</fullName>
+    <label>Estado</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Programado</fullName>
+                <default>true</default>
+                <label>Programado</label>
+            </value>
+            <value>
+                <fullName>Por cobrar</fullName>
+                <default>false</default>
+                <label>Por cobrar</label>
+            </value>
+            <value>
+                <fullName>Cobrado</fullName>
+                <default>false</default>
+                <label>Cobrado</label>
+            </value>
+            <value>
+                <fullName>Vencido</fullName>
+                <default>false</default>
+                <label>Vencido</label>
+            </value>
+            <value>
+                <fullName>Parcial</fullName>
+                <default>false</default>
+                <label>Parcial</label>
+            </value>
+            <value>
+                <fullName>Anulado</fullName>
+                <default>false</default>
+                <label>Anulado</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

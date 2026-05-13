@@ -1,0 +1,142 @@
+<template>
+    <div class="vpf-wrap">
+
+        <!-- ── Toolbar ── -->
+        <div class="vpf-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+            <div class="vpf-toolbar-spacer"></div>
+        </div>
+
+        <!-- ── Filter panel ── -->
+        <template if:true={showFilters}>
+            <div class="vpf-filter-panel">
+                <div class="vpf-filter-hdr">
+                    <span class="vpf-filter-title">Filtros avanzados</span>
+                    <div class="vpf-filter-actions">
+                        <button class="vpf-flt-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vpf-flt-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vpf-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vpf-filter-rule">
+                                <select class="vpf-flt-campo" data-id={rule.id} onchange={handleFilterField}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vpf-flt-op" data-id={rule.id} onchange={handleFilterOp}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <input class="vpf-flt-value" type="text" data-id={rule.id}
+                                    value={rule.value} oninput={handleFilterValue} placeholder="Valor..." />
+                                <button class="vpf-flt-remove" data-id={rule.id} onclick={handleRemoveRule}>×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vpf-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Content ── -->
+        <div class="vpf-content">
+
+            <template if:true={isLoading}>
+                <div class="vpf-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="vpf-error-msg">{error}</div>
+            </template>
+
+            <template if:true={isEmpty}>
+                <div class="vpf-empty-msg">No hay precalificaciones para mostrar.</div>
+            </template>
+
+            <!-- Tabla -->
+            <template if:true={showTable}>
+                <div class="vpf-table-scroll">
+                    <table class="vpf-table">
+                        <thead>
+                            <tr>
+                                <template for:each={headers} for:item="h">
+                                    <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="vpf-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredRows} for:item="row">
+                                <tr key={row.id} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+                                    <td class="vpf-td vpf-td-name">
+                                        <lightning-icon icon-name="utility:form" size="xx-small" class="vpf-row-icon"></lightning-icon>
+                                        {row.name}
+                                    </td>
+                                    <td class="vpf-td">{row.contratistaName}</td>
+                                    <td class="vpf-td"><span class={row.estatusClass}>{row.estadoLabel}</span></td>
+                                    <td class="vpf-td vpf-td-num">{row.scoreICP}</td>
+                                    <td class="vpf-td vpf-td-num">{row.lineaFmt}</td>
+                                    <td class="vpf-td vpf-td-num">{row.capitalFmt}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- Panel lateral -->
+            <template if:true={showPanel}>
+                <div class="vpf-panel">
+                    <div class="vpf-panel-hdr">
+                        <span class="vpf-panel-title">{panelRecord.name}</span>
+                        <div class="vpf-panel-hdr-actions">
+                            <button class="vpf-panel-prev" onclick={handlePanelPrev} title="Anterior">
+                                <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vpf-panel-next" onclick={handlePanelNext} title="Siguiente">
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vpf-panel-close" onclick={handleClosePanel}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vpf-panel-body">
+                        <template for:each={panelFields} for:item="f">
+                            <div key={f.key} class="vpf-detail-row">
+                                <span class="vpf-detail-label">{f.label}</span>
+                                <template if:true={f.isMoney}>
+                                    <span class="vpf-detail-money">{f.value}</span>
+                                </template>
+                                <template if:true={f.isBadge}>
+                                    <span class={f.badgeClass}>{f.value}</span>
+                                </template>
+                                <template if:false={f.isMoney}>
+                                    <template if:false={f.isBadge}>
+                                        <span>{f.value}</span>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </div>
+</template>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Endoso_Prima_No_Negativa</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(NOT(ISBLANK(Nueva_Prima__c)), Nueva_Prima__c &lt; 0)</errorConditionFormula>
+    <errorMessage>La prima no puede ser negativa.</errorMessage>
+</ValidationRule>

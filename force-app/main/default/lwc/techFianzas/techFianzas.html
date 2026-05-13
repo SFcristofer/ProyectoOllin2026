@@ -1,74 +1,843 @@
 <template>
-    <div class="airtable-container slds-bg-color_neutral-1">
-        <!-- Barra de Herramientas -->
-        <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
-            <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
-                <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
-                    <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                </lightning-button-menu>
-                <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+    <div class="at-container">
+
+        <!-- SPINNER -->
+        <template if:true={isLoading}>
+            <div class="at-loading-overlay">
+                <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
             </div>
-            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
-                <lightning-button label="Nueva Fianza" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
+        </template>
+
+        <!-- ═══ VIEW TABS BAR ═══ -->
+        <div class="at-views-bar">
+            <div class="at-views-list">
+                <button class={gridTabClass} data-view="grid" onclick={handleViewChange}>
+                    <lightning-icon icon-name="utility:table" size="xx-small" class="at-tab-icon" alternative-text="Grid"></lightning-icon>
+                    Grid
+                </button>
+                <button class={galleryTabClass} data-view="gallery" onclick={handleViewChange}>
+                    <lightning-icon icon-name="utility:image" size="xx-small" class="at-tab-icon" alternative-text="Gallery"></lightning-icon>
+                    Gallery
+                </button>
+                <button class={kanbanTabClass} data-view="kanban" onclick={handleViewChange}>
+                    <lightning-icon icon-name="utility:kanban" size="xx-small" class="at-tab-icon" alternative-text="Kanban"></lightning-icon>
+                    Kanban
+                </button>
+                <button class="at-add-view-btn">+ Agregar vista</button>
             </div>
         </div>
 
-        <!-- Tabla Estilo Airtable -->
-        <div class="airtable-grid-container slds-p-around_medium">
-            <template if:true={isLoading}>
-                <div class="slds-p-around_large slds-text-align_center">
-                    <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
-                </div>
-            </template>
+        <!-- ═══ TOOLBAR ═══ -->
+        <div class="at-toolbar">
+            <div class="at-toolbar-right">
+                <lightning-input
+                    type="search"
+                    variant="label-hidden"
+                    placeholder="Buscar..."
+                    class="at-search"
+                    onchange={handleSearch}>
+                </lightning-input>
+                <lightning-button
+                    label="Nueva Fianza"
+                    variant="brand"
+                    icon-name="utility:add"
+                    class="slds-m-left_small"
+                    onclick={handleOpenCreateModal}>
+                </lightning-button>
+            </div>
+        </div>
 
-            <template if:true={fianzasFiltradas}>
-                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+        <!-- ═══ GRID VIEW ═══ -->
+        <template if:true={isGridView}>
+            <div class="at-grid-wrapper">
+                <table class="at-table">
                     <thead>
-                        <tr class="slds-line-height_reset">
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:user" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Contratista(s)</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:people" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Vendedor(es)</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
+                        <tr>
+                            <th class="at-th at-th-rownum"></th>
+                            <th class="at-th at-th-sticky at-th-sortable" data-field="name" onclick={handleSort}>
+                                <span class="at-field-icon"><lightning-icon icon-name="utility:text" size="xx-small"></lightning-icon></span>
+                                Folio{nameSortArrow}
+                            </th>
+                            <template for:each={visibleColumnsWithSort} for:item="col">
+                                <th key={col.field} class={col.thClass} style={col.minWidthStyle} data-field={col.field} onclick={handleSort}>
+                                    <span class="at-field-icon"><lightning-icon icon-name={col.icon} size="xx-small"></lightning-icon></span>
+                                    {col.label}{col.sortArrow}
+                                </th>
+                            </template>
+                            <!-- Add field (+) -->
+                            <th class="at-th at-th-addfield" onclick={handleToggleColumnPicker}>
+                                <template if:false={showColumnPicker}>
+                                    <span class="at-add-field-label">+ Campo</span>
+                                </template>
+                                <template if:true={showColumnPicker}>
+                                    <div class="at-column-picker" onclick={stopPropagation}>
+                                        <div class="at-picker-header">Agregar campo</div>
+                                        <template if:true={hasAvailableColumns}>
+                                            <template for:each={availableColumns} for:item="ac">
+                                                <div key={ac.field} class="at-picker-item" data-field={ac.field} onclick={handleSelectColumn}>
+                                                    <lightning-icon icon-name={ac.icon} size="xx-small" class="slds-m-right_x-small" alternative-text={ac.label}></lightning-icon>
+                                                    {ac.label}
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={hasAvailableColumns}>
+                                            <div class="at-picker-empty">No hay más campos disponibles</div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={fianzasFiltradas} for:item="fianza">
-                            <tr key={fianza.id}>
-                                <td class="airtable-cell">{fianza.name}</td>
-                                <!-- Chips para Contratistas -->
-                                <td class="airtable-cell">
-                                    <template for:each={fianza.contratistas} for:item="con">
-                                        <span key={con} class="slds-badge slds-m-around_xx-small">{con}</span>
+                        <template for:each={pagedFianzas} for:item="fianza">
+                            <tr key={fianza.id} class="at-tr" data-id={fianza.id}>
+
+                                <!-- Row number + expand button -->
+                                <td class="at-td at-td-rownum">
+                                    <span class="at-row-num">{fianza.rowNumber}</span>
+                                    <button class="at-expand-btn" data-id={fianza.id} onclick={handleExpandRow} title="Expandir registro">
+                                        <lightning-icon icon-name="utility:expand_alt" size="xx-small" alternative-text="Expandir registro"></lightning-icon>
+                                    </button>
+                                </td>
+
+                                <!-- Sticky: Folio (inline edit) -->
+                                <td class="at-td at-td-sticky" data-id={fianza.id} data-field="name" onclick={handleCellClick}>
+                                    <template if:true={fianza.isEditingName}>
+                                        <input class="at-inline-input" type="text" value={fianza.name}
+                                            data-id={fianza.id} data-field="name"
+                                            onblur={handleCellBlur} onkeydown={handleCellKeydown}/>
+                                    </template>
+                                    <template if:false={fianza.isEditingName}>
+                                        <span class="at-cell-text">{fianza.name}</span>
                                     </template>
                                 </td>
-                                <!-- Chips para Vendedores -->
-                                <td class="airtable-cell">
-                                    <template for:each={fianza.vendedores} for:item="ven">
-                                        <span key={ven} class="slds-badge slds-m-around_xx-small">{ven}</span>
-                                    </template>
-                                </td>
-                                <td class="airtable-cell">
-                                    <lightning-formatted-number value={fianza.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
-                                </td>
-                                <td class="airtable-cell">
-                                    <span class={fianza.estatusClass}>{fianza.estatus}</span>
-                                </td>
+
+                                <!-- Dynamic columns -->
+                                <template for:each={visibleColumns} for:item="col">
+                                    <td key={col.field} class="at-td" data-id={fianza.id} data-field={col.field} onclick={handleCellClick}>
+
+                                        <!-- Contratistas chips -->
+                                        <template if:true={col.isContratistas}>
+                                            <div class="at-chips">
+                                                <template for:each={fianza.contratistas} for:item="c">
+                                                    <span key={c} class="at-chip at-chip-blue">{c}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Vendedores chips -->
+                                        <template if:true={col.isVendedores}>
+                                            <div class="at-chips">
+                                                <template for:each={fianza.vendedores} for:item="v">
+                                                    <span key={v} class="at-chip at-chip-purple">{v}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Contratos chips -->
+                                        <template if:true={col.isContratos}>
+                                            <div class="at-chips">
+                                                <template for:each={fianza.contratos} for:item="ct">
+                                                    <span key={ct} class="at-chip at-chip-teal">{ct}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Monto (inline edit) -->
+                                        <template if:true={col.isMonto}>
+                                            <template if:true={fianza.isEditingMonto}>
+                                                <input class="at-inline-input at-inline-number" type="number"
+                                                    value={fianza.monto}
+                                                    data-id={fianza.id} data-field="monto"
+                                                    onblur={handleCellBlur} onkeydown={handleCellKeydown}/>
+                                            </template>
+                                            <template if:false={fianza.isEditingMonto}>
+                                                <lightning-formatted-number value={fianza.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                            </template>
+                                        </template>
+
+                                        <!-- Estatus badge + inline select -->
+                                        <template if:true={col.isEstatus}>
+                                            <template if:true={fianza.isEditingEstatus}>
+                                                <select class="at-inline-select"
+                                                    data-id={fianza.id} data-field="estatus"
+                                                    onchange={handleSelectChange} onblur={handleSelectBlur}>
+                                                    <option value="Activa">Activa</option>
+                                                    <option value="Pendiente">Pendiente</option>
+                                                    <option value="Cancelada">Cancelada</option>
+                                                    <option value="Vencida">Vencida</option>
+                                                </select>
+                                            </template>
+                                            <template if:false={fianza.isEditingEstatus}>
+                                                <span class={fianza.estatusClass}>{fianza.estatus}</span>
+                                            </template>
+                                        </template>
+
+                                        <!-- Fecha emisión (inline date edit) -->
+                                        <template if:true={col.isFecha}>
+                                            <template if:true={fianza.isEditingFecha}>
+                                                <input class="at-inline-input" type="date"
+                                                    value={fianza.fechaISO}
+                                                    data-id={fianza.id} data-field="fecha"
+                                                    onblur={handleCellBlur} onkeydown={handleCellKeydown}/>
+                                            </template>
+                                            <template if:false={fianza.isEditingFecha}>
+                                                <span class="at-cell-text">{fianza.fechaDisplay}</span>
+                                            </template>
+                                        </template>
+
+                                        <!-- Beneficiario -->
+                                        <template if:true={col.isBeneficiario}>
+                                            <span class="at-cell-text">{fianza.beneficiario}</span>
+                                        </template>
+
+                                        <!-- Tipo de Riesgo -->
+                                        <template if:true={col.isTipoRiesgo}>
+                                            <template if:true={fianza.tipoRiesgo}>
+                                                <span class="at-chip at-chip-teal">{fianza.tipoRiesgo}</span>
+                                            </template>
+                                        </template>
+
+                                        <!-- Monto Vigente -->
+                                        <template if:true={col.isMontoVigente}>
+                                            <template if:true={fianza.montoVigente}>
+                                                <lightning-formatted-number value={fianza.montoVigente} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                            </template>
+                                        </template>
+
+                                        <!-- Prima Neta -->
+                                        <template if:true={col.isPrimaNeta}>
+                                            <template if:true={fianza.primaNeta}>
+                                                <lightning-formatted-number value={fianza.primaNeta} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                            </template>
+                                        </template>
+
+                                        <!-- Prima Vigente -->
+                                        <template if:true={col.isPrimaVigente}>
+                                            <template if:true={fianza.primaVigente}>
+                                                <lightning-formatted-number value={fianza.primaVigente} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                            </template>
+                                        </template>
+
+                                        <!-- Fecha Vencimiento -->
+                                        <template if:true={col.isFechaVencimiento}>
+                                            <span class="at-cell-text">{fianza.fechaVencimientoDisplay}</span>
+                                        </template>
+
+                                        <!-- Vencimiento Vigente -->
+                                        <template if:true={col.isFechaVigente}>
+                                            <span class="at-cell-text">{fianza.fechaVigenteDisplay}</span>
+                                        </template>
+
+                                        <!-- Plazo Reclamación -->
+                                        <template if:true={col.isPlazoReclamacion}>
+                                            <span class="at-cell-text">{fianza.plazoReclamacionDisplay}</span>
+                                        </template>
+
+                                        <!-- Días para Reclamación -->
+                                        <template if:true={col.isDiasReclamacion}>
+                                            <span class="at-cell-text">{fianza.diasReclamacionDisplay}</span>
+                                        </template>
+
+                                    </td>
+                                </template>
+
+                                <td class="at-td at-td-filler"></td>
                             </tr>
                         </template>
+
+                        <!-- Add row -->
+                        <tr class="at-tr-addrow" onclick={handleOpenCreateModal}>
+                            <td colspan="99" class="at-td-addrow">
+                                <span class="at-addrow-label">+ Agregar registro</span>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+            </div>
+            <template if:true={showPagination}>
+                <div class="at-pagination">
+                    <button class="at-page-btn" onclick={handlePrevPage} disabled={isFirstPage} aria-label="Anterior">&#8592; Anterior</button>
+                    <span class="at-page-label">{paginationLabel}</span>
+                    <button class="at-page-btn" onclick={handleNextPage} disabled={isLastPage} aria-label="Siguiente">Siguiente &#8594;</button>
+                </div>
             </template>
-        </div>
+        </template>
+
+        <!-- ═══ GALLERY VIEW ═══ -->
+        <template if:true={isGalleryView}>
+            <div class="at-gallery">
+                <template for:each={fianzasFiltradas} for:item="fianza">
+                    <div key={fianza.id} class="at-gallery-card" data-id={fianza.id} onclick={handleExpandRow}>
+                        <div class="at-gallery-card-top">
+                            <span class={fianza.estatusClass}>{fianza.estatus}</span>
+                        </div>
+                        <div class="at-gallery-title">{fianza.name}</div>
+                        <div class="at-gallery-field">
+                            <span class="at-gallery-label">Monto</span>
+                            <lightning-formatted-number value={fianza.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                        </div>
+                        <div class="at-gallery-field">
+                            <span class="at-gallery-label">Contratista(s)</span>
+                            <div class="at-chips">
+                                <template for:each={fianza.contratistas} for:item="c">
+                                    <span key={c} class="at-chip at-chip-blue">{c}</span>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="at-gallery-footer">{fianza.fechaDisplay}</div>
+                    </div>
+                </template>
+                <!-- Add card -->
+                <div class="at-gallery-add" onclick={handleOpenCreateModal}>
+                    <span class="at-gallery-add-icon">+</span>
+                    <span>Nuevo registro</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══ KANBAN VIEW ═══ -->
+        <template if:true={isKanbanView}>
+            <div class="at-kanban">
+                <template for:each={kanbanColumns} for:item="col">
+                    <div key={col.status} class="at-kanban-col">
+                        <div class="at-kanban-col-header">
+                            <span class={col.badgeClass}>{col.status}</span>
+                            <span class="at-kanban-count">{col.count}</span>
+                        </div>
+                        <div class="at-kanban-cards">
+                            <template for:each={col.items} for:item="fianza">
+                                <div key={fianza.id} class="at-kanban-card" data-id={fianza.id} onclick={handleExpandRow}>
+                                    <div class="at-kanban-card-name">{fianza.name}</div>
+                                    <div class="at-kanban-card-meta">
+                                        <lightning-formatted-number value={fianza.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                    </div>
+                                    <div class="at-chips at-chips-sm">
+                                        <template for:each={fianza.contratistas} for:item="c">
+                                            <span key={c} class="at-chip at-chip-blue">{c}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            <button class="at-kanban-add-btn" onclick={handleOpenCreateModal}>+ Agregar</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══ CALENDAR VIEW ═══ -->
+        <template if:true={isCalendarView}>
+            <div class="at-calendar-placeholder">
+                <lightning-icon icon-name="utility:event" size="large" class="at-placeholder-icon"></lightning-icon>
+                <p class="at-placeholder-title">Vista de Calendario</p>
+                <p class="at-placeholder-sub">Las fianzas se mostrarán por Fecha de Emisión</p>
+            </div>
+        </template>
+
     </div>
 
-    <!-- Modal de Creación -->
-    <c-tech-fianza-create-modal 
+    <!-- ═══ ROW DETAIL PANEL ═══ -->
+    <template if:true={isDetailPanelOpen}>
+        <div class="at-overlay" onclick={handleCloseDetailPanel}></div>
+        <div class="at-detail-panel">
+            <div class="at-detail-header">
+                <div class="at-detail-nav">
+                    <button class="at-detail-nav-btn" onclick={handlePrevRecord} disabled={isFirstRecord} title="Anterior" aria-label="Anterior">▲</button>
+                    <button class="at-detail-nav-btn" onclick={handleNextRecord} disabled={isLastRecord} title="Siguiente" aria-label="Siguiente">▼</button>
+                </div>
+                <div class="at-detail-header-info">
+                    <span class="at-detail-title">{selectedFianza.name}</span>
+                    <span class="at-detail-subtitle">Registro</span>
+                </div>
+                <div class="at-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <lightning-button label="Editar" icon-name="utility:edit" size="small" variant="neutral" onclick={handleEditFromPanel}></lightning-button>
+                    </template>
+                    <template if:true={isEditingPanel}>
+                        <span class="at-panel-editing-badge">Editando...</span>
+                    </template>
+                    <button class="at-detail-close" onclick={handleCloseDetailPanel} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                </div>
+            </div>
+            <div class="at-detail-body">
+                <template if:true={selectedFianza}>
+                    <!-- VIEW MODE -->
+                    <template if:false={isEditingPanel}>
+                        <lightning-record-view-form record-id={selectedFianza.id} object-api-name="Tech_Fianza__c">
+                            <div class="at-detail-fields">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Folio</span>
+                                    <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Estado</span>
+                                    <lightning-output-field field-name="Estatus__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Riesgo</span>
+                                    <lightning-output-field field-name="Tipo_de_Riesgo__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contratista</span>
+                                    <lightning-output-field field-name="Contratistas__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Beneficiario</span>
+                                    <lightning-output-field field-name="Beneficiarios__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Afianzadora</span>
+                                    <lightning-output-field field-name="Institucion__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Vendedor</span>
+                                    <lightning-output-field field-name="Vendedor__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contrato</span>
+                                    <lightning-output-field field-name="Contrato__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Monto Afianzado</span>
+                                    <lightning-output-field field-name="Monto_Afianzado__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Monto Vigente</span>
+                                    <lightning-output-field field-name="Monto_Afianzado_Vigente__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Prima Neta</span>
+                                    <lightning-output-field field-name="Prima_neta__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Prima Vigente</span>
+                                    <lightning-output-field field-name="Prima_Vigente__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Costo de Fianza</span>
+                                    <lightning-output-field field-name="Costo_de_fianza__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha de Emisión</span>
+                                    <lightning-output-field field-name="Fecha_de_Emision__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha Vencimiento</span>
+                                    <lightning-output-field field-name="Fecha_de_Vencimiento__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Vencimiento Vigente</span>
+                                    <lightning-output-field field-name="Fecha_Vencimiento_Vigente__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-formula">fx</span>Días p/Vencer</span>
+                                    <lightning-output-field field-name="Dias_para_vencer__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-number">#</span>Días Reclamación</span>
+                                    <lightning-output-field field-name="DiasReclamaci_n__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-percent">%</span>Exposición</span>
+                                    <lightning-output-field field-name="Exposicion__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                            </div>
+                        </lightning-record-view-form>
+                    </template>
+
+                    <!-- EDIT MODE -->
+                    <template if:true={isEditingPanel}>
+                        <lightning-record-edit-form
+                            record-id={selectedFianza.id}
+                            object-api-name="Tech_Fianza__c"
+                            onsuccess={handlePanelSaveSuccess}>
+                            <div class="at-detail-fields at-detail-fields-edit">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Estado</span>
+                                    <lightning-input-field field-name="Estatus__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Riesgo</span>
+                                    <lightning-input-field field-name="Tipo_de_Riesgo__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contratista</span>
+                                    <lightning-input-field field-name="Contratistas__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Beneficiario</span>
+                                    <lightning-input-field field-name="Beneficiarios__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Afianzadora</span>
+                                    <lightning-input-field field-name="Institucion__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Vendedor</span>
+                                    <lightning-input-field field-name="Vendedor__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contrato</span>
+                                    <lightning-input-field field-name="Contrato__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Monto Afianzado</span>
+                                    <lightning-input-field field-name="Monto_Afianzado__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Monto Vigente</span>
+                                    <lightning-input-field field-name="Monto_Afianzado_Vigente__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Prima Neta</span>
+                                    <lightning-input-field field-name="Prima_neta__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Prima Vigente</span>
+                                    <lightning-input-field field-name="Prima_Vigente__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Costo de Fianza</span>
+                                    <lightning-input-field field-name="Costo_de_fianza__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha de Emisión</span>
+                                    <lightning-input-field field-name="Fecha_de_Emision__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha Vencimiento</span>
+                                    <lightning-input-field field-name="Fecha_de_Vencimiento__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Vencimiento Vigente</span>
+                                    <lightning-input-field field-name="Fecha_Vencimiento_Vigente__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-number">#</span>Días Reclamación</span>
+                                    <lightning-input-field field-name="DiasReclamaci_n__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-percent">%</span>Exposición</span>
+                                    <lightning-input-field field-name="Exposicion__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="at-panel-edit-actions">
+                                <button class="at-panel-btn at-panel-btn-cancel" type="button" aria-label="Cancelar edición" onclick={handlePanelCancel}>Cancelar</button>
+                                <button class="at-panel-btn at-panel-btn-save" type="submit" aria-label="Guardar cambios">Guardar cambios</button>
+                            </div>
+                        </lightning-record-edit-form>
+                    </template>
+
+                    <!-- Relaciones múltiples -->
+                    <div class="at-rel-section">
+                        <div class="at-rel-section-title"><span class="at-ftype at-ftype-ref">≡</span>Contratistas</div>
+                        <div class="at-rel-cards">
+                            <template for:each={selectedFianza.contratistaRels} for:item="r">
+                                <div key={r.relId} class="at-rel-card">
+                                    <span class="at-rel-card-icon">👤</span>
+                                    <div class="at-rel-card-info">
+                                        <span class="at-rel-card-name">{r.name}</span>
+                                        <span class="at-rel-card-sub">{r.sub}</span>
+                                    </div>
+                                    <button class="at-rel-card-del" data-rel-id={r.relId} onclick={handleDeleteContratista} title="Quitar">×</button>
+                                </div>
+                            </template>
+                            <template if:false={selectedFianza.hasContratistaRels}>
+                                <p class="at-rel-empty">Sin contratistas vinculados</p>
+                            </template>
+                        </div>
+                        <template if:false={isAddingContratista}>
+                            <button class="at-rel-add-btn" onclick={handleAddContratistaStart}>
+                                <span class="at-rel-add-plus">+</span> Agregar contratista
+                            </button>
+                        </template>
+                        <template if:true={isAddingContratista}>
+                            <div class="at-rel-search-box">
+                                <div class="at-rel-search-row">
+                                    <span class="at-rel-search-icon">🔍</span>
+                                    <input class="at-rel-search-input" type="text" placeholder="Buscar contratista..." oninput={handleContratistaSearch}/>
+                                    <button class="at-rel-search-cancel" onclick={handleCancelContratista}>✕</button>
+                                </div>
+                                <template if:true={hasContratistaResults}>
+                                    <div class="at-rel-results">
+                                        <template for:each={contratistaResults} for:item="r">
+                                            <div key={r.id} class="at-rel-result-item" data-id={r.id} onclick={handleSelectContratista}>
+                                                <span class="at-rel-result-dot"></span>
+                                                <div class="at-rel-result-info">
+                                                    <span class="at-rel-result-name">{r.name}</span>
+                                                    <span class="at-rel-result-sub">{r.sub}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={isCreatingNewContratista}>
+                                    <button class="at-rel-create-btn" onclick={handleCreateNewAccount}>+ Crear nueva cuenta</button>
+                                </template>
+                                <template if:true={isCreatingNewContratista}>
+                                    <div class="at-rel-create-inline">
+                                        <lightning-record-edit-form object-api-name="Account" onsuccess={handleCreatedContratista}>
+                                            <lightning-input-field field-name="Name" variant="label-hidden" placeholder="Nombre de la cuenta"></lightning-input-field>
+                                            <div class="at-rel-create-actions">
+                                                <button class="at-rel-create-cancel" type="button" onclick={handleCancelCreateContratista}>Cancelar</button>
+                                                <button class="at-rel-create-save" type="submit">Crear y vincular</button>
+                                            </div>
+                                        </lightning-record-edit-form>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="at-rel-section">
+                        <div class="at-rel-section-title"><span class="at-ftype at-ftype-ref">≡</span>Vendedores</div>
+                        <div class="at-rel-cards">
+                            <template for:each={selectedFianza.vendedorRels} for:item="r">
+                                <div key={r.relId} class="at-rel-card">
+                                    <span class="at-rel-card-icon">🏷️</span>
+                                    <div class="at-rel-card-info">
+                                        <span class="at-rel-card-name">{r.name}</span>
+                                        <span class="at-rel-card-sub">{r.sub}</span>
+                                    </div>
+                                    <button class="at-rel-card-del" data-rel-id={r.relId} onclick={handleDeleteVendedor} title="Quitar">×</button>
+                                </div>
+                            </template>
+                            <template if:false={selectedFianza.hasVendedorRels}>
+                                <p class="at-rel-empty">Sin vendedores vinculados</p>
+                            </template>
+                        </div>
+                        <template if:false={isAddingVendedor}>
+                            <button class="at-rel-add-btn" onclick={handleAddVendedorStart}>
+                                <span class="at-rel-add-plus">+</span> Agregar vendedor
+                            </button>
+                        </template>
+                        <template if:true={isAddingVendedor}>
+                            <div class="at-rel-search-box">
+                                <div class="at-rel-search-row">
+                                    <span class="at-rel-search-icon">🔍</span>
+                                    <input class="at-rel-search-input" type="text" placeholder="Buscar vendedor..." oninput={handleVendedorSearch}/>
+                                    <button class="at-rel-search-cancel" onclick={handleCancelVendedor}>✕</button>
+                                </div>
+                                <template if:true={hasVendedorResults}>
+                                    <div class="at-rel-results">
+                                        <template for:each={vendedorResults} for:item="r">
+                                            <div key={r.id} class="at-rel-result-item" data-id={r.id} onclick={handleSelectVendedor}>
+                                                <span class="at-rel-result-dot"></span>
+                                                <div class="at-rel-result-info">
+                                                    <span class="at-rel-result-name">{r.name}</span>
+                                                    <span class="at-rel-result-sub">{r.sub}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={isCreatingNewVendedor}>
+                                    <button class="at-rel-create-btn" onclick={handleCreateNewVendedor}>+ Crear nuevo vendedor</button>
+                                </template>
+                                <template if:true={isCreatingNewVendedor}>
+                                    <div class="at-rel-create-inline">
+                                        <lightning-record-edit-form object-api-name="Vendedores__c" onsuccess={handleCreatedVendedor}>
+                                            <lightning-input-field field-name="Name" variant="label-hidden" placeholder="Nombre del vendedor"></lightning-input-field>
+                                            <div class="at-rel-create-actions">
+                                                <button class="at-rel-create-cancel" type="button" onclick={handleCancelCreateVendedor}>Cancelar</button>
+                                                <button class="at-rel-create-save" type="submit">Crear y vincular</button>
+                                            </div>
+                                        </lightning-record-edit-form>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="at-rel-section">
+                        <div class="at-rel-section-title"><span class="at-ftype at-ftype-ref">≡</span>Contratos</div>
+                        <div class="at-rel-cards">
+                            <template for:each={selectedFianza.contratoRels} for:item="r">
+                                <div key={r.relId} class="at-rel-card">
+                                    <span class="at-rel-card-icon">📄</span>
+                                    <div class="at-rel-card-info">
+                                        <span class="at-rel-card-name">{r.name}</span>
+                                        <span class="at-rel-card-sub">{r.sub}</span>
+                                    </div>
+                                    <button class="at-rel-card-del" data-rel-id={r.relId} onclick={handleDeleteContratoRel} title="Quitar">×</button>
+                                </div>
+                            </template>
+                            <template if:false={selectedFianza.hasContratoRels}>
+                                <p class="at-rel-empty">Sin contratos vinculados</p>
+                            </template>
+                        </div>
+                        <template if:false={isAddingContratoRel}>
+                            <button class="at-rel-add-btn" onclick={handleAddContratoRelStart}>
+                                <span class="at-rel-add-plus">+</span> Agregar contrato
+                            </button>
+                        </template>
+                        <template if:true={isAddingContratoRel}>
+                            <div class="at-rel-search-box">
+                                <div class="at-rel-search-row">
+                                    <span class="at-rel-search-icon">🔍</span>
+                                    <input class="at-rel-search-input" type="text" placeholder="Buscar contrato..." oninput={handleContratoRelSearch}/>
+                                    <button class="at-rel-search-cancel" onclick={handleCancelContratoRel}>✕</button>
+                                </div>
+                                <template if:true={hasContratoRelResults}>
+                                    <div class="at-rel-results">
+                                        <template for:each={contratoRelResults} for:item="r">
+                                            <div key={r.id} class="at-rel-result-item" data-id={r.id} onclick={handleSelectContratoRel}>
+                                                <span class="at-rel-result-dot"></span>
+                                                <div class="at-rel-result-info">
+                                                    <span class="at-rel-result-name">{r.name}</span>
+                                                    <span class="at-rel-result-sub">{r.sub}</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={isCreatingNewContratoRel}>
+                                    <button class="at-rel-create-btn" onclick={handleCreateNewContrato}>+ Crear nuevo contrato</button>
+                                </template>
+                                <template if:true={isCreatingNewContratoRel}>
+                                    <div class="at-rel-create-inline">
+                                        <lightning-record-edit-form object-api-name="Contract" onsuccess={handleCreatedContratoRel}>
+                                            <lightning-input-field field-name="Name" variant="label-hidden" placeholder="Número / nombre del contrato"></lightning-input-field>
+                                            <div class="at-rel-create-actions">
+                                                <button class="at-rel-create-cancel" type="button" onclick={handleCancelCreateContratoRel}>Cancelar</button>
+                                                <button class="at-rel-create-save" type="submit">Crear y vincular</button>
+                                            </div>
+                                        </lightning-record-edit-form>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <!-- ═══ PLAN DE PAGOS Y RECIBOS ═══ -->
+                    <div class="at-rel-section">
+                        <div class="at-rel-section-title at-rel-collapsible" onclick={handleTogglePlanes}>
+                            <span class="at-ftype at-ftype-ref">≡</span>Plan de Pagos y Recibos
+                            <span class="at-rel-toggle">{planesToggleIcon}</span>
+                        </div>
+                        <template if:true={expandPlanes}>
+                            <template if:true={submodulos.loading}>
+                                <div class="at-submod-loading">
+                                    <lightning-spinner alternative-text="Cargando..." size="x-small"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template if:false={submodulos.loading}>
+                                <template if:true={hasPlanes}>
+                                    <template for:each={submodulos.planes} for:item="plan">
+                                        <div key={plan.id} class="at-submod-plan">
+                                            <div class="at-submod-plan-header">
+                                                <span class="at-chip at-chip-teal">{plan.name}</span>
+                                                <span class={plan.estatusClass}>{plan.estatus}</span>
+                                                <span class="at-submod-meta">{plan.periodo} · {plan.metodo}</span>
+                                                <span class="at-submod-meta">
+                                                    <lightning-formatted-number value={plan.montoTotal} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                                </span>
+                                                <span class="at-submod-meta">{plan.numRecibos} recibos · Inicio: {plan.fechaInicio}</span>
+                                            </div>
+                                            <template if:true={plan.hasRecibos}>
+                                                <div class="at-submod-recibos">
+                                                    <div class="at-submod-recibos-hdr">
+                                                        <span>#</span>
+                                                        <span>Estado</span>
+                                                        <span>Programado</span>
+                                                        <span>Fecha Pago</span>
+                                                        <span>Monto Prog.</span>
+                                                        <span>Cobrado</span>
+                                                    </div>
+                                                    <template for:each={plan.recibos} for:item="rec">
+                                                        <div key={rec.id} class="at-submod-recibo-row">
+                                                            <span class="at-submod-num">{rec.numero}</span>
+                                                            <span class={rec.estadoClass}>{rec.estado}</span>
+                                                            <span>{rec.fechaProg}</span>
+                                                            <span>{rec.fechaPago}</span>
+                                                            <template if:true={rec.montoProg}>
+                                                                <lightning-formatted-number value={rec.montoProg} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                                            </template>
+                                                            <template if:false={rec.montoProg}><span>—</span></template>
+                                                            <template if:true={rec.montoCob}>
+                                                                <lightning-formatted-number value={rec.montoCob} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                                            </template>
+                                                            <template if:false={rec.montoCob}><span>—</span></template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template if:false={hasPlanes}>
+                                    <p class="at-rel-empty">Sin plan de pagos vinculado</p>
+                                </template>
+                            </template>
+                        </template>
+                    </div>
+
+                    <!-- ═══ COMISIONES ═══ -->
+                    <div class="at-rel-section">
+                        <div class="at-rel-section-title at-rel-collapsible" onclick={handleToggleComisiones}>
+                            <span class="at-ftype at-ftype-currency">$</span>Comisiones
+                            <span class="at-rel-toggle">{comisionesToggleIcon}</span>
+                        </div>
+                        <template if:true={expandComisiones}>
+                            <template if:false={submodulos.loading}>
+                                <template if:true={hasComisiones}>
+                                    <template for:each={submodulos.comisiones} for:item="com">
+                                        <div key={com.id} class="at-rel-card">
+                                            <span class="at-rel-card-icon">💰</span>
+                                            <div class="at-rel-card-info">
+                                                <span class="at-rel-card-name">{com.vendedor}</span>
+                                                <span class="at-rel-card-sub">{com.pct}</span>
+                                            </div>
+                                            <span class={com.estatusClass}>{com.estatus}</span>
+                                            <div class="at-com-montos">
+                                                <div class="at-com-monto-row">
+                                                    <span class="at-com-label">Ollin</span>
+                                                    <template if:true={com.montoOllin}>
+                                                        <lightning-formatted-number value={com.montoOllin} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                                    </template>
+                                                    <template if:false={com.montoOllin}><span>—</span></template>
+                                                </div>
+                                                <div class="at-com-monto-row">
+                                                    <span class="at-com-label">Vendedor</span>
+                                                    <template if:true={com.montoVendedor}>
+                                                        <lightning-formatted-number value={com.montoVendedor} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                                    </template>
+                                                    <template if:false={com.montoVendedor}><span>—</span></template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div class="at-com-totals">
+                                        <span>Total Ollin:</span>
+                                        <lightning-formatted-number value={submodulos.totalOllin} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                        <span>Total Vendedor:</span>
+                                        <lightning-formatted-number value={submodulos.totalVendedor} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                    </div>
+                                </template>
+                                <template if:false={hasComisiones}>
+                                    <p class="at-rel-empty">Sin comisiones registradas</p>
+                                </template>
+                            </template>
+                        </template>
+                    </div>
+
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- ═══ CREATE MODAL ═══ -->
+    <c-tech-fianza-create-modal
         show-modal={isCreateModalOpen}
         onclose={handleCloseCreateModal}
         onsuccess={handleCreateSuccess}>
+    </c-tech-fianza-create-modal>
+
+    <!-- ═══ EDIT MODAL ═══ -->
+    <c-tech-fianza-create-modal
+        show-modal={isEditModalOpen}
+        edit-record-id={editFianzaId}
+        onclose={handleCloseEditModal}
+        onsuccess={handleEditSuccess}>
     </c-tech-fianza-create-modal>
 </template>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contracto__c</fullName>
+    <label>Contracto</label>
+    <referenceTo>Contract</referenceTo>
+    <relationshipLabel>Convenios Modificatorios</relationshipLabel>
+    <relationshipName>Convenios_Modificatorios</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>

@@ -1,0 +1,384 @@
+<template>
+    <div class="vin-container">
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="vin-loading">
+                <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Toolbar -->
+        <div class="vin-toolbar">
+            <div class="vin-toolbar-left">
+                <span class="vin-title">Instituciones · Catálogo</span>
+                <input class="vin-search" type="search" placeholder="Buscar institución..."
+                    value={searchTerm} oninput={handleSearch} />
+            </div>
+            <div class="vin-toolbar-right">
+                <button class={filterBtnClass} onclick={handleToggleFilters}>
+                    <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                    {filterBtnLabel}
+                </button>
+                <button class="vin-btn-new" onclick={handleNuevo}>
+                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                    + Nueva Institución
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <template if:true={showFilters}>
+            <div class="vin-filter-panel">
+                <div class="vin-filter-panel-hdr">
+                    <span class="vin-filter-panel-title">Filtros avanzados</span>
+                    <div class="vin-filter-panel-actions">
+                        <button class="vin-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vin-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vin-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vin-filter-rule">
+                                <select class="vin-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vin-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vin-flt-value" type="text" data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vin-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="vin-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vin-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={hasError}>
+            <div class="vin-error">{errorMsg}</div>
+        </template>
+
+        <!-- Empty -->
+        <template if:true={isEmpty}>
+            <div class="vin-empty">No hay instituciones registradas.</div>
+        </template>
+
+        <!-- Grid -->
+        <template if:true={showGrid}>
+            <div class="vin-grid-wrap">
+
+                <!-- Header -->
+                <div class="vin-grid-row vin-grid-header">
+                    <template for:each={gridHeaders} for:item="hdr">
+                        <div key={hdr.key} class={hdr.cellClass}
+                             data-field={hdr.field} onclick={handleSort}>
+                            {hdr.label}
+                            <template if:true={hdr.icon}>
+                                <span class="vin-sort-icon">{hdr.icon}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Rows -->
+                <template for:each={rows} for:item="row">
+                    <div key={row.id} class="vin-grid-row vin-grid-data"
+                        data-id={row.id} onclick={handleRowClick}>
+
+                        <div class="vin-grid-cell vin-cell-num">{row.rowNum}</div>
+                        <div class="vin-grid-cell vin-cell-name">{row.name}</div>
+                        <div class="vin-grid-cell">
+                            <span class={row.tipoClass}>{row.tipo}</span>
+                        </div>
+                        <div class="vin-grid-cell">
+                            <span class={row.estatusClass}>{row.estatus}</span>
+                        </div>
+                        <div class="vin-grid-cell vin-cell-exec">{row.ejecutivoPrincipal}</div>
+                        <div class="vin-grid-cell vin-cell-center">
+                            <span class={row.ejChipClass}>{row.totalEjecutivos}</span>
+                        </div>
+
+                    </div>
+                </template>
+
+                <!-- Add row -->
+                <div class="vin-grid-row vin-addrow" onclick={handleNuevo}>
+                    <div class="vin-addrow-cell" style="grid-column: 1 / -1;">
+                        <span class="vin-addrow-label">+ Agregar registro</span>
+                    </div>
+                </div>
+
+            </div>
+        </template>
+
+    </div>
+
+    <!-- Detail / Edit panel -->
+    <template if:true={selectedInstitucion}>
+        <div class="vin-overlay" onclick={handleClosePanel}></div>
+        <div class="vin-detail-panel">
+            <div class="vin-detail-header">
+                <div class="vin-detail-header-main">
+                    <span class="vin-detail-title">{selectedInstitucion.name}</span>
+                    <span class={panelInstitucion.estatusClass}>{panelInstitucion.estatus}</span>
+                </div>
+                <div class="vin-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <button class="vin-detail-edit-btn" onclick={handleEditPanel}>
+                            <lightning-icon icon-name="utility:edit" size="x-small"
+                                           alternative-text="Editar"></lightning-icon>
+                            Editar
+                        </button>
+                    </template>
+                    <button class="vin-detail-close" onclick={handleClosePanel}>
+                        <lightning-icon icon-name="utility:close" size="small"
+                                       alternative-text="Cerrar"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="vin-detail-body">
+
+                <!-- VIEW MODE -->
+                <template if:false={isEditingPanel}>
+
+                    <!-- Datos generales -->
+                    <div class="vin-rec-section">
+                        <div class="vin-rec-section-title">Datos generales</div>
+                        <div class="vin-field-grid">
+                            <div class="vin-field-card">
+                                <span class="vin-field-label">Nombre de la Institución</span>
+                                <span class="vin-field-val">{panelInstitucion.name}</span>
+                            </div>
+                            <div class="vin-field-card">
+                                <span class="vin-field-label">Tipo</span>
+                                <span class={panelInstitucion.tipoClass}>{panelInstitucion.tipo}</span>
+                            </div>
+                            <div class="vin-field-card">
+                                <span class="vin-field-label">Sitio web</span>
+                                <template if:true={panelInstitucion.sitioWebUrl}>
+                                    <a class="vin-field-link" href={panelInstitucion.sitioWebUrl} target="_blank">{panelInstitucion.sitioWeb}</a>
+                                </template>
+                                <template if:false={panelInstitucion.sitioWebUrl}>
+                                    <span class="vin-field-empty">—</span>
+                                </template>
+                            </div>
+                            <div class="vin-field-card">
+                                <span class="vin-field-label">Estatus</span>
+                                <span class={panelInstitucion.estatusClass}>{panelInstitucion.estatus}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejecutivos de contacto -->
+                    <div class="vin-rec-section">
+                        <div class="vin-rec-section-hdr2">
+                            <span class="vin-rec-section-title2">Ejecutivos de contacto ({panelEjecutivosCount})</span>
+                            <button class="vin-btn-add-exec" onclick={handleNuevoEjecutivo}>+ Nuevo ejecutivo</button>
+                        </div>
+                        <template for:each={panelEjecutivos} for:item="ej">
+                            <div key={ej.id} class="vin-exec-card">
+                                <div class="vin-exec-card-hdr">
+                                    <div class="vin-avatar" style={ej.avatarStyle}>{ej.initials}</div>
+                                    <div>
+                                        <div class="vin-exec-card-name">{ej.name}</div>
+                                        <div class="vin-exec-card-role">{ej.puestoArea}</div>
+                                    </div>
+                                    <div class="vin-card-actions">
+                                        <template if:false={ej.confirmDelete}>
+                                            <button class="vin-card-btn-edit" data-id={ej.id} onclick={handleEditEjecutivo} title="Editar">✏️</button>
+                                            <button class="vin-card-btn-del" data-id={ej.id} onclick={handleDeleteEjecutivoConfirm} title="Eliminar">🗑️</button>
+                                        </template>
+                                        <template if:true={ej.confirmDelete}>
+                                            <span class="vin-confirm-label">¿Eliminar?</span>
+                                            <button class="vin-confirm-si" data-id={ej.id} onclick={handleDeleteEjecutivo}>Sí</button>
+                                            <button class="vin-confirm-no" data-id={ej.id} onclick={handleCancelDeleteEjecutivo}>No</button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="vin-exec-card-fields">
+                                    <div class="vin-exec-mini-field">
+                                        <div class="vin-exec-mini-label">Correo electrónico</div>
+                                        <div class="vin-exec-mini-email">{ej.email}</div>
+                                    </div>
+                                    <div class="vin-exec-mini-field">
+                                        <div class="vin-exec-mini-label">Teléfono directo</div>
+                                        <div class="vin-exec-mini-val">{ej.telefono}</div>
+                                    </div>
+                                    <div class="vin-exec-mini-field">
+                                        <div class="vin-exec-mini-label">Celular</div>
+                                        <div class="vin-exec-mini-val">{ej.celular}</div>
+                                    </div>
+                                    <div class="vin-exec-mini-field">
+                                        <div class="vin-exec-mini-label">Principal</div>
+                                        <template if:true={ej.esPrincipal}>
+                                            <div class="vin-exec-principal-si">Sí</div>
+                                        </template>
+                                        <template if:false={ej.esPrincipal}>
+                                            <div class="vin-exec-mini-val">No</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={hasEjecutivos}>
+                            <div class="vin-empty-rel">Sin ejecutivos registrados</div>
+                        </template>
+                    </div>
+
+                    <!-- Accesos al portal -->
+                    <div class="vin-rec-section">
+                        <div class="vin-rec-section-hdr2">
+                            <span class="vin-rec-section-title2">Accesos al portal ({panelAccesosCount})</span>
+                            <button class="vin-btn-add-access" onclick={handleNuevoAcceso}>+ Nuevo acceso</button>
+                        </div>
+                        <template for:each={panelAccesos} for:item="acc">
+                            <div key={acc.id} class="vin-access-card">
+                                <div class="vin-access-card-title-row">
+                                    <span class="vin-access-card-title">🔐 {acc.name}</span>
+                                    <div class="vin-card-actions">
+                                        <button class="vin-card-btn-edit" data-id={acc.id} data-name={acc.name} onclick={handleEditAcceso} title="Editar">✏️</button>
+                                        <button class="vin-card-btn-del" data-id={acc.id} data-name={acc.name} onclick={handleDeleteAccesoConfirm} title="Eliminar">🗑️</button>
+                                    </div>
+                                </div>
+                                <div class="vin-access-row">
+                                    <span class="vin-access-label">URL del portal</span>
+                                    <a class="vin-access-link" href={acc.urlPortal} target="_blank">{acc.urlPortal}</a>
+                                </div>
+                                <div class="vin-access-row">
+                                    <span class="vin-access-label">Usuario</span>
+                                    <span class="vin-access-val">{acc.usuario}</span>
+                                </div>
+                                <div class="vin-access-row">
+                                    <span class="vin-access-label">Contraseña</span>
+                                    <span class="vin-access-masked">••••••••••</span>
+                                    <button class="vin-access-show-btn" data-id={acc.id} data-name={acc.name} onclick={handleTogglePass}>mostrar</button>
+                                </div>
+                                <div class="vin-access-row">
+                                    <span class="vin-access-label">Notas</span>
+                                    <span class="vin-access-notes">{acc.notas}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={hasAccesos}>
+                            <div class="vin-empty-rel">Sin accesos al portal registrados</div>
+                        </template>
+                    </div>
+
+                </template>
+
+                <!-- EDIT MODE -->
+                <template if:true={isEditingPanel}>
+                    <lightning-record-edit-form record-id={selectedInstitucion.id}
+                                               object-api-name="Institucion__c"
+                                               onsuccess={handlePanelSaveSuccess}>
+                        <div class="vin-detail-fields">
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Nombre</span>
+                                <lightning-input-field field-name="Name" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Tipo</span>
+                                <lightning-input-field field-name="Tipo__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Estatus</span>
+                                <lightning-input-field field-name="Estatus__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Página web</span>
+                                <lightning-input-field field-name="Pagina_Web__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Email</span>
+                                <lightning-input-field field-name="Email__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="vin-detail-row">
+                                <span class="vin-detail-label">Teléfono</span>
+                                <lightning-input-field field-name="Telefono__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                        <div class="vin-panel-edit-actions">
+                            <button class="vin-panel-btn-cancel" type="button" onclick={handleCancelEdit}>Cancelar</button>
+                            <button class="vin-panel-btn-save" type="submit">Guardar cambios</button>
+                        </div>
+                    </lightning-record-edit-form>
+                </template>
+
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal nueva institución -->
+    <c-tech-institucion-create-modal
+        show-modal={isModalOpen}
+        onclose={handleModalClose}
+        onsuccess={handleModalSuccess}>
+    </c-tech-institucion-create-modal>
+
+    <!-- Modal nuevo ejecutivo -->
+    <c-tech-ejecutivo-create-modal
+        show-modal={isEjecutivoModalOpen}
+        institucion-id={selectedInstitucionId}
+        institucion-name={selectedInstitucionName}
+        onclose={handleEjecutivoModalClose}
+        onsuccess={handleEjecutivoModalSuccess}>
+    </c-tech-ejecutivo-create-modal>
+
+    <!-- Modal nuevo acceso al portal -->
+    <c-tech-acceso-create-modal
+        show-modal={isAccesoModalOpen}
+        institucion-id={selectedInstitucionId}
+        institucion-name={selectedInstitucionName}
+        onclose={handleAccesoModalClose}
+        onsuccess={handleAccesoModalSuccess}>
+    </c-tech-acceso-create-modal>
+
+    <!-- Modal verificación de contraseña -->
+    <c-tech-portal-password-modal
+        show-modal={isPasswordModalOpen}
+        acceso-id={passwordAccesoId}
+        portal-name={passwordPortalName}
+        mode={passwordModalMode}
+        onclose={handlePasswordModalClose}
+        onverified={handlePasswordModalVerified}>
+    </c-tech-portal-password-modal>
+
+    <!-- Modal editar ejecutivo -->
+    <c-tech-ejecutivo-edit-modal
+        show-modal={isEjecutivoEditModalOpen}
+        ejecutivo-id={editEjecutivoId}
+        onclose={handleEjecutivoEditClose}
+        onsuccess={handleEjecutivoEditSuccess}>
+    </c-tech-ejecutivo-edit-modal>
+
+    <!-- Modal editar acceso -->
+    <c-tech-acceso-edit-modal
+        show-modal={isAccesoEditModalOpen}
+        acceso-id={editAccesoId}
+        onclose={handleAccesoEditClose}
+        onsuccess={handleAccesoEditSuccess}>
+    </c-tech-acceso-edit-modal>
+
+</template>

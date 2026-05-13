@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Seguros_compacto</fullName>
+    <fields>Name</fields>
+    <fields>Inicio_del_seguro__c</fields>
+    <fields>Fin_del_seguro__c</fields>
+    <fields>Frecuencia_de_pago__c</fields>
+    <fields>Cliente__c</fields>
+    <fields>OwnerId</fields>
+    <label>Seguros compacto</label>
+</CompactLayout>

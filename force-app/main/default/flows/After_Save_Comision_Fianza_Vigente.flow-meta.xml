@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <name>Es_Nuevo_Vigente</name>
+        <label>¿Cambió a Vigente ahora?</label>
+        <locationX>308</locationX>
+        <locationY>264</locationY>
+        <defaultConnectorLabel>No, salir</defaultConnectorLabel>
+        <rules>
+            <name>Cambio_a_Vigente</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record__Prior.Estatus__c</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <stringValue>Vigente</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Crear_Comision</targetReference>
+            </connector>
+            <label>Sí, acaba de cambiar a Vigente</label>
+        </rules>
+    </decisions>
+    <description>Pieza 3a: Crea Tech_Comision__c cuando una Tech_Fianza__c cambia a Estatus = Vigente.</description>
+    <environments>Default</environments>
+    <interviewLabel>After Save Comision Fianza Vigente {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>After Save Comision Fianza Vigente</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <name>Crear_Comision</name>
+        <label>Crear Comisión</label>
+        <locationX>308</locationX>
+        <locationY>384</locationY>
+        <inputAssignments>
+            <field>Fianza__c</field>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Vendedor__c</field>
+            <value>
+                <elementReference>$Record.Vendedor__c</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Tech_Comision__c</object>
+    </recordCreates>
+    <runInMode>SystemModeWithoutSharing</runInMode>
+    <start>
+        <locationX>184</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Es_Nuevo_Vigente</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Estatus__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Vigente</stringValue>
+            </value>
+        </filters>
+        <object>Tech_Fianza__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

@@ -1,0 +1,92 @@
+<apex:page standardController="Precalificacion__c" renderAs="pdf" applyBodyTag="false" applyHtmlTag="false" showHeader="false" sidebar="false">
+<html>
+<head>
+<style type="text/css">
+@page { size: letter; margin: 1.5cm 2cm; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #333; margin: 0; padding: 0; }
+.header { text-align: center; margin-bottom: 15px; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+.header img { height: 60px; }
+.header h1 { font-size: 16px; color: #1a3a5c; margin: 8px 0 0 0; letter-spacing: 1px; }
+.section-title { background-color: #1a3a5c; color: #fff; padding: 6px 12px; font-size: 12px; font-weight: bold; margin: 12px 0 6px 0; }
+.data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+.data-table td, .data-table th { border: 1px solid #ccc; padding: 5px 8px; font-size: 10px; }
+.data-table th { background-color: #e8edf2; text-align: left; font-weight: bold; width: 40%; }
+.data-table td { text-align: right; }
+.result-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+.result-table td, .result-table th { border: 1px solid #ccc; padding: 5px 8px; font-size: 10px; }
+.result-table th { background-color: #e8edf2; text-align: center; font-weight: bold; }
+.aprobado { background-color: #d4edda; color: #155724; text-align: center; font-weight: bold; }
+.fallido { background-color: #f8d7da; color: #721c24; text-align: center; font-weight: bold; }
+.comments-box { border: 1px solid #ccc; padding: 10px; min-height: 60px; margin-top: 6px; font-size: 10px; }
+.footer { text-align: center; font-size: 8px; color: #999; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 5px; }
+</style>
+</head>
+<body>
+<!-- Force SOQL query for formula fields -->
+<div style="display:none">
+<apex:outputField value="{!Precalificacion__c.Liquidez__c}"/>
+<apex:outputField value="{!Precalificacion__c.Apalancamiento__c}"/>
+<apex:outputField value="{!Precalificacion__c.Capital_de_Trabajo__c}"/>
+<apex:outputField value="{!Precalificacion__c.ROE__c}"/>
+<apex:outputField value="{!Precalificacion__c.Prueba_del_Acido__c}"/>
+<apex:outputField value="{!Precalificacion__c.Linea_Afianzamiento_Calc__c}"/>
+<apex:outputField value="{!Precalificacion__c.Resultado_Afianzamiento_Calc__c}"/>
+<apex:outputField value="{!Precalificacion__c.Capacidad_Afianzamiento_Calc__c}"/>
+<apex:outputField value="{!Precalificacion__c.Total_a_Afianzar__c}"/>
+<apex:outputField value="{!Precalificacion__c.Comentarios__c}"/>
+</div>
+<div class="header">
+<img src="/file-asset/ollin1?v=1" alt="Ollin Proteccion" style="height:60px" />
+<h1>ESTUDIO DE PRECALIFICACION</h1>
+</div>
+<div class="section-title">DATOS DEL CONTRATISTA</div>
+<table class="data-table">
+<tr><th>Contratista</th><td style="text-align:left">{!Precalificacion__c.Name}</td></tr>
+<tr><th>Fecha Estados Financieros</th><td style="text-align:left"><apex:outputText value="{0,date,dd/MM/yyyy}"><apex:param value="{!Precalificacion__c.Fecha_Estados_Financieros__c}"/></apex:outputText></td></tr>
+</table>
+<div class="section-title">VARIABLES DE ANALISIS</div>
+<table class="data-table">
+<tr><th colspan="2" style="text-align:center; background-color:#1a3a5c; color:#fff;">Balance General</th></tr>
+<tr><th>Activo Circulante</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Activo_Circulante__c}"/></apex:outputText></td></tr>
+<tr><th>Activo Fijo Neto</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Activo_Fijo_Neto__c}"/></apex:outputText></td></tr>
+<tr><th>Activo Total</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Activo_total__c}"/></apex:outputText></td></tr>
+<tr><th>Pasivo Corto Plazo</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Pasivo_Corto_Plazo__c}"/></apex:outputText></td></tr>
+<tr><th>Pasivo Total</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Pasivo_Total__c}"/></apex:outputText></td></tr>
+<tr><th>Capital Social</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Capital_Social__c}"/></apex:outputText></td></tr>
+<tr><th>Utilidades Retenidas</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Utilidades_Retenidas__c}"/></apex:outputText></td></tr>
+<tr><th>Utilidad del Ejercicio</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Utilidad_del_Ejercicio__c}"/></apex:outputText></td></tr>
+<tr><th>Capital Contable</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Capital_Contable__c}"/></apex:outputText></td></tr>
+<tr><th>Inventarios</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Inventarios__c}"/></apex:outputText></td></tr>
+<tr><th colspan="2" style="text-align:center; background-color:#1a3a5c; color:#fff;">Estado de Resultados</th></tr>
+<tr><th>Ventas Netas</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Ventas_Netas__c}"/></apex:outputText></td></tr>
+</table>
+<div class="section-title">RESULTADOS FINANCIEROS</div>
+<table class="result-table">
+<tr><th>Indicador</th><th>Valor</th><th>Criterio</th><th>Resultado</th></tr>
+<tr><td>Liquidez</td><td style="text-align:right"><apex:outputText value="{0, number, #,##0.00}"><apex:param value="{!Precalificacion__c.Liquidez__c}"/></apex:outputText></td><td style="text-align:center">&gt;= 1.00</td><td class="{!IF(Precalificacion__c.Liquidez__c >= 1, 'aprobado', 'fallido')}">{!IF(Precalificacion__c.Liquidez__c >= 1, "Aprobado", "Fallido")}</td></tr>
+<tr><td>Apalancamiento</td><td style="text-align:right"><apex:outputText value="{0, number, #,##0.00}"><apex:param value="{!Precalificacion__c.Apalancamiento__c}"/></apex:outputText></td><td style="text-align:center">&lt;= 2.00</td><td class="{!IF(Precalificacion__c.Apalancamiento__c <= 2, 'aprobado', 'fallido')}">{!IF(Precalificacion__c.Apalancamiento__c <= 2, "Aprobado", "Fallido")}</td></tr>
+<tr><td>Capital de Trabajo</td><td style="text-align:right"><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Capital_de_Trabajo__c}"/></apex:outputText></td><td style="text-align:center">&gt; 0</td><td class="{!IF(Precalificacion__c.Capital_de_Trabajo__c > 0, 'aprobado', 'fallido')}">{!IF(Precalificacion__c.Capital_de_Trabajo__c > 0, "Aprobado", "Fallido")}</td></tr>
+<tr><td>ROE</td><td style="text-align:right"><apex:outputText value="{0, number, #,##0.00}"><apex:param value="{!Precalificacion__c.ROE__c}"/></apex:outputText></td><td style="text-align:center">&gt; 0</td><td class="{!IF(Precalificacion__c.ROE__c > 0, 'aprobado', 'fallido')}">{!IF(Precalificacion__c.ROE__c > 0, "Aprobado", "Fallido")}</td></tr>
+<tr><td>Prueba del Acido</td><td style="text-align:right"><apex:outputText value="{0, number, #,##0.00}"><apex:param value="{!Precalificacion__c.Prueba_del_Acido__c}"/></apex:outputText></td><td style="text-align:center">&gt;= 0.80</td><td class="{!IF(Precalificacion__c.Prueba_del_Acido__c >= 0.8, 'aprobado', 'fallido')}">{!IF(Precalificacion__c.Prueba_del_Acido__c >= 0.8, "Aprobado", "Fallido")}</td></tr>
+</table>
+<div class="section-title">ESTUDIO DE LINEA DE AFIANZAMIENTO</div>
+<table class="data-table">
+<tr><th>Linea de Afianzamiento (Capital Contable x 2)</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Linea_Afianzamiento_Calc__c}"/></apex:outputText></td></tr>
+<tr><th colspan="2" style="text-align:center; background-color:#e8edf2;">Fianzas Requeridas</th></tr>
+<tr><th>Importe Total del Contrato</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Importe_Total_Contrato__c}"/></apex:outputText></td></tr>
+<tr><th>Anticipo ({!Precalificacion__c.Porcentaje_Anticipo__c}%)</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Importe_Anticipo__c}"/></apex:outputText></td></tr>
+<tr><th>Cumplimiento ({!Precalificacion__c.Porcentaje_Cumplimiento__c}%)</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Importe_Cumplimiento__c}"/></apex:outputText></td></tr>
+<tr><th>Pasivos Contingentes ({!Precalificacion__c.Porcentaje_Pasivos_Cont__c}%)</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Importe_Pasivos_Contingentes__c}"/></apex:outputText></td></tr>
+<tr><th style="font-weight:bold">Total a Afianzar</th><td style="font-weight:bold"><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Total_a_Afianzar__c}"/></apex:outputText></td></tr>
+</table>
+<div class="section-title">RESULTADO</div>
+<table class="data-table">
+<tr><th>Resultado de Afianzamiento</th><td><apex:outputText value="{0, number, $#,##0.00}"><apex:param value="{!Precalificacion__c.Resultado_Afianzamiento_Calc__c}"/></apex:outputText></td></tr>
+<tr><th>Capacidad de Afianzamiento</th><td class="{!IF(Precalificacion__c.Resultado_Afianzamiento_Calc__c > 0, 'aprobado', 'fallido')}">{!Precalificacion__c.Capacidad_Afianzamiento_Calc__c}</td></tr>
+</table>
+<div class="section-title">COMENTARIOS</div>
+<div class="comments-box">{!Precalificacion__c.Comentarios__c}</div>
+<div class="footer">Ollin Proteccion - Estudio de Precalificacion - Documento generado automaticamente</div>
+</body>
+</html>
+</apex:page>

@@ -1,0 +1,81 @@
+:host { display: flex; flex: 1; overflow: hidden; width: 100%; }
+
+.vcu-wrap {
+    display: flex; flex-direction: column; width: 100%; height: 100%;
+    background: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px; color: #2a2a2a;
+}
+
+/* ── Toolbar ── */
+.vcu-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-bottom: 1px solid #e5e7eb;
+    background: #fff; flex-shrink: 0;
+}
+.vcu-toolbar-spacer { flex: 1; }
+.vcu-btn-filters {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border: 1px solid #d1d5eb; border-radius: 6px;
+    background: #fff; font-size: 12.5px; font-weight: 500; color: #374151; cursor: pointer;
+}
+.vcu-btn-filters:hover { border-color: #1a56db; color: #1a56db; }
+.vcu-btn-filters-active { border-color: #1a56db; color: #1a56db; background: #eff6ff; }
+.vcu-btn-filters-open   { background: #eff6ff; }
+
+/* ── Filter panel ── */
+.vcu-filter-panel { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; flex-shrink: 0; }
+.vcu-filter-hdr   { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.vcu-filter-title { font-weight: 600; font-size: 12.5px; color: #374151; flex: 1; }
+.vcu-filter-actions { display: flex; gap: 6px; }
+.vcu-flt-add, .vcu-flt-clear { padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; border: 1px solid #d1d5eb; background: #fff; color: #374151; }
+.vcu-flt-add:hover   { border-color: #1a56db; color: #1a56db; }
+.vcu-flt-clear:hover { border-color: #ef4444; color: #ef4444; }
+.vcu-filter-rules { display: flex; flex-direction: column; gap: 6px; }
+.vcu-filter-rule  { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vcu-flt-campo, .vcu-flt-op, .vcu-flt-value { padding: 4px 8px; border: 1px solid #d1d5eb; border-radius: 5px; font-size: 12px; color: #374151; background: #fff; }
+.vcu-flt-value    { min-width: 160px; }
+.vcu-flt-remove   { padding: 3px 8px; border: none; background: transparent; color: #9ca3af; cursor: pointer; font-size: 15px; }
+.vcu-flt-remove:hover { color: #ef4444; }
+.vcu-filter-empty { font-size: 12px; color: #9ca3af; }
+
+/* ── Content ── */
+.vcu-content      { display: flex; flex: 1; overflow: hidden; position: relative; }
+.vcu-spinner-wrap { display: flex; align-items: center; justify-content: center; flex: 1; }
+.vcu-error-msg    { padding: 24px; color: #ef4444; font-size: 13px; }
+.vcu-empty-msg    { padding: 24px; color: #9ca3af; font-size: 13px; text-align: center; }
+
+/* ── Table ── */
+.vcu-table-scroll { flex: 1; overflow: auto; }
+.vcu-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.vcu-table thead { position: sticky; top: 0; z-index: 1; }
+.vcu-th { padding: 8px 12px; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; text-align: left; font-weight: 600; color: #6b7280; font-size: 11.5px; white-space: nowrap; user-select: none; }
+.vcu-th-sort    { cursor: pointer; }
+.vcu-th-sort:hover { color: #1a56db; }
+.vcu-th-sorted  { color: #1a56db; }
+.vcu-sort-icon  { margin-left: 4px; font-size: 10px; }
+.vcu-td         { padding: 7px 12px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+.vcu-td-name    { font-weight: 500; color: #111827; }
+.vcu-row        { cursor: pointer; transition: background 0.1s; }
+.vcu-row:hover  { background: #f9fafb; }
+.vcu-row-selected { background: #eff6ff !important; }
+
+/* ── Badges ── */
+.vcu-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+.vcu-badge-blue  { background: #dbeafe; color: #1e40af; }
+.vcu-badge-gray  { background: #f3f4f6; color: #6b7280; }
+.vcu-badge-teal  { background: #ccfbf1; color: #0f766e; }
+.vcu-badge-purple{ background: #ede9fe; color: #5b21b6; }
+
+/* ── Panel lateral ── */
+.vcu-panel {
+    width: 320px; min-width: 280px; border-left: 1px solid #e5e7eb;
+    background: #fff; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;
+}
+.vcu-panel-hdr { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; background: #f9fafb; flex-shrink: 0; }
+.vcu-panel-title { flex: 1; font-weight: 600; font-size: 13px; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vcu-panel-hdr-actions { display: flex; gap: 4px; }
+.vcu-panel-prev, .vcu-panel-next, .vcu-panel-close { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: none; border-radius: 5px; background: transparent; cursor: pointer; color: #6b7280; }
+.vcu-panel-prev:hover, .vcu-panel-next:hover, .vcu-panel-close:hover { background: #e5e7eb; color: #111827; }
+.vcu-panel-body { flex: 1; overflow-y: auto; padding: 12px; }
+.vcu-detail-row   { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+.vcu-detail-label { width: 120px; min-width: 120px; color: #6b7280; font-size: 12px; }

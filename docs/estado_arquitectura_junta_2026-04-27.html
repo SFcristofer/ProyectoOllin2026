@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Estado de Arquitectura — Junta 2026-04-27</title>
+<style>
+  :root {
+    --ok: #10b981; --ok-soft: #d1fae5;
+    --warn: #f59e0b; --warn-soft: #fef3c7;
+    --err: #ef4444; --err-soft: #fee2e2;
+    --info: #3b82f6; --info-soft: #dbeafe;
+    --ink: #0f172a; --slate: #475569; --line: #e2e8f0; --bg: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; font-size: 14px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  header { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 32px; border-radius: 14px; margin-bottom: 28px; }
+  header .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6; margin-bottom: 8px; }
+  header h1 { margin: 0 0 10px; font-size: 26px; }
+  header p { margin: 0; opacity: 0.8; font-size: 13.5px; }
+  header .meta { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  header .meta span { font-size: 12px; opacity: 0.7; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; }
+
+  .alert { padding: 16px 20px; border-radius: 10px; margin-bottom: 24px; border-left: 5px solid var(--warn); background: var(--warn-soft); }
+  .alert strong { color: #92400e; display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .alert p { margin: 0; color: #78350f; font-size: 13.5px; }
+
+  .section { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 22px; box-shadow: 0 2px 8px rgba(15,23,42,0.05); }
+  .section h2 { margin: 0 0 18px; font-size: 16px; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .section h2 .num { background: var(--ink); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f1f5f9; text-align: left; padding: 9px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--slate); border-bottom: 2px solid var(--line); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge.ok { background: var(--ok-soft); color: #065f46; }
+  .badge.pending { background: var(--warn-soft); color: #92400e; }
+  .badge.missing { background: var(--err-soft); color: #991b1b; }
+  .badge.decision { background: var(--info-soft); color: #1e40af; }
+
+  .decision-box { background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+  .decision-box .title { font-size: 13px; font-weight: 700; color: #1e40af; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .decision-box .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .decision-box .opt { background: white; border-radius: 8px; padding: 14px 16px; border: 1px solid #bfdbfe; }
+  .decision-box .opt .opt-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .decision-box .opt ul { margin: 0; padding-left: 16px; font-size: 12.5px; color: var(--slate); line-height: 1.8; }
+  .decision-box .opt.recommended { border-color: var(--ok); background: var(--ok-soft); }
+  .decision-box .opt.recommended .opt-title { color: #065f46; }
+
+  .rule-box { background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 16px 20px; margin-top: 18px; }
+  .rule-box .title { font-size: 12px; font-weight: 700; color: #c2410c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .rule-box ul { margin: 0; padding-left: 18px; font-size: 13px; color: #7c2d12; line-height: 2; }
+
+  .progress-bar { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 999px; }
+
+  code { font-family: "SF Mono", Consolas, monospace; background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-size: 12px; color: #334155; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .summary-card { background: white; border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 6px rgba(15,23,42,0.05); text-align: center; }
+  .summary-card .num { font-size: 32px; font-weight: 700; line-height: 1; }
+  .summary-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); margin-top: 4px; }
+  .summary-card.ok .num { color: var(--ok); }
+  .summary-card.warn .num { color: var(--warn); }
+  .summary-card.err .num { color: var(--err); }
+  .summary-card.info .num { color: var(--info); }
+
+  @media print { body { background: white; } .section { box-shadow: none; border: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">ProyectoOllin2026 · Salesforce Sandbox</div>
+    <h1>Estado de Arquitectura — Auditoría del Org</h1>
+    <p>Documento preparado para junta de sincronización de equipo. Refleja el estado real del org verificado por consultas directas al org (Tooling API), no por suposiciones.</p>
+    <div class="meta">
+      <span>Org: soporte.technovalue@ollin.com.mx.dev</span>
+      <span>Auditado: 2026-04-26</span>
+      <span>Junta: 2026-04-27 8:00 AM</span>
+      <span>Branch: implement-airtable-ProyectoOllin2026</span>
+    </div>
+  </header>
+
+  <div class="alert">
+    <strong>⚠️ Motivo de esta junta</strong>
+    <p>Se detectaron inconsistencias entre lo que el equipo reportó haber ejecutado y lo que realmente está en el org. Hay cambios incompletos y una decisión de arquitectura crítica sin resolver que bloquea el avance del código. Esta reunión es para alinear y definir quién hace qué.</p>
+  </div>
+
+  <!-- RESUMEN EJECUTIVO -->
+  <div class="summary-grid">
+    <div class="summary-card ok"><div class="num">5</div><div class="label">Gaps resueltos</div></div>
+    <div class="summary-card warn"><div class="num">1</div><div class="label">Decisión pendiente</div></div>
+    <div class="summary-card err"><div class="num">6</div><div class="label">Gaps sin ejecutar</div></div>
+    <div class="summary-card info"><div class="num">13</div><div class="label">Clases Apex a reescribir</div></div>
+  </div>
+
+  <!-- SECCIÓN 1: DECISIONES ARQUITECTURA -->
+  <div class="section">
+    <h2><span class="num">1</span> Decisiones de arquitectura — CONFIRMADAS</h2>
+    <p style="color:var(--slate); margin:0 0 16px; font-size:13px;">Estas decisiones ya fueron tomadas y no están en discusión. Se documentan aquí para que todo el equipo las conozca.</p>
+    <table>
+      <tr>
+        <th>Decisión</th>
+        <th>Resolución</th>
+        <th>Impacto</th>
+      </tr>
+      <tr>
+        <td><strong>Contrato para Fianzas</strong></td>
+        <td><span class="badge ok">✓ Contract estándar</span></td>
+        <td>Fianza__c ya tiene M-D a Contract ✅. <code>Contrato__c</code> custom se depreca.</td>
+      </tr>
+      <tr>
+        <td><strong>Institución, Contratista, Beneficiario, Afianzadora</strong></td>
+        <td><span class="badge ok">✓ Account con Record Types</span></td>
+        <td>Los 4 objetos custom desaparecen. Todo apunta a Account.</td>
+      </tr>
+      <tr>
+        <td><strong>Person Account</strong></td>
+        <td><span class="badge ok">✓ Habilitado en org</span></td>
+        <td>Clientes pueden ser personas físicas o morales.</td>
+      </tr>
+      <tr>
+        <td><strong>Endoso__c vs Endoso_de_Fianza__c</strong></td>
+        <td><span class="badge ok">✓ Objetos separados</span></td>
+        <td>Endoso__c solo para Seguros. Endoso_de_Fianza__c solo para Fianzas (M-D a Fianza ✅).</td>
+      </tr>
+      <tr>
+        <td><strong>Objetos que desaparecen</strong></td>
+        <td><span class="badge ok">✓ Confirmado</span></td>
+        <td>Contratista__c, Beneficiario__c, Institucion__c, Afianzadora__c, Proyecto__c, Pago__c, Pago_parcial__c, Tech_Relacion__c, Contrato__c custom.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SECCIÓN 2: DECISIÓN PENDIENTE -->
+  <div class="section">
+    <h2><span class="num">2</span> Decisión pendiente — <span style="color:#1e40af">REQUIERE RESPUESTA HOY</span></h2>
+
+    <div class="decision-box">
+      <div class="title">🔵 Decisión: Plan de Pagos para Fianzas</div>
+      <p style="font-size:13px; color:var(--slate); margin:0 0 14px;">El cliente requiere que Fianzas tengan su propio Plan de Pagos con Recibos de Cobro. <code>Plan_de_Pagos__c</code> actual tiene M-D requerido a Seguro — no puede usarse para Fianzas sin romper la estructura existente.</p>
+      <div class="options">
+        <div class="opt recommended">
+          <div class="opt-title">✅ Opción A — Objeto separado (RECOMENDADA)</div>
+          <ul>
+            <li><code>Plan_de_Pagos_Fianza__c</code> ya existe (vacío)</li>
+            <li>Agregar M-D a Fianza__c + campos</li>
+            <li>Lookup en Recibo_de_Cobro__c</li>
+            <li>0 migración de datos</li>
+            <li>Rollups nativos de Seguro intactos</li>
+            <li>Esfuerzo: ~1 hora Admin</li>
+          </ul>
+        </div>
+        <div class="opt">
+          <div class="opt-title">⚠️ Opción B — Objeto unificado</div>
+          <ul>
+            <li>Eliminar M-D Seguro de Plan_de_Pagos__c</li>
+            <li>Crear Lookup a Seguro + Lookup a Fianza</li>
+            <li>Migrar 129 registros existentes</li>
+            <li>Rompe 3 rollup summaries en Seguro</li>
+            <li>Rehacerlos vía Apex trigger</li>
+            <li>Esfuerzo: ~4 horas Admin + Dev</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:#991b1b; font-weight:600; margin:0;">⛔ Ningún código puede avanzar en el módulo de Fianzas hasta que esta decisión esté tomada.</p>
+  </div>
+
+  <!-- SECCIÓN 3: ESTADO DE GAPS -->
+  <div class="section">
+    <h2><span class="num">3</span> Estado de todos los gaps — verificado en org</h2>
+    <table>
+      <tr>
+        <th>#</th>
+        <th>Gap</th>
+        <th>Objeto afectado</th>
+        <th>Estado real en org</th>
+        <th>Quién lo ejecuta</th>
+      </tr>
+      <tr>
+        <td>1.1</td>
+        <td>Agregar Contratista, Beneficiario, Afianzadora, Vendedor como Lookups a Account/Vendedores</td>
+        <td><code>Contract</code></td>
+        <td><span class="badge ok">✅ Completo</span></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>1.2</td>
+        <td>Agregar <code>Afianzadora_Account__c</code> y <code>Beneficiario_Account__c</code> → Account</td>
+        <td><code>Fianza__c</code></td>
+        <td><span class="badge ok">✅ Completo</span></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>1.3</td>
+        <td>Plan de Pagos para Fianzas — objeto creado pero <strong>completamente vacío</strong> (sin M-D, sin campos)</td>
+        <td><code>Plan_de_Pagos_Fianza__c</code></td>
+        <td><span class="badge pending">⏳ Incompleto</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>1.3b</td>
+        <td>Agregar Lookup a <code>Plan_de_Pagos_Fianza__c</code> + Validation Rule</td>
+        <td><code>Recibo_de_Cobro__c</code></td>
+        <td><span class="badge missing">❌ Pendiente</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>1.4</td>
+        <td>Cambiar M-D de <code>Contrato__c</code> custom → <code>Contract</code> estándar. Actualmente apunta al objeto equivocado.</td>
+        <td><code>Convenio_Modificatorio__c</code></td>
+        <td><span class="badge missing">❌ Pendiente</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>1.5</td>
+        <td>Agregar M-D a <code>Seguro__c</code> (actualmente es objeto huérfano con Lookups)</td>
+        <td><code>Endoso__c</code></td>
+        <td><span class="badge missing">❌ Pendiente</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>1.6</td>
+        <td>Agregar Lookup a Account (RT Institución)</td>
+        <td><code>Acceso_al_portal__c</code></td>
+        <td><span class="badge missing">❌ Pendiente</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>1.7</td>
+        <td>Reemplazar campo <code>Institucion__c</code> texto libre por Lookup a Account</td>
+        <td><code>Tabla_Comision__c</code></td>
+        <td><span class="badge missing">❌ Pendiente</span></td>
+        <td>Admin</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Crear objeto <code>Comision__c</code> desde cero con M-D a Seguro y M-D a Fianza + todos sus campos</td>
+        <td><code>Comision__c</code> (nuevo)</td>
+        <td><span class="badge missing">❌ No existe</span></td>
+        <td>Admin</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SECCIÓN 4: OBJETOS A DEPRECAR -->
+  <div class="section">
+    <h2><span class="num">4</span> Objetos a deprecar — no tocar hasta que código esté listo</h2>
+    <p style="color:var(--slate); margin:0 0 14px; font-size:13px;">Estos objetos tienen datos y código que los referencia. No deben eliminarse hasta que la reescritura de Apex esté completa y probada.</p>
+    <table>
+      <tr>
+        <th>Objeto</th>
+        <th>Registros actuales</th>
+        <th>Por qué se depreca</th>
+        <th>Estado</th>
+      </tr>
+      <tr>
+        <td><code>Contratista__c</code></td>
+        <td>12</td>
+        <td>Reemplazado por Account RT Contratista</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Beneficiario__c</code></td>
+        <td>6</td>
+        <td>Reemplazado por Account RT Beneficiario</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Institucion__c</code></td>
+        <td>—</td>
+        <td>Reemplazado por Account RT Institución</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Afianzadora__c</code></td>
+        <td>—</td>
+        <td>Reemplazado por Account RT Institución</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Contrato__c</code> (custom)</td>
+        <td>—</td>
+        <td>Reemplazado por Contract estándar</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Tech_Relacion__c</code></td>
+        <td>6</td>
+        <td>Junction deprecated — toda la lógica se mueve a campos directos</td>
+        <td><span class="badge pending">⏳ Esperando Apex</span></td>
+      </tr>
+      <tr>
+        <td><code>Proyecto__c</code></td>
+        <td>20</td>
+        <td>No se usa en nueva arquitectura</td>
+        <td><span class="badge pending">⏳ Esperando confirmación</span></td>
+      </tr>
+      <tr>
+        <td><code>Pago__c</code></td>
+        <td>—</td>
+        <td>Reemplazado por Plan_de_Pagos__c</td>
+        <td><span class="badge pending">⏳ Esperando confirmación</span></td>
+      </tr>
+      <tr>
+        <td><code>Plan_de_Cobro__c</code></td>
+        <td>0</td>
+        <td>API names con typos graves, M-D a Opportunity (incorrecto)</td>
+        <td><span class="badge missing">❌ Deprecar ya</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SECCIÓN 5: APEX A REESCRIBIR -->
+  <div class="section">
+    <h2><span class="num">5</span> Clases Apex a reescribir — bloqueadas hasta completar Admin</h2>
+    <p style="color:var(--slate); margin:0 0 14px; font-size:13px;">Ninguna clase puede reescribirse hasta que los campos de las Fases 1 y 3 existan en el org. Una vez listos, el Dev puede trabajar en este orden.</p>
+    <table>
+      <tr>
+        <th>Clase</th>
+        <th>Cambio principal</th>
+        <th>Prioridad</th>
+      </tr>
+      <tr>
+        <td><code>TechContratistaSelector</code></td>
+        <td><code>FROM Contratista__c</code> → <code>FROM Account WHERE RecordType = 'Contratista'</code></td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechContratistaWrapper</code></td>
+        <td>Recibir Account en lugar de Contratista__c</td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechContratistaController</code></td>
+        <td>Eliminar toda lógica de Tech_Relacion__c, usar lookups directos en Contract</td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechBeneficiarioSelector</code></td>
+        <td><code>FROM Beneficiario__c</code> → <code>FROM Account WHERE RecordType = 'Beneficiario'</code></td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechBeneficiarioWrapper</code></td>
+        <td>Recibir Account en lugar de Beneficiario__c</td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechContratoSelector</code></td>
+        <td><code>FROM Contrato__c</code> → <code>FROM Contract</code> con nuevos campos custom</td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechFianzaSelector</code></td>
+        <td>Eliminar subquery Tech_Relacion__c, usar <code>Contratista__c</code>, <code>Afianzadora_Account__c</code>, <code>Beneficiario_Account__c</code></td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechFianzaWrapper</code></td>
+        <td>Eliminar loop de Relaciones_Tecnicas_Fianza__r</td>
+        <td>Alta</td>
+      </tr>
+      <tr>
+        <td><code>TechAmpliacionSelector</code></td>
+        <td><code>FROM Endoso__c</code> → <code>FROM Endoso_de_Fianza__c</code> para tab de Fianzas</td>
+        <td>Media</td>
+      </tr>
+      <tr>
+        <td><code>TechAfianzadoSelector</code></td>
+        <td>Eliminar subquery Tech_Relacion__c, reemplazar con subquery directa de Fianza__c</td>
+        <td>Media</td>
+      </tr>
+      <tr>
+        <td><code>TechAfianzadoController</code></td>
+        <td>Limpiar referencias a Tech_Relacion__c</td>
+        <td>Media</td>
+      </tr>
+      <tr>
+        <td><code>TechContratistaFieldsController</code></td>
+        <td>Actualizar campos a Account</td>
+        <td>Media</td>
+      </tr>
+      <tr>
+        <td>Nuevas clases para <code>Comision__c</code></td>
+        <td>Selector, Wrapper, Controller, FieldsController — desde cero</td>
+        <td>Baja (después de crear objeto)</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SECCIÓN 6: REGLAS DE TRABAJO -->
+  <div class="section">
+    <h2><span class="num">6</span> Propuesta de reglas de trabajo para el equipo</h2>
+    <div class="rule-box">
+      <div class="title">📋 Reglas a acordar hoy</div>
+      <ul>
+        <li><strong>Un responsable de Setup.</strong> Solo una persona aprueba y ejecuta cambios en Object Manager. Los demás proponen pero no ejecutan solos.</li>
+        <li><strong>Verificar antes de reportar.</strong> No reportar un cambio como hecho hasta que se verifique en el org. Se detectaron cambios reportados que no existían.</li>
+        <li><strong>Decisiones en junta, no en chat.</strong> Cambios de arquitectura (tipos de relación, nuevos objetos) se deciden en conjunto, no unilateralmente.</li>
+        <li><strong>Admin primero, Dev después.</strong> Ningún Apex se reescribe hasta que el campo que necesita exista en el org.</li>
+        <li><strong>No crear objetos sin todos los campos.</strong> <code>Plan_de_Pagos_Fianza__c</code> fue creado vacío. Todo objeto nuevo debe crearse completo en una sola sesión.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 7: SIGUIENTE PASO -->
+  <div class="section">
+    <h2><span class="num">7</span> Siguiente paso inmediato — al salir de esta junta</h2>
+    <table>
+      <tr>
+        <th>Acción</th>
+        <th>Responsable</th>
+        <th>Tiempo est.</th>
+      </tr>
+      <tr>
+        <td>✅ Tomar decisión de Plan de Pagos (Opción A o B)</td>
+        <td>Todo el equipo</td>
+        <td>En junta</td>
+      </tr>
+      <tr>
+        <td>Completar <code>Plan_de_Pagos_Fianza__c</code>: M-D + todos los campos</td>
+        <td>Admin</td>
+        <td>1 hr</td>
+      </tr>
+      <tr>
+        <td>Lookup en <code>Recibo_de_Cobro__c</code> + Validation Rule</td>
+        <td>Admin</td>
+        <td>30 min</td>
+      </tr>
+      <tr>
+        <td>Crear M-D en <code>Convenio_Modificatorio__c</code> → Contract</td>
+        <td>Admin</td>
+        <td>20 min</td>
+      </tr>
+      <tr>
+        <td>Crear M-D en <code>Endoso__c</code> → <code>Seguro__c</code></td>
+        <td>Admin</td>
+        <td>20 min</td>
+      </tr>
+      <tr>
+        <td>Lookup en <code>Acceso_al_portal__c</code> → Account</td>
+        <td>Admin</td>
+        <td>15 min</td>
+      </tr>
+      <tr>
+        <td>Lookup en <code>Tabla_Comision__c</code> → Account (reemplazar texto)</td>
+        <td>Admin</td>
+        <td>15 min</td>
+      </tr>
+      <tr>
+        <td>Crear objeto <code>Comision__c</code> con todos sus campos</td>
+        <td>Admin</td>
+        <td>1.5 hr</td>
+      </tr>
+      <tr>
+        <td>Iniciar reescritura de Apex (una vez Admin terminado)</td>
+        <td>Dev</td>
+        <td>8–12 hr</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="background:#0f172a; color:white; border-radius:10px; padding:20px 24px; text-align:center; margin-top:8px;">
+    <p style="margin:0; font-size:13px; opacity:0.7;">Documento generado automáticamente por auditoría directa al org Ollin · 2026-04-26 · ProyectoOllin2026</p>
+  </div>
+
+</div>
+</body>
+</html>

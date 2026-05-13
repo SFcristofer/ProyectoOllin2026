@@ -1,0 +1,392 @@
+<template>
+    <div class="wz-overlay" onclick={handleOverlayClick}>
+        <div class="wz-modal" onclick={stopProp}>
+
+            <!-- Header -->
+            <div class="wz-header">
+                <div class="wz-header-left">
+                    <lightning-icon icon-name="utility:contract" size="small" class="wz-header-icon"></lightning-icon>
+                    <div>
+                        <div class="wz-header-title">{wizardTitle}</div>
+                        <div class="wz-header-sub">{wizardSub}</div>
+                    </div>
+                </div>
+                <button class="wz-close" onclick={handleClose} title="Cerrar">
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+            </div>
+
+            <!-- Progress bar — 4 pasos -->
+            <div class="wz-progress">
+                <div class={stepClass1}>
+                    <div class="wz-step-dot">1</div>
+                    <span class="wz-step-label">Contrato</span>
+                </div>
+                <div class="wz-step-line"></div>
+                <div class={stepClass2}>
+                    <div class="wz-step-dot">2</div>
+                    <span class="wz-step-label">Precalificación</span>
+                </div>
+                <div class="wz-step-line"></div>
+                <div class={stepClass3}>
+                    <div class="wz-step-dot">3</div>
+                    <span class="wz-step-label">Fianzas</span>
+                </div>
+                <div class="wz-step-line"></div>
+                <div class={stepClass4}>
+                    <div class="wz-step-dot">4</div>
+                    <span class="wz-step-label">Revisión</span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="wz-body">
+
+                <!-- ══ PASO 1: Datos del Contrato ══ -->
+                <template if:true={isStep1}>
+                    <div class="wz-section-title">Datos del Contrato</div>
+
+                    <div class="wz-form-grid">
+                        <!-- Contratista (lookup) -->
+                        <div class="wz-field wz-field-full">
+                            <label class="wz-label">Contratista (Cliente) <span class="wz-req">*</span></label>
+                            <div class="wz-lookup">
+                                <input class="wz-input" type="text" placeholder="Buscar contratista..."
+                                    value={contratistaBusqueda} oninput={handleBuscarContratista}
+                                    onfocus={handleFocusLookup} onblur={handleBlurLookup}
+                                    data-tipo="contratista" />
+                                <template if:true={resultadosContratista.length}>
+                                    <div class="wz-lookup-results">
+                                        <template for:each={resultadosContratista} for:item="r">
+                                            <div key={r.id} class="wz-lookup-item" data-id={r.id} data-name={r.name} data-tipo="contratista" onclick={handleSelectLookup}>
+                                                <span class="wz-lookup-name">{r.name}</span>
+                                                <span class="wz-lookup-sub">{r.sub}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:true={contratoData.contratistaId}>
+                                    <div class="wz-selected-chip">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="wz-chip-icon"></lightning-icon>
+                                        {contratoData.contratistaNombre}
+                                        <button class="wz-chip-clear" data-tipo="contratista" onclick={handleClearLookup}>×</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Institución (Afianzadora) -->
+                        <div class="wz-field">
+                            <label class="wz-label">Institución (Afianzadora) <span class="wz-req">*</span></label>
+                            <div class="wz-lookup">
+                                <input class="wz-input" type="text" placeholder="Buscar institución..."
+                                    value={institucionBusqueda} oninput={handleBuscarInstitucion}
+                                    onfocus={handleFocusLookup} onblur={handleBlurLookup}
+                                    data-tipo="institucion" />
+                                <template if:true={resultadosInstitucion.length}>
+                                    <div class="wz-lookup-results">
+                                        <template for:each={resultadosInstitucion} for:item="r">
+                                            <div key={r.id} class="wz-lookup-item" data-id={r.id} data-name={r.name} data-tipo="institucion" onclick={handleSelectLookup}>
+                                                <span class="wz-lookup-name">{r.name}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:true={contratoData.institucionId}>
+                                    <div class="wz-selected-chip">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="wz-chip-icon"></lightning-icon>
+                                        {contratoData.institucionNombre}
+                                        <button class="wz-chip-clear" data-tipo="institucion" onclick={handleClearLookup}>×</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Beneficiario -->
+                        <div class="wz-field">
+                            <label class="wz-label">Beneficiario</label>
+                            <div class="wz-lookup">
+                                <input class="wz-input" type="text" placeholder="Buscar beneficiario..."
+                                    value={beneficiarioBusqueda} oninput={handleBuscarBeneficiario}
+                                    onfocus={handleFocusLookup} onblur={handleBlurLookup}
+                                    data-tipo="beneficiario" />
+                                <template if:true={resultadosBeneficiario.length}>
+                                    <div class="wz-lookup-results">
+                                        <template for:each={resultadosBeneficiario} for:item="r">
+                                            <div key={r.id} class="wz-lookup-item" data-id={r.id} data-name={r.name} data-tipo="beneficiario" onclick={handleSelectLookup}>
+                                                <span class="wz-lookup-name">{r.name}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:true={contratoData.beneficiarioId}>
+                                    <div class="wz-selected-chip">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="wz-chip-icon"></lightning-icon>
+                                        {contratoData.beneficiarioNombre}
+                                        <button class="wz-chip-clear" data-tipo="beneficiario" onclick={handleClearLookup}>×</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Valor del contrato -->
+                        <div class="wz-field">
+                            <label class="wz-label">Valor del contrato (MXN) <span class="wz-req">*</span></label>
+                            <input class="wz-input" type="number" min="0" step="1"
+                                placeholder="0" value={contratoData.valorContrato}
+                                data-field="valorContrato" oninput={handleContratoField} />
+                        </div>
+
+                        <!-- Fecha inicio -->
+                        <div class="wz-field">
+                            <label class="wz-label">Fecha inicio <span class="wz-req">*</span></label>
+                            <input class="wz-input" type="date"
+                                value={contratoData.startDate}
+                                data-field="startDate" onchange={handleContratoField} />
+                        </div>
+
+                        <!-- Fecha fin -->
+                        <div class="wz-field">
+                            <label class="wz-label">Fecha fin original <span class="wz-req">*</span></label>
+                            <input class="wz-input" type="date"
+                                value={contratoData.endDate}
+                                data-field="endDate" onchange={handleContratoField} />
+                        </div>
+
+                        <!-- Proyecto -->
+                        <div class="wz-field wz-field-full">
+                            <label class="wz-label">Proyecto</label>
+                            <input class="wz-input" type="text" placeholder="Nombre del proyecto..."
+                                value={contratoData.proyecto}
+                                data-field="proyecto" oninput={handleContratoField} />
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ══ PASO 2: Precalificación ══ -->
+                <template if:true={isStep2}>
+                    <div class="wz-section-header">
+                        <div class="wz-section-title">Precalificación</div>
+                        <button class="wz-btn-add-fianza" onclick={handleNuevaPrecalificacion}>
+                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                            Nueva precalificación
+                        </button>
+                    </div>
+                    <p class="wz-step-hint" style="margin-bottom:12px">Opcional — selecciona una precalificación con Capacidad Suficiente para este contrato</p>
+
+                    <!-- Chip seleccionada -->
+                    <template if:true={contratoData.precalificacionId}>
+                        <div class="wz-selected-chip wz-prec-chip">
+                            <lightning-icon icon-name="utility:check" size="xx-small" class="wz-chip-icon"></lightning-icon>
+                            {contratoData.precalificacionNombre}
+                            <button class="wz-chip-clear" onclick={handleClearPrecalificacion}>×</button>
+                        </div>
+                    </template>
+
+                    <!-- Loading -->
+                    <template if:true={precalificacionLoading}>
+                        <div class="wz-prec-loading">
+                            <lightning-spinner size="small" alternative-text="Cargando..."></lightning-spinner>
+                        </div>
+                    </template>
+
+                    <!-- Lista de precalificaciones -->
+                    <template if:false={precalificacionLoading}>
+                        <template if:true={hasPrecalificaciones}>
+                            <div class="wz-prec-list">
+                                <template for:each={precalificaciones} for:item="p">
+                                    <div key={p.id}
+                                        class={p.cardClass}
+                                        data-id={p.id}
+                                        onclick={handleSelectPrecalificacion}>
+                                        <div class="wz-prec-card-top">
+                                            <span class="wz-prec-name">{p.name}</span>
+                                            <template if:true={p.estado}>
+                                                <span class="wz-badge-teal">{p.estado}</span>
+                                            </template>
+                                        </div>
+                                        <div class="wz-prec-card-meta">
+                                            <span>Cap. afianzamiento: <strong>{p.capacidad}</strong></span>
+                                            <span>Resultado: <strong>{p.resultadoFmt}</strong></span>
+                                            <template if:true={p.fecha}>
+                                                <span>Est. financieros: {p.fecha}</span>
+                                            </template>
+                                        </div>
+                                        <template if:true={p.comentarios}>
+                                            <div class="wz-prec-card-comentarios">{p.comentarios}</div>
+                                        </template>
+                                        <template if:false={p.suficiente}>
+                                            <div class="wz-prec-card-insuf">
+                                                <lightning-icon icon-name="utility:ban" size="xx-small"></lightning-icon>
+                                                Capacidad insuficiente — no seleccionable
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasPrecalificaciones}>
+                            <div class="wz-prec-empty">
+                                <lightning-icon icon-name="utility:warning" size="small" class="wz-prec-empty-icon"></lightning-icon>
+                                <p>No hay precalificaciones para <strong>{contratoData.contratistaNombre}</strong>.</p>
+                                <p class="wz-prec-empty-hint">Crea una nueva usando el botón de arriba, o continúa sin precalificación.</p>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Modal nueva precalificación -->
+                    <template if:true={showPrecalificacionModal}>
+                        <c-tech-precalificacion-modal
+                            contratista-id={contratoData.contratistaId}
+                            context-label={contratoData.contratistaNombre}
+                            onclose={handlePrecalificacionModalClose}
+                            onsuccess={handlePrecalificacionModalSuccess}>
+                        </c-tech-precalificacion-modal>
+                    </template>
+                </template>
+
+                <!-- ══ PASO 3: Fianzas ══ -->
+                <template if:true={isStep3}>
+                    <div class="wz-section-header">
+                        <div class="wz-section-title">Fianzas a crear</div>
+                        <button class="wz-btn-add-fianza" onclick={handleAddFianza}>
+                            <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                            Agregar fianza
+                        </button>
+                    </div>
+
+                    <template for:each={fianzas} for:item="f">
+                        <div key={f._key} class="wz-fianza-card">
+                            <div class="wz-fianza-card-hdr">
+                                <span class="wz-fianza-card-title">Fianza #{f._num}</span>
+                                <template if:true={canRemoveFianza}>
+                                    <button class="wz-fianza-card-del" data-key={f._key} onclick={handleRemoveFianza} title="Quitar">
+                                        <lightning-icon icon-name="utility:delete" size="xx-small"></lightning-icon>
+                                    </button>
+                                </template>
+                            </div>
+                            <div class="wz-form-grid">
+                                <div class="wz-field">
+                                    <label class="wz-label">Tipo de riesgo <span class="wz-req">*</span></label>
+                                    <select class="wz-select" data-key={f._key} data-field="tipoRiesgo" onchange={handleFianzaField}>
+                                        <option value="">— selecciona —</option>
+                                        <option value="Cumplimiento" selected={f.tipoRiesgoCumplimiento}>Cumplimiento</option>
+                                        <option value="Anticipo" selected={f.tipoRiesgoAnticipo}>Anticipo</option>
+                                        <option value="Vicios y Defectos Ocultos" selected={f.tipoRiesgoVicios}>Vicios y Defectos Ocultos</option>
+                                        <option value="Pasivos Laborales" selected={f.tipoRiesgoPasivos}>Pasivos Laborales</option>
+                                        <option value="Otro" selected={f.tipoRiesgoOtro}>Otro</option>
+                                    </select>
+                                </div>
+                                <div class="wz-field">
+                                    <label class="wz-label">Monto afianzado (MXN) <span class="wz-req">*</span></label>
+                                    <input class="wz-input" type="number" min="0" step="1"
+                                        placeholder="0" value={f.monto}
+                                        data-key={f._key} data-field="monto" oninput={handleFianzaField} />
+                                </div>
+                                <div class="wz-field">
+                                    <label class="wz-label">Prima neta (MXN)</label>
+                                    <input class="wz-input" type="number" min="0" step="0.01"
+                                        placeholder="0.00" value={f.primaNeta}
+                                        data-key={f._key} data-field="primaNeta" oninput={handleFianzaField} />
+                                </div>
+                                <div class="wz-field">
+                                    <label class="wz-label">Fecha emisión</label>
+                                    <input class="wz-input" type="date" value={f.fechaEmision}
+                                        data-key={f._key} data-field="fechaEmision" onchange={handleFianzaField} />
+                                </div>
+                                <div class="wz-field">
+                                    <label class="wz-label">Fecha vencimiento</label>
+                                    <input class="wz-input" type="date" value={f.fechaVencimiento}
+                                        data-key={f._key} data-field="fechaVencimiento" onchange={handleFianzaField} />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- ══ PASO 4: Revisión ══ -->
+                <template if:true={isStep4}>
+                    <div class="wz-section-title">Resumen — confirma antes de crear</div>
+
+                    <!-- Contrato summary -->
+                    <div class="wz-review-section">
+                        <div class="wz-review-section-title">
+                            <lightning-icon icon-name="utility:contract" size="xx-small"></lightning-icon>
+                            Contrato
+                        </div>
+                        <div class="wz-review-grid">
+                            <div class="wz-review-row"><span class="wz-review-label">Contratista</span><span>{contratoData.contratistaNombre}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Institución</span><span>{contratoData.institucionNombre}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Beneficiario</span><span>{contratoData.beneficiarioNombre}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Valor</span><span class="wz-review-money">{contratoValorFmt}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Inicio</span><span>{contratoData.startDate}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Fin</span><span>{contratoData.endDate}</span></div>
+                            <template if:true={contratoData.proyecto}>
+                                <div class="wz-review-row"><span class="wz-review-label">Proyecto</span><span>{contratoData.proyecto}</span></div>
+                            </template>
+                            <template if:true={contratoData.precalificacionId}>
+                                <div class="wz-review-row">
+                                    <span class="wz-review-label">Precalificación</span>
+                                    <span>{contratoData.precalificacionNombre}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Fianzas summary -->
+                    <div class="wz-review-section">
+                        <div class="wz-review-section-title">
+                            <lightning-icon icon-name="utility:shield" size="xx-small"></lightning-icon>
+                            Fianzas ({fianzasCount})
+                        </div>
+                        <template for:each={fianzasResumen} for:item="f">
+                            <div key={f._key} class="wz-review-fianza">
+                                <div class="wz-review-fianza-hdr">
+                                    <span class="wz-badge-teal">{f.tipoRiesgo}</span>
+                                    <span class="wz-review-money">{f.montoFmt}</span>
+                                </div>
+                                <div class="wz-review-row"><span class="wz-review-label">Prima neta</span><span>{f.primaFmt}</span></div>
+                                <div class="wz-review-row"><span class="wz-review-label">Emisión / Venc.</span><span>{f.fechaEmision} → {f.fechaVencimiento}</span></div>
+                            </div>
+                        </template>
+                        <div class="wz-review-totals">
+                            <span>Total fianzas: <strong>{fianzasCount}</strong></span>
+                            <span>Suma montos: <strong class="wz-review-money">{sumaMontosFmt}</strong></span>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="wz-footer">
+                <template if:true={showBtnBack}>
+                    <button class="wz-btn-secondary" onclick={handleBack}>
+                        <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                        Atrás
+                    </button>
+                </template>
+                <div class="wz-footer-spacer"></div>
+                <button class="wz-btn-secondary" onclick={handleClose}>Cancelar</button>
+                <template if:false={isStep4}>
+                    <button class="wz-btn-primary" onclick={handleNext} disabled={isNextDisabled}>
+                        Siguiente
+                        <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                    </button>
+                </template>
+                <template if:true={isStep4}>
+                    <button class="wz-btn-success" onclick={handleSave} disabled={isSaving}>
+                        <template if:true={isSaving}>
+                            <lightning-spinner size="xx-small" alternative-text="Guardando..."></lightning-spinner>
+                        </template>
+                        <template if:false={isSaving}>
+                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                        </template>
+                        {saveBtnLabel}
+                    </button>
+                </template>
+            </div>
+
+        </div>
+    </div>
+</template>

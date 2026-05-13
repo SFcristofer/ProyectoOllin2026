@@ -1,0 +1,55 @@
+/* ── Backdrop ── */
+.ecm-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9000;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+
+/* ── Modal container ── */
+.ecm-modal {
+    background: #fff; border-radius: 12px;
+    width: 680px; max-width: 96vw; max-height: 90vh;
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Header ── */
+.ecm-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 18px 24px; background: #6366f1; gap: 12px; flex-shrink: 0;
+}
+.ecm-title    { font-size: 16px; font-weight: 700; color: #fff; }
+.ecm-subtitle { font-size: 12px; color: rgba(255,255,255,.75); margin-top: 2px; }
+.ecm-close {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; background: rgba(255,255,255,.15);
+    border: none; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+    --lwc-colorTextIconDefault: #fff;
+}
+.ecm-close:hover { background: rgba(255,255,255,.28); }
+
+/* ── Body ── */
+.ecm-body { padding: 24px; overflow-y: auto; flex: 1; }
+
+/* ── 2-column grid ── */
+.ecm-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px;
+}
+.ecm-col { display: flex; flex-direction: column; }
+
+.ecm-field { margin-bottom: 4px; }
+
+/* ── Footer ── */
+.ecm-footer {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    padding: 16px 24px; border-top: 1px solid #e5e7eb; background: #f9fafb; flex-shrink: 0;
+}
+.ecm-btn-cancel {
+    padding: 8px 20px; border: 1px solid #d1d5db; border-radius: 7px;
+    background: #fff; font-size: 13px; font-weight: 600; color: #374151; cursor: pointer;
+}
+.ecm-btn-cancel:hover { background: #f3f4f6; }
+.ecm-btn-save {
+    padding: 8px 20px; border: none; border-radius: 7px;
+    background: #6366f1; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer;
+}
+.ecm-btn-save:hover { background: #4f46e5; }

@@ -1,0 +1,9 @@
+ »   Warning: @salesforce/cli update available from 2.127.2 to 2.131.7.
+Querying Data... done
+Error (1): 
+CreatedDate, LastModifiedDate, OwnerId FROM Fianza__c
+                               ^
+ERROR at Row:1:Column:297
+No such column 'OwnerId' on entity 'Fianza__c'. If you are attempting to use a custom field, be sure to append the '__c' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.
+
+

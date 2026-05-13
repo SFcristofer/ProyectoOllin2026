@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Handoff_Solicitado__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Disparador que setea el agente AI cuando decide escalar a humano.</description>
+    <label>Handoff solicitado</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

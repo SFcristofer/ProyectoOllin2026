@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Agente_Asignado_Inicial__c</fullName>
+    <label>Agente AI asignado</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Ana</fullName>
+                <default>false</default>
+                <label>Ana</label>
+            </value>
+            <value>
+                <fullName>Camila</fullName>
+                <default>false</default>
+                <label>Camila</label>
+            </value>
+            <value>
+                <fullName>Ninguno</fullName>
+                <default>false</default>
+                <label>Ninguno</label>
+            </value>
+            <value>
+                <fullName>Oli</fullName>
+                <default>false</default>
+                <label>Oli</label>
+            </value>
+            <value>
+                <fullName>Renata</fullName>
+                <default>false</default>
+                <label>Renata</label>
+            </value>
+            <value>
+                <fullName>SDR Agent</fullName>
+                <default>false</default>
+                <label>SDR Agent</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

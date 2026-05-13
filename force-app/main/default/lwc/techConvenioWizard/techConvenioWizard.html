@@ -1,0 +1,282 @@
+<template>
+    <div class="wz-overlay" onclick={handleOverlayClick}>
+        <div class="wz-modal" onclick={stopProp}>
+
+            <!-- Header -->
+            <div class="wz-header">
+                <div class="wz-header-left">
+                    <lightning-icon icon-name="utility:edit_form" size="small" class="wz-header-icon"></lightning-icon>
+                    <div>
+                        <div class="wz-header-title">Nuevo Convenio Modificatorio + Endosos</div>
+                        <div class="wz-header-sub">Modifica el contrato y registra los endosos en las fianzas afectadas</div>
+                    </div>
+                </div>
+                <button class="wz-close" onclick={handleClose} title="Cerrar">
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+            </div>
+
+            <!-- Progress -->
+            <div class="wz-progress">
+                <div class={stepClass1}>
+                    <div class="wz-step-dot">1</div>
+                    <span class="wz-step-label">Convenio</span>
+                </div>
+                <div class="wz-step-line"></div>
+                <div class={stepClass2}>
+                    <div class="wz-step-dot">2</div>
+                    <span class="wz-step-label">Fianzas y Endosos</span>
+                </div>
+                <div class="wz-step-line"></div>
+                <div class={stepClass3}>
+                    <div class="wz-step-dot">3</div>
+                    <span class="wz-step-label">Revisión</span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="wz-body">
+
+                <!-- ══ PASO 1: Datos del Convenio ══ -->
+                <template if:true={isStep1}>
+                    <div class="wz-section-title">Datos del Convenio Modificatorio</div>
+
+                    <div class="wz-form-grid">
+                        <!-- Contrato padre -->
+                        <div class="wz-field wz-field-full">
+                            <label class="wz-label">Contrato padre <span class="wz-req">*</span></label>
+                            <div class="wz-lookup">
+                                <input class="wz-input" type="text" placeholder="Buscar contrato por número..."
+                                    value={contratoBusqueda} oninput={handleBuscarContrato}
+                                    disabled={contratoSeleccionado} />
+                                <template if:true={resultadosContrato.length}>
+                                    <div class="wz-lookup-results">
+                                        <template for:each={resultadosContrato} for:item="r">
+                                            <div key={r.id} class="wz-lookup-item" data-id={r.id} data-name={r.name} onclick={handleSelectContrato}>
+                                                <span class="wz-lookup-name">{r.name}</span>
+                                                <span class="wz-lookup-sub">{r.sub}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:true={contratoSeleccionado}>
+                                    <div class="wz-selected-chip">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="wz-chip-icon"></lightning-icon>
+                                        {convenioData.contratoNombre}
+                                        <button class="wz-chip-clear" onclick={handleClearContrato}>×</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de modificación -->
+                        <div class="wz-field">
+                            <label class="wz-label">Tipo de modificación <span class="wz-req">*</span></label>
+                            <select class="wz-select" data-field="tipo" onchange={handleConvenioField}>
+                                <option value="">— selecciona —</option>
+                                <option value="Ampliación de monto" selected={tipoAmpliacionMonto}>Ampliación de monto</option>
+                                <option value="Ampliación de plazo" selected={tipoAmpliacionPlazo}>Ampliación de plazo</option>
+                                <option value="Cambio de alcance" selected={tipoCambioAlcance}>Cambio de alcance</option>
+                                <option value="Reducción" selected={tipoReduccion}>Reducción</option>
+                            </select>
+                        </div>
+
+                        <!-- Fecha del convenio -->
+                        <div class="wz-field">
+                            <label class="wz-label">Fecha del convenio <span class="wz-req">*</span></label>
+                            <input class="wz-input" type="date" value={convenioData.fecha}
+                                data-field="fecha" onchange={handleConvenioField} />
+                        </div>
+
+                        <!-- Nuevo valor del contrato -->
+                        <div class="wz-field">
+                            <label class="wz-label">Nuevo valor del contrato (MXN)</label>
+                            <input class="wz-input" type="number" min="0" step="1"
+                                placeholder="0" value={convenioData.nuevoValor}
+                                data-field="nuevoValor" oninput={handleConvenioField} />
+                            <template if:true={showDiferencia}>
+                                <span class="wz-diff-hint">{diferenciaMostrar}</span>
+                            </template>
+                        </div>
+
+                        <!-- Nueva fecha fin -->
+                        <div class="wz-field">
+                            <label class="wz-label">Nueva fecha fin</label>
+                            <input class="wz-input" type="date" value={convenioData.nuevaFechaFin}
+                                data-field="nuevaFechaFin" onchange={handleConvenioField} />
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="wz-field wz-field-full">
+                            <label class="wz-label">Descripción / motivo</label>
+                            <textarea class="wz-textarea" rows="3" placeholder="Describe el motivo del convenio..."
+                                value={convenioData.descripcion}
+                                data-field="descripcion" oninput={handleConvenioField}></textarea>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- ══ PASO 2: Fianzas afectadas y Endosos ══ -->
+                <template if:true={isStep2}>
+                    <div class="wz-section-title">Selecciona las fianzas afectadas y define el endoso de cada una</div>
+
+                    <template if:true={loadingFianzas}>
+                        <div class="wz-loading-msg">
+                            <lightning-spinner size="small" alternative-text="Cargando fianzas..."></lightning-spinner>
+                            Cargando fianzas del contrato...
+                        </div>
+                    </template>
+
+                    <template if:false={loadingFianzas}>
+                        <template if:true={fianzasContrato.length}>
+                            <template for:each={fianzasContrato} for:item="f">
+                                <div key={f.id} class={f.cardClass}>
+                                    <!-- Fila de selección -->
+                                    <div class="wz-fz-select-row" data-id={f.id} onclick={handleToggleFianza}>
+                                        <div class={f.checkClass}>
+                                            <template if:true={f.selected}>
+                                                <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                            </template>
+                                        </div>
+                                        <div class="wz-fz-info">
+                                            <span class="wz-fz-name">{f.name}</span>
+                                            <span class="wz-badge-teal">{f.tipoRiesgo}</span>
+                                        </div>
+                                        <div class="wz-fz-amounts">
+                                            <span class="wz-fz-monto">{f.montoVigenteFmt}</span>
+                                            <span class="wz-fz-venc">{f.fechaVencimientoVig}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Subform de endoso (solo si seleccionada) -->
+                                    <template if:true={f.selected}>
+                                        <div class="wz-endoso-form" onclick={stopProp}>
+                                            <div class="wz-endoso-form-title">Datos del Endoso</div>
+                                            <div class="wz-form-grid-3">
+                                                <div class="wz-field">
+                                                    <label class="wz-label">Tipo de endoso <span class="wz-req">*</span></label>
+                                                    <select class="wz-select" data-id={f.id} data-field="tipoEndoso" onchange={handleEndosoField}>
+                                                        <option value="">— selecciona —</option>
+                                                        <option value="Aumento monto"    selected={f.tipoEndosoAumento}>Aumento monto</option>
+                                                        <option value="Reducción monto"  selected={f.tipoEndosoReduccion}>Reducción monto</option>
+                                                        <option value="Cambio de prima"  selected={f.tipoEndosoPrima}>Cambio de prima</option>
+                                                        <option value="Extensión vigencia" selected={f.tipoEndosoExtension}>Extensión vigencia</option>
+                                                        <option value="Cambio datos"     selected={f.tipoEndosoBenef}>Cambio datos</option>
+                                                    </select>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-label">Nuevo monto (MXN)</label>
+                                                    <input class="wz-input" type="number" min="0" step="1"
+                                                        placeholder={f.montoVigente}
+                                                        value={f.nuevoMonto}
+                                                        data-id={f.id} data-field="nuevoMonto" oninput={handleEndosoField} />
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-label">Nueva prima (MXN)</label>
+                                                    <input class="wz-input" type="number" min="0" step="0.01"
+                                                        placeholder="0.00"
+                                                        value={f.nuevaPrima}
+                                                        data-id={f.id} data-field="nuevaPrima" oninput={handleEndosoField} />
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-label">Nueva fecha vencimiento</label>
+                                                    <input class="wz-input" type="date"
+                                                        value={f.nuevaFechaVencimiento}
+                                                        data-id={f.id} data-field="nuevaFechaVencimiento" onchange={handleEndosoField} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:false={fianzasContrato.length}>
+                            <div class="wz-empty-msg">No se encontraron fianzas para este contrato.</div>
+                        </template>
+                    </template>
+                </template>
+
+                <!-- ══ PASO 3: Revisión ══ -->
+                <template if:true={isStep3}>
+                    <div class="wz-section-title">Resumen — confirma antes de crear</div>
+
+                    <!-- Convenio -->
+                    <div class="wz-review-section">
+                        <div class="wz-review-section-title">
+                            <lightning-icon icon-name="utility:edit_form" size="xx-small"></lightning-icon>
+                            Convenio Modificatorio
+                        </div>
+                        <div class="wz-review-grid">
+                            <div class="wz-review-row"><span class="wz-review-label">Contrato</span><span>{convenioData.contratoNombre}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Tipo</span><span>{convenioData.tipo}</span></div>
+                            <div class="wz-review-row"><span class="wz-review-label">Fecha</span><span>{convenioData.fecha}</span></div>
+                            <template if:true={convenioData.nuevoValor}>
+                                <div class="wz-review-row"><span class="wz-review-label">Nuevo valor</span><span class="wz-review-money">{nuevoValorFmt}</span></div>
+                                <div class="wz-review-row"><span class="wz-review-label">Diferencia</span><span class={diferenciaClass}>{diferenciaMostrar}</span></div>
+                            </template>
+                            <template if:true={convenioData.nuevaFechaFin}>
+                                <div class="wz-review-row"><span class="wz-review-label">Nueva fecha fin</span><span>{convenioData.nuevaFechaFin}</span></div>
+                            </template>
+                            <template if:true={convenioData.descripcion}>
+                                <div class="wz-review-row"><span class="wz-review-label">Descripción</span><span>{convenioData.descripcion}</span></div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Endosos -->
+                    <div class="wz-review-section">
+                        <div class="wz-review-section-title">
+                            <lightning-icon icon-name="utility:shield" size="xx-small"></lightning-icon>
+                            Endosos a generar ({endososSeleccionados.length})
+                        </div>
+                        <template for:each={endososSeleccionados} for:item="e">
+                            <div key={e.id} class="wz-review-fianza">
+                                <div class="wz-review-fianza-hdr">
+                                    <span class="wz-fz-name">{e.name}</span>
+                                    <span class="wz-badge-teal">{e.tipoEndoso}</span>
+                                </div>
+                                <template if:true={e.nuevoMonto}>
+                                    <div class="wz-review-row"><span class="wz-review-label">Nuevo monto</span><span class="wz-review-money">{e.nuevoMontoFmt}</span></div>
+                                </template>
+                                <template if:true={e.nuevaFechaVencimiento}>
+                                    <div class="wz-review-row"><span class="wz-review-label">Nuevo vencimiento</span><span>{e.nuevaFechaVencimiento}</span></div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="wz-footer">
+                <template if:true={showBtnBack}>
+                    <button class="wz-btn-secondary" onclick={handleBack}>
+                        <lightning-icon icon-name="utility:chevronleft" size="xx-small"></lightning-icon>
+                        Atrás
+                    </button>
+                </template>
+                <div class="wz-footer-spacer"></div>
+                <button class="wz-btn-secondary" onclick={handleClose}>Cancelar</button>
+                <template if:false={isStep3}>
+                    <button class="wz-btn-primary" onclick={handleNext} disabled={isNextDisabled}>
+                        Siguiente
+                        <lightning-icon icon-name="utility:chevronright" size="xx-small"></lightning-icon>
+                    </button>
+                </template>
+                <template if:true={isStep3}>
+                    <button class="wz-btn-success" onclick={handleSave} disabled={isSaving}>
+                        <template if:true={isSaving}>
+                            <lightning-spinner size="xx-small" alternative-text="Guardando..."></lightning-spinner>
+                        </template>
+                        <template if:false={isSaving}>
+                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                        </template>
+                        Crear Convenio y {endososSeleccionados.length} Endoso(s)
+                    </button>
+                </template>
+            </div>
+
+        </div>
+    </div>
+</template>

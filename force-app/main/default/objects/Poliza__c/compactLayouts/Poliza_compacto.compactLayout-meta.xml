@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Poliza_compacto</fullName>
+    <fields>Name</fields>
+    <fields>Prima_neta__c</fields>
+    <fields>Prima_total__c</fields>
+    <label>Poliza compacto</label>
+</CompactLayout>

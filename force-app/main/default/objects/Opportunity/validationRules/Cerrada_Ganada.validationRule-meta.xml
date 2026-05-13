@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cerrada_Ganada</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    IsWon = TRUE,
+    PRIORVALUE(IsWon) = FALSE,
+    OR(
+        ISBLANK(Vigencia__c),
+        ISBLANK(Vendedor_A__c),
+        ISBLANK(Producto__c),
+        ISBLANK(Institucion__c),
+        ISBLANK(TEXT(Ramo__c)),
+        ISBLANK(TEXT(Metodo_Pago__c)),
+        ISBLANK(TEXT(Periodo_Pago__c)),
+        ISBLANK(Numero_Pagos__c),
+        Numero_Pagos__c &lt;= 0,
+        ISBLANK(Fecha_Inicio_Vigencia__c),
+        ISBLANK(Fecha_Fin_Vigencia__c),
+        ISBLANK(Amount),
+        Amount &lt;= 0    )
+)</errorConditionFormula>
+    <errorMessage>Para cerrar como Ganada completa: Vigencia, Núm. Pagos, Fecha Inicio/Fin Vigencia, Vendedor, Producto, Institución, Ramo, Método de Pago, Período de Pago e Importe.</errorMessage>
+</ValidationRule>

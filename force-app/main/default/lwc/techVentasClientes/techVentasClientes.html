@@ -1,0 +1,266 @@
+<template>
+    <div class="vc-container">
+
+        <!-- Spinner -->
+        <template if:true={isLoading}>
+            <div class="vc-loading">
+                <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Toolbar -->
+        <div class="vc-toolbar">
+            <span class="vc-title">Clientes · Cartera</span>
+            <div class="vc-toolbar-right">
+                <div class="vc-view-toggle">
+                    <button class={btnListaClass} onclick={handleViewLista} title="Vista lista">
+                        <lightning-icon icon-name="utility:table" size="xx-small"></lightning-icon>
+                        Lista
+                    </button>
+                    <button class={btnKanbanClass} onclick={handleViewKanban} title="Vista kanban">
+                        <lightning-icon icon-name="utility:kanban" size="xx-small"></lightning-icon>
+                        Por tipo
+                    </button>
+                </div>
+                <select class="vc-filter-select" onchange={handleTipoFilter}>
+                    <template for:each={tipoOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                    </template>
+                </select>
+                <input type="text" class="vc-search" placeholder="Buscar cliente..."
+                       value={searchTerm} oninput={handleSearch} />
+                <button class={filterBtnClass} onclick={handleToggleFilters}>
+                    <lightning-icon icon-name="utility:filter" size="xx-small" class="vc-btn-icon"></lightning-icon>
+                    {filterBtnLabel}
+                </button>
+                <button class="vc-btn-new" onclick={handleNuevoCliente}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="vc-btn-icon"></lightning-icon>
+                    Nuevo Cliente
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <template if:true={showFilters}>
+            <div class="vc-filter-panel">
+                <div class="vc-filter-panel-hdr">
+                    <span class="vc-filter-panel-title">Filtros avanzados</span>
+                    <div class="vc-filter-panel-actions">
+                        <button class="vc-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vc-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vc-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vc-filter-rule">
+                                <select class="vc-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vc-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vc-flt-value" type={rule.inputType} data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vc-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="vc-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vc-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══ LISTA VIEW ═══ -->
+        <template if:true={isLista}>
+            <div class="vc-grid-wrap">
+
+                <!-- Header -->
+                <div class="vc-grid-row vc-grid-header">
+                    <div class="vc-grid-cell vc-cell-num">#</div>
+                    <template for:each={gridHeaders} for:item="hdr">
+                        <div key={hdr.key} class={hdr.cellClass} data-field={hdr.field} onclick={handleSort}>
+                            {hdr.label}
+                            <template if:true={hdr.sortable}>
+                                <span class="vc-sort-icon">{hdr.icon}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Empty -->
+                <template if:false={hasClientes}>
+                    <div class="vc-empty">Sin clientes registrados</div>
+                </template>
+
+                <!-- Rows -->
+                <template for:each={filteredSorted} for:item="c">
+                    <div key={c.id} class="vc-grid-row vc-grid-data" data-id={c.id} onclick={handleRowClick}>
+                        <div class="vc-grid-cell vc-cell-num">{c.rowNum}</div>
+                        <!-- Nombre -->
+                        <div class="vc-grid-cell vc-cell-2line">
+                            <span class="vc-cell-name">{c.name}</span>
+                            <template if:true={c.company}>
+                                <span class="vc-cell-sub">{c.company}</span>
+                            </template>
+                        </div>
+                        <!-- Tipo -->
+                        <div class="vc-grid-cell">
+                            <template if:true={c.recordType}>
+                                <span class={c.typeBadge}>{c.recordType}</span>
+                            </template>
+                        </div>
+                        <!-- Email -->
+                        <div class="vc-grid-cell vc-cell-2line">
+                            <template if:true={c.email}>
+                                <span class="vc-cell-contact">{c.email}</span>
+                            </template>
+                            <template if:true={c.phone}>
+                                <span class="vc-cell-sub">{c.phone}</span>
+                            </template>
+                        </div>
+                        <!-- Ciudad -->
+                        <div class="vc-grid-cell">
+                            <span class="vc-cell-truncate">{c.ciudad}</span>
+                        </div>
+                        <!-- Pólizas -->
+                        <div class="vc-grid-cell vc-cell-center">
+                            <template if:true={c.numPolizas}>
+                                <span class="vc-badge-count">{c.numPolizas}</span>
+                            </template>
+                        </div>
+                        <!-- Oportunidades -->
+                        <div class="vc-grid-cell vc-cell-center">
+                            <template if:true={c.numOpps}>
+                                <span class="vc-badge-count vc-badge-blue">{c.numOpps}</span>
+                            </template>
+                        </div>
+                        <!-- Fecha -->
+                        <div class="vc-grid-cell vc-cell-date">
+                            {c.fechaRegistro}
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+        <!-- ═══ KANBAN VIEW (por tipo de cliente) ═══ -->
+        <template if:true={isKanban}>
+            <div class="vc-board">
+                <template for:each={kanbanGroups} for:item="grp">
+                    <div key={grp.type} class="vc-kol">
+                        <div class="vc-kol-header">
+                            <span class={grp.badgeClass}>{grp.type}</span>
+                            <span class="vc-kol-count">{grp.count}</span>
+                        </div>
+                        <div class="vc-kol-cards">
+                            <template if:false={grp.hasCards}>
+                                <div class="vc-kol-empty">Sin clientes</div>
+                            </template>
+                            <template for:each={grp.cards} for:item="c">
+                                <div key={c.id} class="vc-kcard" data-id={c.id} onclick={handleRowClick}>
+                                    <div class="vc-kcard-name">{c.name}</div>
+                                    <template if:true={c.company}>
+                                        <div class="vc-kcard-company">{c.company}</div>
+                                    </template>
+                                    <div class="vc-kcard-row">
+                                        <template if:true={c.ciudad}>
+                                            <span class="vc-kcard-chip">{c.ciudad}</span>
+                                        </template>
+                                    </div>
+                                    <div class="vc-kcard-footer">
+                                        <template if:true={c.email}>
+                                            <span class="vc-kcard-email">{c.email}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Detail Panel -->
+        <template if:true={selectedCliente}>
+            <div class="vc-overlay" onclick={handleCloseDetail}></div>
+            <div class="vc-detail-panel">
+                <div class="vc-detail-header">
+                    <span class="vc-detail-title">{selectedCliente.name}</span>
+                    <button class="vc-detail-close" onclick={handleCloseDetail}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="vc-detail-body">
+                    <template if:true={selectedCliente.recordType}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Tipo</span>
+                            <span class={selectedCliente.typeBadge}>{selectedCliente.recordType}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedCliente.company}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Empresa</span>
+                            <span class="vc-detail-val">{selectedCliente.company}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedCliente.email}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Email</span>
+                            <span class="vc-detail-val">{selectedCliente.email}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedCliente.phone}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Teléfono</span>
+                            <span class="vc-detail-val">{selectedCliente.phone}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedCliente.ciudad}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Ciudad</span>
+                            <span class="vc-detail-val">{selectedCliente.ciudad}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedCliente.vendedor}>
+                        <div class="vc-detail-row">
+                            <span class="vc-detail-label">Vendedor</span>
+                            <span class="vc-detail-val">{selectedCliente.vendedor}</span>
+                        </div>
+                    </template>
+                    <div class="vc-detail-section">Cartera</div>
+                    <div class="vc-detail-row">
+                        <span class="vc-detail-label">Pólizas vigentes</span>
+                        <span class="vc-detail-val">{selectedCliente.numPolizasLabel}</span>
+                    </div>
+                    <div class="vc-detail-row">
+                        <span class="vc-detail-label">Oportunidades</span>
+                        <span class="vc-detail-val">{selectedCliente.numOppsLabel}</span>
+                    </div>
+                    <div class="vc-detail-row">
+                        <span class="vc-detail-label">Registrado</span>
+                        <span class="vc-detail-val">{selectedCliente.fechaRegistro}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

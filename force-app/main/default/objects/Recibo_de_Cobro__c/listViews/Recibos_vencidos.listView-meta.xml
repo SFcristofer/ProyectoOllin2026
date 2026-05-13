@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recibos_vencidos</fullName>
+    <columns>NAME</columns>
+    <columns>Cliente_nombre__c</columns>
+    <columns>Poliza_numero__c</columns>
+    <columns>Aseguradora_nombre_del__c</columns>
+    <columns>Fecha_programada__c</columns>
+    <columns>Monto_programado__c</columns>
+    <columns>Dias_mora__c</columns>
+    <columns>Semaforo_cobranza__c</columns>
+    <columns>Estado__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Estado__c</field>
+        <operation>equals</operation>
+        <value>Pendiente,Vencido,Parcial</value>
+    </filters>
+    <filters>
+        <field>Fecha_programada__c</field>
+        <operation>lessThan</operation>
+        <value>TODAY</value>
+    </filters>
+    <label>Recibos vencidos</label>
+</ListView>

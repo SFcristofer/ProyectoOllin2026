@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sofimex_Perdidas_Eval__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(Utilidad_del_Ejercicio__c &lt; 0,
+  IF(ABS(Utilidad_del_Ejercicio__c) &lt;= Capital_Contable__c / 3,
+    &quot;Pérdida Aceptable&quot;,
+    &quot;Pérdida Significativa&quot;),
+  &quot;POSITIVO&quot;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>SOFIMEX - Pérdidas Patrimonio Resultado</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

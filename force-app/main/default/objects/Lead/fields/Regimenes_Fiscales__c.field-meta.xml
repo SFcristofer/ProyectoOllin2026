@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Regimenes_Fiscales__c</fullName>
+    <label>Regímenes Fiscales</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>tipos_de_contribuyentes__c</controllingField>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Sueldos y Salarios e Ingresos Asimilados a Salarios</fullName>
+                <default>false</default>
+                <label>Sueldos y Salarios e Ingresos Asimilados a Salarios</label>
+            </value>
+            <value>
+                <fullName>Personas Físicas con Actividades Empresariales y Profesionales</fullName>
+                <default>false</default>
+                <label>Personas Físicas con Actividades Empresariales y Profesionales</label>
+            </value>
+            <value>
+                <fullName>Sin obligaciones fiscales</fullName>
+                <default>false</default>
+                <label>Sin obligaciones fiscales</label>
+            </value>
+            <value>
+                <fullName>Régimen Simplificado de Confianza (RESICO)</fullName>
+                <default>false</default>
+                <label>Régimen Simplificado de Confianza (RESICO)</label>
+            </value>
+            <value>
+                <fullName>General de Ley Personas Morales</fullName>
+                <default>false</default>
+                <label>General de Ley Personas Morales</label>
+            </value>
+        </valueSetDefinition>
+        <valueSettings>
+            <controllingFieldValue>Persona moral</controllingFieldValue>
+            <valueName>General de Ley Personas Morales</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Persona física</controllingFieldValue>
+            <valueName>Sueldos y Salarios e Ingresos Asimilados a Salarios</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Persona física</controllingFieldValue>
+            <valueName>Personas Físicas con Actividades Empresariales y Profesionales</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Persona física</controllingFieldValue>
+            <valueName>Sin obligaciones fiscales</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Persona física</controllingFieldValue>
+            <valueName>Régimen Simplificado de Confianza (RESICO)</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

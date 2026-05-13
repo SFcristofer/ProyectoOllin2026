@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_vendedor__c</fullName>
+    <label>Tipo vendedor</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Humano</fullName>
+                <default>false</default>
+                <label>Humano</label>
+            </value>
+            <value>
+                <fullName>IA</fullName>
+                <default>false</default>
+                <label>IA</label>
+            </value>
+            <value>
+                <fullName>Externo</fullName>
+                <default>false</default>
+                <label>Externo</label>
+            </value>
+            <value>
+                <fullName>Promotoría</fullName>
+                <default>false</default>
+                <label>Promotoría</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

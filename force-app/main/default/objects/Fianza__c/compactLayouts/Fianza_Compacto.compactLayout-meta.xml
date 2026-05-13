@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fianza_Compacto</fullName>
+    <fields>Name</fields>
+    <fields>Estatus__c</fields>
+    <fields>Fecha_de_Emisi_n__c</fields>
+    <fields>Fecha_de_Vencimiento__c</fields>
+    <fields>Monto_Afianzado__c</fields>
+    <fields>PlazoReclamaci_n__c</fields>
+    <fields>PlazoReclamacion__c</fields>
+    <fields>Contratista__c</fields>
+    <label>Fianza Compacto</label>
+</CompactLayout>

@@ -1,0 +1,105 @@
+/* -------------------------------------------------------------------------
+ * cognoHubGestion.css — v5.1
+ * Overrides visuales sobre SLDS para restaurar jerarquía de alarma.
+ * Motivo: SLDS 2026 cambió slds-theme_error a rosa pastel; el diseño del
+ * Hub requiere alarma fuerte (rojo intenso) en banner y header de
+ * renovaciones atrasadas, con texto blanco legible.
+ * ------------------------------------------------------------------------- */
+
+/* Banner de atrasadas — fuerza rojo sólido con texto blanco */
+.hub-banner-atrasadas {
+    background: #ba0517 !important;
+    border: 1px solid #8e0410 !important;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,.12);
+}
+.hub-banner-atrasadas h2 {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.hub-banner-atrasadas lightning-icon {
+    --sds-c-icon-color-foreground-default: #ffffff;
+    --sds-c-icon-color-foreground: #ffffff;
+}
+.hub-banner-atrasadas .slds-button {
+    background: #ffffff;
+    color: #ba0517;
+    border: 1px solid #ffffff;
+    font-weight: 600;
+}
+.hub-banner-atrasadas .slds-button:hover {
+    background: #f4f6f9;
+}
+
+/* Header del bucket "Atrasadas" en tabla de renovaciones */
+.hub-atrasadas-header {
+    background: #ba0517 !important;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+}
+.hub-atrasadas-header h3 {
+    color: #ffffff !important;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Headers de mes actual / siguiente — más limpio, sin color plano */
+.hub-mes-actual-header {
+    background: #d8eafc;
+    color: #0b5cab;
+    padding: 0.5rem 1rem;
+    border-left: 4px solid #1976d2;
+}
+.hub-mes-actual-header h3 { color: #0b5cab !important; margin: 0; font-weight: 600; }
+
+.hub-mes-siguiente-header {
+    background: #e8eaf6;
+    color: #3f51b5;
+    padding: 0.5rem 1rem;
+    border-left: 4px solid #5c6bc0;
+}
+.hub-mes-siguiente-header h3 { color: #3f51b5 !important; margin: 0; font-weight: 600; }
+
+/* KPI cards — hover sutil */
+.hub-kpi-card {
+    transition: box-shadow .15s ease, transform .15s ease;
+    height: 100%;
+}
+.hub-kpi-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.10);
+    transform: translateY(-1px);
+}
+.hub-kpi-card .slds-text-heading_large {
+    font-weight: 700;
+    margin: 0.25rem 0;
+}
+
+/* Modal close button — fuerza icon centrado y aria-visible */
+.hub-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Filas con semáforo: darles un left-border coloreado en lugar de
+   teñir todo el row con slds-theme_error (ilegible en 2026). */
+tr.semaforo-rojo     td:first-child { border-left: 4px solid #ba0517; }
+tr.semaforo-amarillo td:first-child { border-left: 4px solid #f6b500; }
+tr.semaforo-naranja  td:first-child { border-left: 4px solid #ff7a00; }
+
+/* Cell alignment helpers */
+.hub-dias-mora {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}

@@ -1,0 +1,419 @@
+<template>
+    <div class="vf-wrap">
+
+        <!-- ── Subtab bar ── -->
+        <div class="vf-subtabbar">
+            <button class={stClassContrato} data-tab="contrato" onclick={handleSubTab}>
+                <lightning-icon icon-name="utility:contract" size="xx-small" class="vf-tab-icon"></lightning-icon>
+                Contrato
+            </button>
+            <button class={stClassFianza} data-tab="fianza" onclick={handleSubTab}>
+                <lightning-icon icon-name="utility:shield" size="xx-small" class="vf-tab-icon"></lightning-icon>
+                Fianza
+            </button>
+        </div>
+
+        <!-- ── Fianza: componente dedicado (acordeón) ── -->
+        <template if:true={isTabFianza}>
+            <div class="vf-inst-wrap">
+                <c-tech-ventas-fianza-tab></c-tech-ventas-fianza-tab>
+            </div>
+        </template>
+
+        <!-- ── Contrato: tabla + panel ── -->
+        <template if:true={isTabContrato}>
+
+        <!-- ── Toolbar (filtros + botón nuevo) ── -->
+        <div class="vf-toolbar">
+            <button class={filterBtnClass} onclick={handleToggleFilters}>
+                <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                {filterBtnLabel}
+            </button>
+            <div class="vf-toolbar-spacer"></div>
+            <template if:true={showBtnNuevoContrato}>
+                <button class="vf-btn-primary vf-btn-wizard" onclick={handleOpenWizardContrato}>
+                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                    Nuevo Contrato + Fianzas
+                </button>
+            </template>
+
+        </div>
+
+        <!-- ── Filter panel ── -->
+        <template if:true={showFilters}>
+            <div class="vf-filter-panel">
+                <div class="vf-filter-hdr">
+                    <span class="vf-filter-title">Filtros avanzados</span>
+                    <div class="vf-filter-actions">
+                        <button class="vf-flt-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vf-flt-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vf-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vf-filter-rule">
+                                <select class="vf-flt-campo" data-id={rule.id} onchange={handleFilterField}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <select class="vf-flt-op" data-id={rule.id} onchange={handleFilterOp}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <template if:true={rule.isText}>
+                                    <input class="vf-flt-value" type="text" data-id={rule.id}
+                                        value={rule.value} oninput={handleFilterValue} placeholder="Valor..." />
+                                </template>
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vf-flt-value" data-id={rule.id} onchange={handleFilterValue}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <button class="vf-flt-remove" data-id={rule.id} onclick={handleRemoveRule}>×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vf-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Content: tabla + panel ── -->
+        <div class="vf-content">
+
+            <template if:true={isLoading}>
+                <div class="vf-spinner-wrap">
+                    <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={hasError}>
+                <div class="vf-error-msg">{error}</div>
+            </template>
+
+            <template if:true={isEmpty}>
+                <div class="vf-empty-msg">No hay registros para mostrar.</div>
+            </template>
+
+            <!-- ════════════════════════════════════════ TABLA ════════════════════════════════════════ -->
+            <template if:true={showTable}>
+                <div class="vf-table-scroll">
+                    <table class={tableClass}>
+                        <thead>
+                            <tr>
+                                <template for:each={headers} for:item="h">
+                                    <th key={h.key} class={h.thClass} data-field={h.field} onclick={handleSort}>
+                                        {h.label}
+                                        <template if:true={h.icon}>
+                                            <span class="vf-sort-icon">{h.icon}</span>
+                                        </template>
+                                    </th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredRows} for:item="row">
+                                <tr key={row.id} class={row.trClass} data-id={row.id} onclick={handleRowClick}>
+
+                                    <!-- CONTRATO -->
+                                    <template if:true={isTabContrato}>
+                                        <td class="vf-td-name vf-td-contrato">
+                                            <lightning-icon icon-name="utility:contract" size="xx-small" class="vf-row-icon-teal"></lightning-icon>
+                                            {row.name}
+                                        </td>
+                                        <td>{row.contratista}</td>
+                                        <td>{row.institucion}</td>
+                                        <td>{row.beneficiario}</td>
+                                        <td class="vf-td-num">{row.montoOriginalFmt}</td>
+                                        <td class="vf-td-num vf-td-vigente">{row.valorVigenteFmt}</td>
+                                        <td>{row.fechaInicio}</td>
+                                        <td>{row.fechaFin}</td>
+                                        <td><span class={row.estatusClass}>{row.estatus}</span></td>
+                                    </template>
+
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- ════════════════════════════════════════ PANEL LATERAL ════════════════════════════════════════ -->
+            <template if:true={showPanel}>
+                <div class="vf-panel">
+
+                    <!-- Panel header -->
+                    <div class="vf-panel-hdr">
+                        <span class="vf-panel-title">{panelRecord.name}</span>
+                        <div class="vf-panel-hdr-actions">
+                            <template if:false={isEditing}>
+                                <button class="vf-panel-edit" onclick={handleEditPanel} title="Editar">
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                </button>
+                            </template>
+                            <button class="vf-panel-prev" onclick={handlePanelPrev} title="Anterior">
+                                <lightning-icon icon-name="utility:chevronup" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vf-panel-next" onclick={handlePanelNext} title="Siguiente">
+                                <lightning-icon icon-name="utility:chevrondown" size="xx-small"></lightning-icon>
+                            </button>
+                            <button class="vf-panel-close" onclick={handleClosePanel}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Panel subtabs -->
+                    <div class="vf-panel-tabbar">
+                        <button class={ptClassDetalles} data-ptab="detalles" onclick={handlePanelTab}>Detalles</button>
+                        <template if:true={isTabContrato}>
+                            <button class={ptClassFianzas}    data-ptab="fianzas"    onclick={handlePanelTab}>Fianzas</button>
+                            <button class={ptClassConvenios}  data-ptab="convenios"  onclick={handlePanelTab}>Convenios</button>
+                            <button class={ptClassCalculados} data-ptab="calculados" onclick={handlePanelTab}>Calculados</button>
+                        </template>
+                    </div>
+
+                    <!-- Panel body: Detalles -->
+                    <template if:true={showPtDetalles}>
+                        <!-- Modo lectura -->
+                        <template if:false={isEditing}>
+                            <div class="vf-panel-body">
+                                <template for:each={panelFields} for:item="f">
+                                    <div key={f.key} class="vf-detail-row">
+                                        <span class="vf-detail-label">{f.label}</span>
+                                        <template if:true={f.isMoney}>
+                                            <span class="vf-detail-money">{f.value}</span>
+                                        </template>
+                                        <template if:true={f.isBadge}>
+                                            <span class={f.badgeClass}>{f.value}</span>
+                                        </template>
+                                        <template if:false={f.isMoney}>
+                                            <template if:false={f.isBadge}>
+                                                <span>{f.value}</span>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <!-- Modo edición -->
+                        <template if:true={isEditing}>
+                            <div class="vf-panel-body vf-edit-body">
+                                <template for:each={editFields} for:item="f">
+                                    <div key={f.key} class="vf-edit-field">
+                                        <label class="vf-edit-label">{f.label}</label>
+                                        <template if:true={f.isInput}>
+                                            <input class="vf-edit-input"
+                                                type={f.type}
+                                                value={f.val}
+                                                data-key={f.key}
+                                                oninput={handleEditInput} />
+                                        </template>
+                                        <template if:true={f.isSelect}>
+                                            <select class="vf-edit-select" data-key={f.key} onchange={handleEditInput}>
+                                                <template for:each={f.options} for:item="opt">
+                                                    <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                                </template>
+                                            </select>
+                                        </template>
+                                        <template if:true={f.isTextarea}>
+                                            <textarea class="vf-edit-textarea" data-key={f.key} oninput={handleEditInput}>{f.val}</textarea>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="vf-edit-footer">
+                                    <button class="vf-btn-cancel-edit" onclick={handleCancelEdit} disabled={isSavingEdit}>Cancelar</button>
+                                    <button class="vf-btn-save-edit"   onclick={handleSaveEdit}   disabled={isSavingEdit}>
+                                        <template if:true={isSavingEdit}>Guardando...</template>
+                                        <template if:false={isSavingEdit}>Guardar</template>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- Panel body: Fianzas relacionadas (Contratista / Beneficiario / Institución / Vendedor / Contrato) -->
+                    <template if:true={showPtFianzas}>
+                        <div class="vf-panel-body">
+                            <template if:true={panelFianzas.length}>
+                                <template for:each={panelFianzas} for:item="f">
+                                    <div key={f.id} class="vf-mini-card">
+                                        <div class="vf-mini-card-hdr">
+                                            <span class="vf-mini-card-name">{f.name}</span>
+                                            <span class={f.estatusClass}>{f.estatus}</span>
+                                        </div>
+                                        <div class="vf-mini-card-row">
+                                            <span class="vf-mini-label">Tipo</span>
+                                            <span>{f.tipoRiesgo}</span>
+                                        </div>
+                                        <div class="vf-mini-card-row">
+                                            <span class="vf-mini-label">Monto vigente</span>
+                                            <span class="vf-detail-money">{f.montoVigenteFmt}</span>
+                                        </div>
+                                        <div class="vf-mini-card-row">
+                                            <span class="vf-mini-label">Vencimiento</span>
+                                            <span>{f.fechaVencimiento}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={panelFianzas.length}>
+                                <div class="vf-panel-empty">Sin fianzas vinculadas</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Panel body: Convenios (Contrato) -->
+                    <template if:true={showPtConvenios}>
+                        <div class="vf-panel-body">
+                            <div class="vf-panel-section-hdr">
+                                <span class="vf-panel-section-count">Convenios ({panelConvenios.length})</span>
+                                <button class="vf-btn-add-sub" onclick={handleAddConvenioFromPanel}>
+                                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                    Nuevo convenio
+                                </button>
+                            </div>
+                            <template if:true={hasPanelConvenios}>
+                                <template for:each={panelConveniosView} for:item="cv">
+                                    <div key={cv.id} class="vf-mini-card">
+                                        <div class="vf-mini-card-hdr">
+                                            <span class="vf-mini-card-name">{cv.name}</span>
+                                            <span class={cv.tipoClass}>{cv.tipo}</span>
+                                            <template if:false={cv.isEditing}>
+                                                <button class="vf-mini-edit-btn" data-id={cv.id} onclick={handleEditConvenioCard} title="Editar">
+                                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                                </button>
+                                            </template>
+                                        </div>
+
+                                        <!-- Modo lectura -->
+                                        <template if:false={cv.isEditing}>
+                                            <div class="vf-mini-card-row">
+                                                <span class="vf-mini-label">Fecha</span>
+                                                <span>{cv.fecha}</span>
+                                            </div>
+                                            <div class="vf-mini-card-row">
+                                                <span class="vf-mini-label">Nuevo valor</span>
+                                                <span class="vf-detail-money">{cv.nuevoValorFmt}</span>
+                                            </div>
+                                            <div class="vf-mini-card-row">
+                                                <span class="vf-mini-label">Nueva fecha fin</span>
+                                                <span>{cv.nuevaFechaFin}</span>
+                                            </div>
+                                            <template if:true={cv.descripcion}>
+                                                <div class="vf-mini-card-row">
+                                                    <span class="vf-mini-label">Descripción</span>
+                                                    <span class="vf-mini-desc">{cv.descripcion}</span>
+                                                </div>
+                                            </template>
+                                        </template>
+
+                                        <!-- Modo edición -->
+                                        <template if:true={cv.isEditing}>
+                                            <div class="vf-cv-edit-form">
+                                                <div class="vf-edit-field">
+                                                    <label class="vf-edit-label">Tipo</label>
+                                                    <select class="vf-edit-select" data-field="tipo" onchange={handleConvenioEditField}>
+                                                        <template for:each={convenioEditTipoOptions} for:item="opt">
+                                                            <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                                                        </template>
+                                                    </select>
+                                                </div>
+                                                <div class="vf-edit-field">
+                                                    <label class="vf-edit-label">Nuevo valor (MXN)</label>
+                                                    <input class="vf-edit-input" type="number" data-field="nuevoValor"
+                                                        value={panelConvenioEdit.editData.nuevoValor}
+                                                        oninput={handleConvenioEditField} />
+                                                </div>
+                                                <div class="vf-edit-field">
+                                                    <label class="vf-edit-label">Nueva fecha fin</label>
+                                                    <input class="vf-edit-input" type="date" data-field="nuevaFechaFin"
+                                                        value={panelConvenioEdit.editData.nuevaFechaFin}
+                                                        onchange={handleConvenioEditField} />
+                                                </div>
+                                                <div class="vf-edit-field">
+                                                    <label class="vf-edit-label">Descripción</label>
+                                                    <textarea class="vf-edit-textarea" data-field="descripcion"
+                                                        oninput={handleConvenioEditField}>{panelConvenioEdit.editData.descripcion}</textarea>
+                                                </div>
+                                                <div class="vf-edit-field">
+                                                    <label class="vf-edit-label">Motivo</label>
+                                                    <textarea class="vf-edit-textarea" data-field="motivo"
+                                                        oninput={handleConvenioEditField}>{panelConvenioEdit.editData.motivo}</textarea>
+                                                </div>
+                                                <div class="vf-edit-footer">
+                                                    <button class="vf-btn-cancel-edit" onclick={handleCancelConvenioEdit}>Cancelar</button>
+                                                    <button class="vf-btn-save-edit" onclick={handleSaveConvenioCard}>Guardar</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={hasPanelConvenios}>
+                                <div class="vf-panel-empty">Sin convenios registrados</div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Panel body: Calculados (Contrato) -->
+                    <template if:true={showPtCalculados}>
+                        <div class="vf-panel-body">
+                            <div class="vf-detail-row">
+                                <span class="vf-detail-label">Valor original</span>
+                                <span class="vf-detail-money">{panelRecord.montoOriginalFmt}</span>
+                            </div>
+                            <div class="vf-detail-row">
+                                <span class="vf-detail-label">Valor vigente</span>
+                                <span class="vf-detail-money vf-highlight">{panelRecord.valorVigenteFmt}</span>
+                            </div>
+                            <div class="vf-detail-row">
+                                <span class="vf-detail-label">Suma fianzas</span>
+                                <span class="vf-detail-money">{panelRecord.montoFmt}</span>
+                            </div>
+                            <div class="vf-detail-row">
+                                <span class="vf-detail-label">Exposición</span>
+                                <span>{panelRecord.exposicionFmt}</span>
+                            </div>
+                            <div class="vf-detail-row">
+                                <span class="vf-detail-label">Fecha fin original</span>
+                                <span>{panelRecord.fechaFin}</span>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+
+        </div>
+
+        </template><!-- end if:true isTabContrato -->
+
+        <!-- ── Wizards ── -->
+        <template if:true={showWizardContrato}>
+            <c-tech-fianza-wizard
+                initial-contrato={editContratoForWizard}
+                initial-fianzas={editFianzasForWizard}
+                onclose={handleWizardClose}
+                onsuccess={handleWizardSuccess}>
+            </c-tech-fianza-wizard>
+        </template>
+
+        <template if:true={showWizardConvenio}>
+            <c-tech-convenio-wizard
+                initial-contrato={convenioWizardContrato}
+                onclose={handleWizardClose}
+                onsuccess={handleWizardSuccess}>
+            </c-tech-convenio-wizard>
+        </template>
+
+    </div>
+</template>

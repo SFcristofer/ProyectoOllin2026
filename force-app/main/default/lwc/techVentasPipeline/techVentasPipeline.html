@@ -1,0 +1,529 @@
+<template>
+    <div class="vp-container">
+
+        <!-- Toolbar -->
+        <div class="vp-toolbar">
+            <span class="vp-title">Cotizaciones · Fase 2 Proceso de Venta</span>
+            <div class="vp-toolbar-right">
+                <div class="vp-view-toggle">
+                    <button class={btnListaClass} onclick={handleViewLista} title="Vista lista">
+                        <lightning-icon icon-name="utility:table" size="xx-small"></lightning-icon>
+                        Lista
+                    </button>
+                    <button class={btnKanbanClass} onclick={handleViewKanban} title="Vista kanban">
+                        <lightning-icon icon-name="utility:kanban" size="xx-small"></lightning-icon>
+                        Kanban
+                    </button>
+                </div>
+                <select class="vp-filter-select" onchange={handleRamoFilter}>
+                    <template for:each={ramoOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                    </template>
+                </select>
+                <input type="text" class="vp-search" placeholder="Buscar oportunidad..."
+                       value={searchTerm} oninput={handleSearch} />
+                <button class={filterBtnClass} onclick={handleToggleFilters}>
+                    <lightning-icon icon-name="utility:filter" size="x-small" class="vp-btn-icon"></lightning-icon>
+                    {filterBtnLabel}
+                </button>
+                <button class="vp-btn-new" onclick={handleNuevaOpp}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="vp-btn-icon"></lightning-icon>
+                    Nueva Oportunidad
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══ PANEL DE FILTROS ═══ -->
+        <template if:true={showFilters}>
+            <div class="vp-filter-panel">
+                <div class="vp-filter-panel-hdr">
+                    <span class="vp-filter-panel-title">Filtros avanzados</span>
+                    <div class="vp-filter-panel-actions">
+                        <button class="vp-flt-btn-add" onclick={handleAddRule}>+ Agregar regla</button>
+                        <button class="vp-flt-btn-clear" onclick={handleClearFilters}>Limpiar todo</button>
+                    </div>
+                </div>
+                <template if:true={hasFilterRules}>
+                    <div class="vp-filter-rules">
+                        <template for:each={filterRulesView} for:item="rule">
+                            <div key={rule.id} class="vp-filter-rule">
+                                <!-- Campo -->
+                                <select class="vp-flt-campo" data-id={rule.id} onchange={handleFilterFieldChange}>
+                                    <template for:each={rule.fieldOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <!-- Operador -->
+                                <select class="vp-flt-op" data-id={rule.id} onchange={handleFilterOpChange}>
+                                    <template for:each={rule.opOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <!-- Valor: texto / número -->
+                                <template if:true={rule.isText}>
+                                    <input class="vp-flt-value" type={rule.inputType} data-id={rule.id}
+                                           value={rule.value} oninput={handleFilterValueChange} placeholder="Valor..." />
+                                </template>
+                                <!-- Valor: fecha -->
+                                <template if:true={rule.isDate}>
+                                    <input class="vp-flt-value" type="date" data-id={rule.id}
+                                           value={rule.value} onchange={handleFilterValueChange} />
+                                </template>
+                                <!-- Valor: picklist -->
+                                <template if:true={rule.isPicklist}>
+                                    <select class="vp-flt-value" data-id={rule.id} onchange={handleFilterValueChange}>
+                                        <option value="">— selecciona —</option>
+                                        <template for:each={rule.picklistOptions} for:item="opt">
+                                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                        </template>
+                                    </select>
+                                </template>
+                                <!-- Quitar regla -->
+                                <button class="vp-flt-remove" data-id={rule.id} onclick={handleRemoveRule} title="Quitar regla">×</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={hasFilterRules}>
+                    <div class="vp-filter-empty">Sin reglas. Haz clic en "+ Agregar regla" para comenzar.</div>
+                </template>
+                <div class="vp-filter-panel-footer">
+                    <button class="vp-flt-btn-apply" onclick={handleApplyFilters} disabled={isApplying}>
+                        <lightning-icon icon-name="utility:search" size="xx-small" class="vp-btn-icon"></lightning-icon>
+                        {applyBtnLabel}
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══ LISTA VIEW ═══ -->
+        <template if:true={isLista}>
+            <div class="vp-list-wrap">
+
+                <!-- Header -->
+                <div class="vp-list-row vp-list-header">
+                    <div class="vp-list-cell vp-cell-num">#</div>
+                    <template for:each={listHeaders} for:item="hdr">
+                        <div key={hdr.key} class={hdr.cellClass} data-field={hdr.field} onclick={handleSort}>
+                            {hdr.label}
+                            <template if:true={hdr.sortable}>
+                                <span class="vp-sort-icon">{hdr.icon}</span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Empty -->
+                <template if:false={hasFiltered}>
+                    <div class="vp-list-empty">Sin oportunidades</div>
+                </template>
+
+                <!-- Rows -->
+                <template for:each={filteredSorted} for:item="opp">
+                    <div key={opp.id} class={opp.rowClass} data-id={opp.id} onclick={handleRowClick}>
+
+                        <!-- # -->
+                        <div class="vp-list-cell vp-cell-num">{opp.rowNum}</div>
+
+                        <!-- Edit btn -->
+                        <div class="vp-list-cell vp-cell-edit">
+                            <button class="vp-row-edit-btn" data-id={opp.id} onclick={handleRowEditBtn} title="Editar">✎</button>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="vp-list-cell vp-cell-2line">
+                            <span class="vp-cell-name">{opp.name}</span>
+                            <template if:true={opp.subproducto}>
+                                <span class="vp-cell-sub">{opp.subproducto}</span>
+                            </template>
+                        </div>
+
+                        <!-- Prospecto -->
+                        <div class="vp-list-cell">
+                            <span class="vp-cell-truncate">{opp.prospectoName}</span>
+                        </div>
+
+                        <!-- Cliente -->
+                        <div class="vp-list-cell">
+                            <span class="vp-cell-truncate">{opp.clientName}</span>
+                        </div>
+
+                        <!-- Ramo ✎ -->
+                        <div class="vp-list-cell vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="ramo" data-val={opp.ramo}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingRamo}>
+                                <template if:true={opp.ramo}>
+                                    <span class="vp-chip">{opp.ramo}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingRamo}>
+                                <select class="vp-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">— sin ramo —</option>
+                                    <template for:each={ramoInlineOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </template>
+                        </div>
+
+                        <!-- Importe ✎ -->
+                        <div class="vp-list-cell vp-cell-money vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="amount" data-val={opp.amount}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingAmount}>
+                                {opp.amountFmt}
+                            </template>
+                            <template if:true={opp.isEditingAmount}>
+                                <input type="number" class="vp-inline-input"
+                                       value={opp.amount}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- % Comisión ✎ -->
+                        <div class="vp-list-cell vp-cell-center vp-cell-editable"
+                             data-id={opp.id} data-field="comision" data-val={opp.comision}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingComision}>
+                                <template if:true={opp.comisionFmt}>
+                                    <span class="vp-cell-pct">{opp.comisionFmt}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingComision}>
+                                <input type="number" class="vp-inline-input"
+                                       value={opp.comision}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Producto (required, read-only) -->
+                        <div class="vp-list-cell vp-cell-required-ro">
+                            <span class="vp-cell-truncate">{opp.productoName}</span>
+                        </div>
+
+                        <!-- Vendedor (required, read-only) -->
+                        <div class="vp-list-cell vp-cell-required-ro">
+                            <span class="vp-cell-truncate">{opp.vendedor}</span>
+                        </div>
+
+                        <!-- Etapa ✎ -->
+                        <div class="vp-list-cell vp-cell-editable"
+                             data-id={opp.id} data-field="stageName" data-val={opp.stageName}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingStage}>
+                                <span class={opp.stageClass}>{opp.stageName}</span>
+                            </template>
+                            <template if:true={opp.isEditingStage}>
+                                <select class="vp-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <template for:each={stageInlineOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </template>
+                        </div>
+
+                        <!-- Cierre ✎ -->
+                        <div class="vp-list-cell vp-cell-date vp-cell-editable"
+                             data-id={opp.id} data-field="closeDate" data-val={opp.closeDate}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingClose}>
+                                {opp.closeDate}
+                            </template>
+                            <template if:true={opp.isEditingClose}>
+                                <input type="date" class="vp-inline-input vp-inline-date"
+                                       value={opp.closeDate}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Vigencia ✎ -->
+                        <div class="vp-list-cell vp-cell-center vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="vigencia" data-val={opp.vigencia}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingVigencia}>
+                                <template if:true={opp.vigencia}>
+                                    <span class="vp-cell-vigencia">{opp.vigencia}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingVigencia}>
+                                <input type="number" class="vp-inline-input"
+                                       value={opp.vigencia}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Núm. Pagos ✎ -->
+                        <div class="vp-list-cell vp-cell-center vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="numeroPagos" data-val={opp.numeroPagos}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingNumPagos}>
+                                <template if:true={opp.numeroPagos}>
+                                    <span class="vp-cell-vigencia">{opp.numeroPagos}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingNumPagos}>
+                                <input type="number" class="vp-inline-input"
+                                       value={opp.numeroPagos}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Inicio Vig. ✎ -->
+                        <div class="vp-list-cell vp-cell-date vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="fechaInicioVig" data-val={opp.fechaInicioVig}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingFechaIni}>
+                                {opp.fechaInicioVig}
+                            </template>
+                            <template if:true={opp.isEditingFechaIni}>
+                                <input type="date" class="vp-inline-input vp-inline-date"
+                                       value={opp.fechaInicioVig}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Fin Vig. ✎ -->
+                        <div class="vp-list-cell vp-cell-date vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="fechaFinVig" data-val={opp.fechaFinVig}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingFechaFin}>
+                                {opp.fechaFinVig}
+                            </template>
+                            <template if:true={opp.isEditingFechaFin}>
+                                <input type="date" class="vp-inline-input vp-inline-date"
+                                       value={opp.fechaFinVig}
+                                       oninput={handleInlineInputChange}
+                                       onkeydown={handleInlineInputKey}
+                                       onblur={handleInlineInputBlur} />
+                            </template>
+                        </div>
+
+                        <!-- Método Pago ✎ -->
+                        <div class="vp-list-cell vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="metodoPago" data-val={opp.metodoPago}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingMetPago}>
+                                <template if:true={opp.metodoPago}>
+                                    <span class="vp-chip vp-chip-gray">{opp.metodoPago}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingMetPago}>
+                                <select class="vp-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">— sin método —</option>
+                                    <template for:each={metPagoOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </template>
+                        </div>
+
+                        <!-- Período Pago ✎ -->
+                        <div class="vp-list-cell vp-cell-editable vp-cell-required"
+                             data-id={opp.id} data-field="periodoPago" data-val={opp.periodoPago}
+                             onclick={handleInlineOpen}>
+                            <template if:false={opp.isEditingPerPago}>
+                                <template if:true={opp.periodoPago}>
+                                    <span class="vp-chip vp-chip-gray">{opp.periodoPago}</span>
+                                </template>
+                            </template>
+                            <template if:true={opp.isEditingPerPago}>
+                                <select class="vp-inline-select" onchange={handleInlineSelectChange} onclick={handleSelectClick}>
+                                    <option value="">— sin período —</option>
+                                    <template for:each={perPagoOptions} for:item="opt">
+                                        <option key={opt.key} value={opt.value}>{opt.label}</option>
+                                    </template>
+                                </select>
+                            </template>
+                        </div>
+
+                        <!-- Póliza a renovar (read-only) -->
+                        <div class="vp-list-cell">
+                            <span class="vp-cell-truncate">{opp.polizaRenovarNombre}</span>
+                        </div>
+
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+        <!-- ═══ KANBAN VIEW ═══ -->
+        <template if:true={isKanban}>
+            <div class="vp-board">
+                <template for:each={columns} for:item="col">
+                    <div key={col.stage} class={col.columnClass} data-stage={col.stage}
+                         ondragover={handleDragOver}
+                         ondragenter={handleDragEnter}
+                         ondragleave={handleDragLeave}
+                         ondrop={handleDrop}>
+
+                        <div class="vp-col-header">
+                            <span class={col.headerClass}>{col.stage}</span>
+                            <span class="vp-col-count">{col.count}</span>
+                            <template if:true={col.totalFmt}>
+                                <span class="vp-col-total">{col.totalFmt}</span>
+                            </template>
+                        </div>
+
+                        <template if:true={col.isDragOver}>
+                            <div class="vp-drop-hint">Soltar aquí</div>
+                        </template>
+
+                        <div class="vp-cards">
+                            <template if:false={col.hasCards}>
+                                <div class="vp-empty">Sin oportunidades</div>
+                            </template>
+                            <template for:each={col.cards} for:item="opp">
+                                <div key={opp.id} class={opp.cardClass}
+                                     draggable="true"
+                                     data-id={opp.id}
+                                     ondragstart={handleDragStart}
+                                     ondragend={handleDragEnd}
+                                     onclick={handleCardClick}>
+                                    <div class="vp-card-drag-handle">⠿</div>
+                                    <div class="vp-card-name">{opp.name}</div>
+                                    <div class="vp-card-client">{opp.clientName}</div>
+                                    <div class="vp-card-row">
+                                        <template if:true={opp.ramo}>
+                                            <span class="vp-chip">{opp.ramo}</span>
+                                        </template>
+                                        <template if:true={opp.tipoOriginador}>
+                                            <span class="vp-chip vp-chip-gray">{opp.tipoOriginador}</span>
+                                        </template>
+                                    </div>
+                                    <div class="vp-card-footer">
+                                        <span class="vp-card-amount">{opp.amountFmt}</span>
+                                        <span class="vp-card-vendedor">{opp.vendedor}</span>
+                                    </div>
+                                    <template if:true={opp.motivoPerdida}>
+                                        <div class="vp-card-motivo">{opp.motivoPerdida}</div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Detail Panel -->
+        <template if:true={selectedOpp}>
+            <div class="vp-overlay" onclick={handleCloseDetail}></div>
+            <div class="vp-detail-panel">
+                <div class="vp-detail-header">
+                    <span class="vp-detail-title">{selectedOpp.name}</span>
+                    <button class="vp-detail-edit" onclick={handleEditOpen}>
+                        <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                        Editar
+                    </button>
+                    <button class="vp-detail-close" onclick={handleCloseDetail}>
+                        <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="vp-detail-body">
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Cliente</span>
+                        <span class="vp-detail-val">{selectedOpp.clientName}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Prospecto</span>
+                        <span class="vp-detail-val">{selectedOpp.prospectoName}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Ramo</span>
+                        <span class="vp-detail-val">{selectedOpp.ramo}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Producto</span>
+                        <span class="vp-detail-val">{selectedOpp.productoName}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Subproducto</span>
+                        <span class="vp-detail-val">{selectedOpp.subproducto}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Importe</span>
+                        <span class="vp-detail-val vp-detail-money">{selectedOpp.amountFmt}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Comisión Ollin %</span>
+                        <span class="vp-detail-val">{selectedOpp.comisionFmt}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Método de pago</span>
+                        <span class="vp-detail-val">{selectedOpp.metodoPago}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Período de pago</span>
+                        <span class="vp-detail-val">{selectedOpp.periodoPago}</span>
+                    </div>
+                    <template if:true={selectedOpp.polizaRenovarNombre}>
+                        <div class="vp-detail-row">
+                            <span class="vp-detail-label">Póliza a renovar</span>
+                            <span class="vp-detail-val">{selectedOpp.polizaRenovarNombre}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedOpp.urlPoliza}>
+                        <div class="vp-detail-row">
+                            <span class="vp-detail-label">URL Póliza</span>
+                            <a class="vp-detail-val vp-detail-link" href={selectedOpp.urlPoliza} target="_blank" rel="noopener noreferrer">{selectedOpp.urlPoliza}</a>
+                        </div>
+                    </template>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Vendedor</span>
+                        <span class="vp-detail-val">{selectedOpp.vendedor}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Originador</span>
+                        <span class="vp-detail-val">{selectedOpp.tipoOriginador}</span>
+                    </div>
+                    <div class="vp-detail-row">
+                        <span class="vp-detail-label">Cierre estimado</span>
+                        <span class="vp-detail-val">{selectedOpp.closeDate}</span>
+                    </div>
+                    <template if:true={selectedOpp.motivoPerdida}>
+                        <div class="vp-detail-row">
+                            <span class="vp-detail-label">Motivo pérdida</span>
+                            <span class="vp-detail-val vp-detail-red">{selectedOpp.motivoPerdida}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedOpp.aseguradora}>
+                        <div class="vp-detail-row">
+                            <span class="vp-detail-label">Aseguradora</span>
+                            <span class="vp-detail-val">{selectedOpp.aseguradora}</span>
+                        </div>
+                    </template>
+                    <template if:true={selectedOpp.notasVendedor}>
+                        <div class="vp-detail-row vp-detail-row-col">
+                            <span class="vp-detail-label">Notas vendedor</span>
+                            <span class="vp-detail-val vp-detail-notes">{selectedOpp.notasVendedor}</span>
+                        </div>
+                    </template>
+
+                    <div class="vp-detail-section">Cambiar etapa</div>
+                    <div class="vp-stage-buttons">
+                        <template for:each={stageOptions} for:item="s">
+                            <button key={s.value} class={s.btnClass} data-stage={s.value}
+                                    onclick={handleChangeStage}>{s.label}</button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

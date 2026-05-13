@@ -1,0 +1,67 @@
+<template>
+    <template if:true={showModal}>
+        <div class="eem-backdrop" onclick={handleBackdropClick}></div>
+        <div class="eem-modal">
+
+            <div class="eem-header">
+                <div>
+                    <div class="eem-header-title">Editar ejecutivo</div>
+                </div>
+                <button class="eem-close" onclick={handleClose} title="Cerrar">×</button>
+            </div>
+
+            <lightning-record-edit-form
+                record-id={ejecutivoId}
+                object-api-name="EjecutivoContacto__c"
+                onsuccess={handleSuccess}
+                onerror={handleError}>
+
+                <div class="eem-body">
+                    <div class="eem-grid">
+                        <div class="eem-col">
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Nombre</span>
+                                <lightning-input-field field-name="Name" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Área</span>
+                                <lightning-input-field field-name="Area__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">¿Es principal?</span>
+                                <lightning-input-field field-name="Principal__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                        <div class="eem-col">
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Puesto</span>
+                                <lightning-input-field field-name="Puesto__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Correo electrónico</span>
+                                <lightning-input-field field-name="Email__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Celular</span>
+                                <lightning-input-field field-name="Celular__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                            <div class="eem-field-wrap">
+                                <span class="eem-field-label">Teléfono directo</span>
+                                <lightning-input-field field-name="Telefono__c" variant="label-hidden"></lightning-input-field>
+                            </div>
+                        </div>
+                    </div>
+                    <template if:true={errorMsg}>
+                        <div class="eem-error">{errorMsg}</div>
+                    </template>
+                </div>
+
+                <div class="eem-footer">
+                    <button class="eem-btn-cancel" type="button" onclick={handleClose}>Cancelar</button>
+                    <button class="eem-btn-save" type="submit">Guardar cambios</button>
+                </div>
+
+            </lightning-record-edit-form>
+        </div>
+    </template>
+</template>

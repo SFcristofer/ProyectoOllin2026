@@ -1,30 +1,33 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <lightning-tabset variant="scoped">
-            <lightning-tab label="Fianzas">
-                <c-tech-fianzas></c-tech-fianzas>
-            </lightning-tab>
-            <lightning-tab label="Ampliaciones">
-                <c-tech-ampliaciones></c-tech-ampliaciones>
-            </lightning-tab>
-            <lightning-tab label="Fianzas Globales">
-                <c-tech-fianzas-globales></c-tech-fianzas-globales>
-            </lightning-tab>
-            <lightning-tab label="Contratos">
-                <c-tech-contratos></c-tech-contratos>
-            </lightning-tab>
-            <lightning-tab label="Proyectos">
-                <c-tech-proyectos></c-tech-proyectos>
-            </lightning-tab>
-            <lightning-tab label="Contratistas">
-                <c-tech-contratistas></c-tech-contratistas>
-            </lightning-tab>
-            <lightning-tab label="Beneficiarios">
-                <c-tech-beneficiarios></c-tech-beneficiarios>
-            </lightning-tab>
-            <lightning-tab label="Afianzados">
-                <c-tech-afianzados></c-tech-afianzados>
-            </lightning-tab>
-        </lightning-tabset>
+    <div class="ot-wrap">
+
+        <!-- ── Tab bar ── -->
+        <div class="ot-tabbar" role="tablist">
+            <button class={tabClass0}  data-tab="fianzas"       onclick={handleTab} role="tab">Fianzas</button>
+            <button class={tabClass1}  data-tab="endosos"       onclick={handleTab} role="tab">Endosos</button>
+            <button class={tabClass2}  data-tab="contratos"     onclick={handleTab} role="tab">Contratos</button>
+            <button class={tabClass3}  data-tab="convenios"     onclick={handleTab} role="tab">Convenios</button>
+            <button class={tabClass4}  data-tab="planpagos"     onclick={handleTab} role="tab">Plan de Pagos</button>
+            <button class={tabClass5}  data-tab="recibos"       onclick={handleTab} role="tab">Recibos de Cobro</button>
+            <button class={tabClass6}  data-tab="comisiones"    onclick={handleTab} role="tab">Comisiones</button>
+            <button class={tabClass7}  data-tab="proyectos"     onclick={handleTab} role="tab">Proyectos</button>
+            <button class={tabClass8}  data-tab="contratistas"  onclick={handleTab} role="tab">Contratistas</button>
+            <button class={tabClass9}  data-tab="beneficiarios" onclick={handleTab} role="tab">Beneficiarios</button>
+            <button class={tabClass10} data-tab="afianzados"    onclick={handleTab} role="tab">Afianzados</button>
+        </div>
+
+        <!-- ── Panels — todos montados, ocultos via CSS ── -->
+        <div class={panelClass0} ><c-tech-fianzas></c-tech-fianzas></div>
+        <div class={panelClass1} ><c-tech-ampliaciones></c-tech-ampliaciones></div>
+        <div class={panelClass2} ><c-tech-contratos></c-tech-contratos></div>
+        <div class={panelClass3} ><c-tech-convenio-modificatorio></c-tech-convenio-modificatorio></div>
+        <div class={panelClass4} ><c-tech-plan-pago></c-tech-plan-pago></div>
+        <div class={panelClass5} ><c-tech-recibo-cobro></c-tech-recibo-cobro></div>
+        <div class={panelClass6} ><c-tech-comision></c-tech-comision></div>
+        <div class={panelClass7} ><c-tech-proyectos></c-tech-proyectos></div>
+        <div class={panelClass8} ><c-tech-contratistas></c-tech-contratistas></div>
+        <div class={panelClass9} ><c-tech-beneficiarios></c-tech-beneficiarios></div>
+        <div class={panelClass10}><c-tech-afianzados></c-tech-afianzados></div>
+
     </div>
 </template>

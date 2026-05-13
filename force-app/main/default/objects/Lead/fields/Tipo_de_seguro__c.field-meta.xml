@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_de_seguro__c</fullName>
+    <label>Tipo de seguro</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Seguros de auto</fullName>
+                <default>false</default>
+                <label>Seguros de auto</label>
+            </value>
+            <value>
+                <fullName>Vida</fullName>
+                <default>false</default>
+                <label>Vida</label>
+            </value>
+            <value>
+                <fullName>Daños</fullName>
+                <default>false</default>
+                <label>Daños</label>
+            </value>
+            <value>
+                <fullName>Gastos Médicos</fullName>
+                <default>false</default>
+                <label>Gastos Médicos</label>
+            </value>
+            <value>
+                <fullName>Fianzas</fullName>
+                <default>false</default>
+                <label>Fianzas</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

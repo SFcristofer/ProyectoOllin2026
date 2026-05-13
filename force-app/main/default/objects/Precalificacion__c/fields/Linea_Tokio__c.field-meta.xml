@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Linea_Tokio__c</fullName>
+    <formula>IF(AND(Tokio_Liquidez_Eval__c=&quot;POSITIVO&quot;, Tokio_Apalancamiento_Eval__c=&quot;POSITIVO&quot;, Tokio_AF_Ventas_Eval__c=&quot;POSITIVO&quot;, Tokio_CapTrabajo_Eval__c=&quot;POSITIVO&quot;), Capital_Contable__c * 0.4, 0)</formula>
+    <label>Línea TOKIO MARINE (Monto)</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+</CustomField>

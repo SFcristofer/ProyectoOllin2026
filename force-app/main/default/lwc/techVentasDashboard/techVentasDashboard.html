@@ -1,0 +1,286 @@
+<template>
+<div class="vdb-root">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <div class="vdb-header">
+        <div class="vdb-header-left">
+            <span class="vdb-header-icon">
+                <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 10L10 2L18 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 8V17H16V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8 17V12H12V17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            <div>
+                <div class="vdb-header-title">Embudo de Ventas</div>
+                <div class="vdb-header-sub">Año en curso · {currentYear} · Datos en tiempo real</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ FILTER BAR ══════════ -->
+    <div class="vdb-filter-bar">
+
+        <!-- Período -->
+        <div class="vdb-filter-group">
+            <span class="vdb-filter-label">Período</span>
+            <div class="vdb-chips">
+                <button class={chipYearCls}  data-period="year"  onclick={handlePeriodFilter}>Este año</button>
+                <button class={chipQ1Cls}    data-period="q1"    onclick={handlePeriodFilter}>Q1</button>
+                <button class={chipQ2Cls}    data-period="q2"    onclick={handlePeriodFilter}>Q2</button>
+                <button class={chipQ3Cls}    data-period="q3"    onclick={handlePeriodFilter}>Q3</button>
+                <button class={chipQ4Cls}    data-period="q4"    onclick={handlePeriodFilter}>Q4</button>
+                <button class={chipMonthCls} data-period="month" onclick={handlePeriodFilter}>Este mes</button>
+            </div>
+        </div>
+
+        <!-- Ejecutivo -->
+        <div class="vdb-filter-group">
+            <span class="vdb-filter-label">Ejecutivo</span>
+            <select class="vdb-select" onchange={handleEjecutivoChange}>
+                <template for:each={ejecutivoOptions} for:item="opt">
+                    <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                </template>
+            </select>
+        </div>
+
+        <!-- Origen -->
+        <div class="vdb-filter-group">
+            <span class="vdb-filter-label">Origen</span>
+            <select class="vdb-select" onchange={handleOrigenChange}>
+                <template for:each={origenOptions} for:item="opt">
+                    <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                </template>
+            </select>
+        </div>
+
+        <!-- Limpiar filtros -->
+        <template if:true={hasActiveFilters}>
+            <button class="vdb-clear-btn" onclick={handleClearFilters}>✕ Limpiar</button>
+        </template>
+
+    </div>
+
+    <!-- ══════════ KPI GRID (3×3) ══════════ -->
+    <div class="vdb-kpi-grid">
+        <template for:each={kpiCards} for:item="card">
+            <div key={card.id} class={card.cls}>
+                <div class="vdb-kpi-top">
+                    <span class="vdb-kpi-label">{card.label}</span>
+                    <template if:true={card.isGlobal}>
+                        <span class="vdb-kpi-global">Sin filtro</span>
+                    </template>
+                    <template if:false={card.isGlobal}>
+                        <span class={card.trendCls}>{card.trendVal}</span>
+                    </template>
+                </div>
+                <div class="vdb-kpi-value">{card.value}</div>
+                <div class="vdb-kpi-sub">{card.sub}</div>
+                <svg class="vdb-spark" viewBox="0 0 80 28" preserveAspectRatio="none">
+                    <polyline class="vdb-spark-line" points={card.sparkPath}></polyline>
+                </svg>
+            </div>
+        </template>
+    </div>
+
+    <!-- ══════════ BODY ══════════ -->
+    <div class="vdb-body">
+
+        <!-- ── LEFT: Funnel + Charts ── -->
+        <div class="vdb-main-col">
+
+            <!-- FUNNEL CARD -->
+            <div class="vdb-card">
+                <div class="vdb-card-hd">
+                    <div class="vdb-card-hd-left">
+                        <span class="vdb-card-title">Funnel de Ventas</span>
+                        <span class="vdb-badge">6 etapas</span>
+                    </div>
+                    <span class="vdb-card-hint">↓ Click en una etapa para ver sus oportunidades</span>
+                </div>
+
+                <div class="vdb-fs-cols">
+                    <span class="vdb-fs-col-lbl">Etapa</span>
+                    <span class="vdb-fs-col-lbl">Distribución</span>
+                    <span class="vdb-fs-col-lbl vdb-ta-r">Registros</span>
+                    <span class="vdb-fs-col-lbl vdb-ta-r">Monto</span>
+                    <span class="vdb-fs-col-lbl vdb-ta-r">Conv.</span>
+                    <span class="vdb-fs-col-lbl vdb-ta-r">Tiempo</span>
+                </div>
+
+                <template for:each={funnelStages} for:item="stage">
+                    <div key={stage.id} class={stage.cls} data-id={stage.id} onclick={handleStageClick}>
+                        <div class="vdb-fs-label-wrap">
+                            <span class="vdb-fs-dot" style={stage.dotStyle}></span>
+                            <div>
+                                <span class="vdb-fs-label">{stage.label}</span>
+                                <span class="vdb-fs-desc">{stage.desc}</span>
+                            </div>
+                        </div>
+                        <div class="vdb-fs-bar-bg">
+                            <div class="vdb-fs-bar" style={stage.barStyle}></div>
+                        </div>
+                        <span class="vdb-fs-count">{stage.count}</span>
+                        <span class="vdb-fs-monto">{stage.monto}</span>
+                        <span class={stage.convCls}>{stage.conv}%</span>
+                        <span class="vdb-fs-time">{stage.time}</span>
+                    </div>
+                </template>
+
+                <!-- DETALLE DE ETAPA SELECCIONADA -->
+                <template if:true={hasSelectedStage}>
+                    <div class="vdb-stage-detail">
+                        <div class="vdb-sd-header">
+                            <span class="vdb-sd-dot" style={selectedStageDotStyle}></span>
+                            <span class="vdb-sd-title">{selectedStageLabel}</span>
+                            <span class="vdb-sd-count">{selectedStageOpps.length} oportunidades</span>
+                            <button class="vdb-sd-close" onclick={handleCloseDetail}>✕</button>
+                        </div>
+
+                        <!-- Lista vacía -->
+                        <template if:true={noStageOpps}>
+                            <div class="vdb-sd-empty">Sin oportunidades registradas en esta etapa</div>
+                        </template>
+
+                        <!-- Tabla de opps -->
+                        <template if:false={noStageOpps}>
+                            <div class="vdb-sd-table-wrap">
+                                <div class="vdb-sd-thead">
+                                    <span>Oportunidad</span>
+                                    <span>Cliente</span>
+                                    <span>Ejecutivo</span>
+                                    <span class="vdb-ta-r">Monto</span>
+                                    <span class="vdb-ta-r">Cierre est.</span>
+                                </div>
+                                <template for:each={selectedStageOpps} for:item="opp">
+                                    <div key={opp.id} class="vdb-sd-row">
+                                        <span class="vdb-sd-name">{opp.name}</span>
+                                        <span class="vdb-sd-client">{opp.displayClient}</span>
+                                        <span class="vdb-sd-vendor">{opp.vendedor}</span>
+                                        <span class="vdb-sd-monto vdb-ta-r">{opp.amountFmt}</span>
+                                        <span class="vdb-sd-date vdb-ta-r">{opp.closeDate}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- CHARTS ROW -->
+            <div class="vdb-charts-row">
+
+                <!-- Tendencia mensual -->
+                <div class="vdb-card">
+                    <div class="vdb-card-hd">
+                        <span class="vdb-card-title">Tendencia mensual</span>
+                        <span class="vdb-card-meta">Cierres · {currentYear}</span>
+                    </div>
+                    <div class="vdb-bar-chart">
+                        <template for:each={monthlyTrend} for:item="m">
+                            <div key={m.id} class="vdb-bar-col">
+                                <span class="vdb-bar-val">{m.value}</span>
+                                <div class="vdb-bar-track">
+                                    <div class="vdb-bar-fill" style={m.barStyle}></div>
+                                </div>
+                                <span class="vdb-bar-lbl">{m.label}</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Lead Sources -->
+                <div class="vdb-card">
+                    <div class="vdb-card-hd">
+                        <span class="vdb-card-title">Origen de leads</span>
+                    </div>
+                    <div class="vdb-sources-list">
+                        <template for:each={leadSources} for:item="src">
+                            <div key={src.id} class="vdb-src-row">
+                                <span class="vdb-src-label">{src.label}</span>
+                                <div class="vdb-src-track">
+                                    <div class="vdb-src-fill" style={src.style}></div>
+                                </div>
+                                <span class="vdb-src-count">{src.count}</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── RIGHT: Alerts · Ejecutivos · Activity ── -->
+        <div class="vdb-sidebar-col">
+
+            <!-- ALERTS -->
+            <div class="vdb-card">
+                <div class="vdb-card-hd">
+                    <span class="vdb-card-title">⚡ Alertas activas</span>
+                    <span class="vdb-badge vdb-badge-danger">4</span>
+                </div>
+                <div class="vdb-alerts-list">
+                    <template for:each={alerts} for:item="alert">
+                        <div key={alert.id} class={alert.cls}>
+                            <span class={alert.dot}></span>
+                            <div class="vdb-alert-body">
+                                <span class="vdb-alert-label">{alert.label}</span>
+                                <span class="vdb-alert-detail">{alert.detail}</span>
+                            </div>
+                            <span class="vdb-alert-count">{alert.count}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- TOP EJECUTIVOS -->
+            <div class="vdb-card">
+                <div class="vdb-card-hd">
+                    <span class="vdb-card-title">Top ejecutivos</span>
+                    <span class="vdb-card-meta">Por cierres</span>
+                </div>
+                <div class="vdb-exec-list">
+                    <template for:each={topEjecutivos} for:item="exec">
+                        <div key={exec.id} class="vdb-exec-row">
+                            <div class="vdb-exec-rank">#{exec.id}</div>
+                            <div class="vdb-exec-avatar" style={exec.avatarStyle}>{exec.initials}</div>
+                            <div class="vdb-exec-info">
+                                <div class="vdb-exec-name">{exec.name}</div>
+                                <div class="vdb-exec-bar-bg">
+                                    <div class="vdb-exec-bar" style={exec.barStyle}></div>
+                                </div>
+                            </div>
+                            <div class="vdb-exec-stats">
+                                <span class="vdb-exec-deals">{exec.deals}</span>
+                                <span class="vdb-exec-monto">{exec.monto}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ACTIVIDAD -->
+            <div class="vdb-card">
+                <div class="vdb-card-hd">
+                    <span class="vdb-card-title">Actividad reciente</span>
+                </div>
+                <div class="vdb-act-list">
+                    <template for:each={actividad} for:item="act">
+                        <div key={act.id} class="vdb-act-row">
+                            <span class={act.dot}></span>
+                            <div class="vdb-act-body">
+                                <span class="vdb-act-tipo">{act.tipo}</span>
+                                <span class="vdb-act-nombre">{act.nombre}</span>
+                            </div>
+                            <span class="vdb-act-time">{act.tiempo}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</template>

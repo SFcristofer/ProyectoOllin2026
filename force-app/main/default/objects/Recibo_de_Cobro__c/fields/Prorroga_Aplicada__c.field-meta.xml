@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Prorroga_Aplicada__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Marca si se otorgó prórroga al cliente para este recibo. Cuando es TRUE, Camila suspende la cadencia de cobranza hasta nueva fecha.</description>
+    <label>Prórroga Aplicada</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

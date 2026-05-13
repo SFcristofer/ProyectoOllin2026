@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>StageName__c</fullName>
+    <label>Etapa</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Oportunidad creada</fullName>
+                <default>false</default>
+                <label>Oportunidad creada</label>
+            </value>
+            <value>
+                <fullName>Análisis/Levantamiento de información</fullName>
+                <default>false</default>
+                <label>Análisis/Levantamiento de información</label>
+            </value>
+            <value>
+                <fullName>Cotización iniciada</fullName>
+                <default>false</default>
+                <label>Cotización iniciada</label>
+            </value>
+            <value>
+                <fullName>Propuesta enviada / presentada</fullName>
+                <default>false</default>
+                <label>Propuesta enviada / presentada</label>
+            </value>
+            <value>
+                <fullName>Seguimiento</fullName>
+                <default>false</default>
+                <label>Seguimiento</label>
+            </value>
+            <value>
+                <fullName>Cierre ganado</fullName>
+                <default>false</default>
+                <label>Cierre ganado</label>
+            </value>
+            <value>
+                <fullName>Cierre perdido</fullName>
+                <default>false</default>
+                <label>Cierre perdido</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

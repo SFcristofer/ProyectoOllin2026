@@ -1,0 +1,394 @@
+/* ── Root ── */
+:host { display: flex; flex: 1; width: 100%; overflow: hidden; }
+
+.vin-container { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
+
+/* ── Loading ── */
+.vin-loading {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; background: rgba(255,255,255,.7); z-index: 10;
+}
+
+/* ── Toolbar ── */
+.vin-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0; background: #fff; gap: 12px;
+}
+.vin-toolbar-left  { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.vin-toolbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.vin-title { font-size: 13px; font-weight: 700; color: #2a2a2a; white-space: nowrap; }
+
+.vin-search {
+    height: 30px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 12px; color: #374151; outline: none; width: 220px;
+}
+.vin-search:focus { border-color: #6366f1; }
+
+.vin-btn-filters {
+    display: flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 12px; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 6px; color: #374151;
+    font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    --lwc-colorTextIconDefault: #6b7280;
+}
+.vin-btn-filters:hover { border-color: #6b7280; }
+.vin-btn-filters-active { border-color: #6366f1; color: #6366f1; background: #f5f3ff; --lwc-colorTextIconDefault: #6366f1; }
+.vin-btn-filters-open   { border-color: #2a2a2a; background: #f3f4f6; }
+
+.vin-btn-new {
+    display: flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 14px; background: #6366f1;
+    border: none; border-radius: 6px; color: #fff;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    --lwc-colorTextIconDefault: #fff;
+}
+.vin-btn-new:hover { background: #4f46e5; }
+
+/* ── Filter panel ── */
+.vin-filter-panel {
+    padding: 10px 16px; border-bottom: 1px solid #e0e0e0;
+    background: #f9fafb; flex-shrink: 0;
+}
+.vin-filter-panel-hdr {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.vin-filter-panel-title { font-size: 12px; font-weight: 600; color: #374151; }
+.vin-filter-panel-actions { display: flex; gap: 6px; }
+.vin-flt-btn-add {
+    font-size: 11px; font-weight: 600; color: #6366f1; background: #f5f3ff;
+    border: 1px solid #c4b5fd; border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.vin-flt-btn-add:hover { background: #ede9fe; }
+.vin-flt-btn-clear {
+    font-size: 11px; color: #6b7280; background: #fff; border: 1px solid #d1d5db;
+    border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.vin-flt-btn-clear:hover { background: #f3f4f6; }
+.vin-filter-rules { display: flex; flex-direction: column; gap: 6px; }
+.vin-filter-rule  { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vin-flt-campo, .vin-flt-op {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; background: #fff; color: #374151; cursor: pointer;
+}
+.vin-flt-campo { min-width: 110px; }
+.vin-flt-op    { min-width: 130px; }
+.vin-flt-value {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; color: #374151; min-width: 140px; background: #fff;
+}
+.vin-flt-remove {
+    width: 24px; height: 24px; border: none; background: transparent;
+    color: #9ca3af; font-size: 16px; cursor: pointer; border-radius: 4px; flex-shrink: 0;
+}
+.vin-flt-remove:hover { background: #fee2e2; color: #dc2626; }
+.vin-filter-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 4px 0; }
+
+/* ── Grid ── */
+.vin-grid-wrap { overflow-x: auto; overflow-y: auto; flex: 1; width: 100%; }
+
+.vin-grid-row {
+    display: grid;
+    /* #   Nombre          Tipo    Estatus  Ej.Principal    Ejecs */
+    grid-template-columns: 36px minmax(200px,2fr) 120px 100px minmax(160px,1.5fr) 70px;
+    border-bottom: 1px solid #e5e7eb;
+    min-width: 790px;
+    width: 100%;
+}
+.vin-grid-header {
+    background: #f3f4f6; border-bottom: 2px solid #d1d5db;
+    position: sticky; top: 0; z-index: 2;
+}
+.vin-grid-header .vin-grid-cell {
+    font-size: 10px; font-weight: 600; color: #4b5563;
+    text-transform: uppercase; letter-spacing: .04em;
+}
+.vin-grid-hdr { display: flex; align-items: center; gap: 4px; }
+.vin-hdr-sort { cursor: pointer; -webkit-user-select: none; user-select: none; }
+.vin-hdr-sort:hover { color: #6366f1; background: #f5f3ff; }
+.vin-sorted { color: #6366f1; }
+.vin-sort-icon { font-size: 10px; color: #9ca3af; flex-shrink: 0; }
+.vin-sorted .vin-sort-icon { color: #6366f1; }
+
+.vin-grid-data { cursor: pointer; }
+.vin-grid-data:hover { background: #f5f3ff; }
+
+.vin-grid-cell {
+    padding: 8px 10px; font-size: 12px; color: #2a2a2a;
+    border-right: 1px solid #e5e7eb;
+    overflow: hidden; white-space: nowrap;
+    display: flex; align-items: center; min-width: 0;
+}
+.vin-grid-cell:last-child { border-right: none; }
+
+.vin-cell-num    { justify-content: center; color: #9ca3af; font-size: 11px; background: #fafbfc; flex-shrink: 0; }
+.vin-cell-name   { font-weight: 600; color: #6366f1; }
+.vin-cell-exec   { font-size: 11px; color: #374151; }
+.vin-cell-center { justify-content: center; }
+
+/* ── Empty / Error ── */
+.vin-empty, .vin-error {
+    display: flex; align-items: center; justify-content: center;
+    flex: 1; padding: 40px; color: #6b7280; font-size: 13px;
+}
+.vin-error { color: #dc2626; }
+
+/* ── Chips ── */
+.vin-chip {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 500; white-space: nowrap; flex-shrink: 0;
+}
+.vin-chip-blue   { background: #dbeafe; color: #1a56db; }
+.vin-chip-purple { background: #ede9fe; color: #6d28d9; }
+.vin-chip-gray   { background: #f3f4f6; color: #6b7280; }
+
+/* ── Badges ── */
+.vin-badge {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+.vin-badge-green  { background: #d1fae5; color: #065f46; }
+.vin-badge-gray   { background: #f3f4f6; color: #374151; }
+.vin-badge-orange { background: #fef3c7; color: #92400e; }
+.vin-badge-blue   { background: #dbeafe; color: #1e40af; }
+.vin-badge-amber  { background: #fef3c7; color: #b45309; }
+.vin-badge-purple { background: #ede9fe; color: #6d28d9; }
+
+/* ── Add row ── */
+.vin-addrow { cursor: pointer; }
+.vin-addrow:hover .vin-addrow-label { background: #f5f3ff; color: #6366f1; }
+.vin-addrow-cell { padding: 7px 12px; border: 1px solid #e5e7eb; }
+.vin-addrow-label {
+    display: inline-block; font-size: 12px; color: #9ca3af;
+    padding: 3px 8px; border-radius: 4px; transition: background .12s, color .12s;
+}
+
+/* ── Detail panel ── */
+.vin-overlay { position: fixed; inset: 0; z-index: 8000; }
+
+.vin-detail-panel {
+    position: fixed; top: 0; right: 0; width: 560px; max-width: 95vw; height: 100vh;
+    background: #fff; box-shadow: -4px 0 28px rgba(0,0,0,.14); z-index: 8001;
+    display: flex; flex-direction: column; animation: vin-slide-in .2s ease-out;
+}
+@keyframes vin-slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.vin-detail-header {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 20px;
+    border-bottom: 1px solid #4f46e5; gap: 10px; flex-shrink: 0; background: #1e293b;
+}
+.vin-detail-header-main {
+    display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+}
+.vin-detail-title {
+    font-size: 15px; font-weight: 700; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vin-detail-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.vin-detail-edit-btn {
+    display: flex; align-items: center; gap: 4px;
+    height: 26px; padding: 0 10px; background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3); border-radius: 5px; color: #fff;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.vin-detail-edit-btn:hover { background: rgba(255,255,255,.28); }
+
+.vin-detail-close {
+    display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    background: rgba(255,255,255,.15); border: none; border-radius: 6px; cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.vin-detail-close:hover { background: rgba(255,255,255,.28); }
+
+.vin-detail-body { flex: 1; overflow-y: auto; padding: 16px; }
+.vin-detail-fields { display: flex; flex-direction: column; }
+
+.vin-detail-row {
+    display: grid; grid-template-columns: 100px 1fr; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid #f3f3f3; align-items: center;
+}
+.vin-detail-label { font-size: 11px; color: #9ca3af; font-weight: 500; }
+
+/* ── Panel sections ── */
+.vin-panel-section { margin-top: 20px; }
+
+.vin-panel-section-title {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase;
+    letter-spacing: .05em; margin-bottom: 8px;
+    border-left: 3px solid #6366f1; padding-left: 7px;
+}
+.vin-section-count { color: #9ca3af; font-weight: 400; }
+
+.vin-linked-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.vin-linked-th {
+    text-align: left; padding: 5px 8px; font-size: 9px; font-weight: 600;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    border-bottom: 1.5px solid #e5e7eb; background: #fafafa;
+}
+.vin-th-center { text-align: center; }
+.vin-linked-row { transition: background .1s; }
+.vin-linked-row:hover { background: #f5f3ff; }
+.vin-linked-cell { padding: 7px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.vin-linked-empty { text-align: center; padding: 12px; color: #9ca3af; font-style: italic; }
+.vin-td-center { text-align: center; vertical-align: middle; }
+
+.vin-acc-url     { color: #2563eb; font-size: 11px; word-break: break-all; white-space: normal; }
+
+/* ── Record view sections ── */
+.vin-rec-section { padding: 20px 0; border-bottom: 1px solid #f1f5f9; }
+.vin-rec-section:last-child { border-bottom: none; }
+
+.vin-rec-section-title {
+    font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 14px;
+    padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;
+}
+.vin-rec-section-hdr2 {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;
+}
+.vin-rec-section-title2 { font-size: 13px; font-weight: 700; color: #475569; }
+
+/* ── Field grid (datos generales) ── */
+.vin-field-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+}
+.vin-field-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.vin-field-label {
+    font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .3px;
+}
+.vin-field-val   { font-size: 13px; color: #1e293b; font-weight: 500; }
+.vin-field-link  { font-size: 13px; color: #2563eb; text-decoration: underline; }
+.vin-field-empty { font-size: 13px; color: #94a3b8; }
+
+/* ── Ejecutivo cards ── */
+.vin-exec-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+}
+.vin-exec-card-hdr {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.vin-avatar {
+    width: 40px; height: 40px; border-radius: 50%; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; flex-shrink: 0;
+}
+.vin-exec-card-name { font-size: 14px; font-weight: 700; color: #1e293b; }
+.vin-exec-card-role { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+.vin-exec-card-fields {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+}
+.vin-exec-mini-field  { display: flex; flex-direction: column; gap: 2px; }
+.vin-exec-mini-label  { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+.vin-exec-mini-val    { font-size: 12px; color: #1e293b; font-weight: 500; }
+.vin-exec-mini-email  { font-size: 12px; color: #2563eb; font-weight: 500; }
+.vin-exec-principal-si { font-size: 12px; color: #10b981; font-weight: 700; }
+
+/* ── Add buttons ── */
+.vin-btn-add-exec {
+    font-size: 12px; font-weight: 700; color: #fff; background: #6366f1;
+    border: none; border-radius: 6px; padding: 5px 14px; cursor: pointer; white-space: nowrap;
+}
+.vin-btn-add-exec:hover { background: #4f46e5; }
+
+.vin-btn-add-access {
+    font-size: 12px; font-weight: 700; color: #6366f1; background: #fff;
+    border: 2px solid #6366f1; border-radius: 6px; padding: 4px 12px; cursor: pointer; white-space: nowrap;
+}
+.vin-btn-add-access:hover { background: #f5f3ff; }
+
+/* ── Card action buttons (edit / delete) ── */
+.vin-exec-card-hdr { position: relative; }
+.vin-card-actions  { margin-left: auto; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+.vin-card-btn-edit,
+.vin-card-btn-del {
+    background: none; border: none; cursor: pointer; font-size: 14px;
+    padding: 2px 4px; border-radius: 4px; line-height: 1;
+    opacity: .5; transition: opacity .15s, background .15s;
+}
+.vin-card-btn-edit:hover { opacity: 1; background: #ede9fe; }
+.vin-card-btn-del:hover  { opacity: 1; background: #fee2e2; }
+
+.vin-confirm-label { font-size: 11px; color: #dc2626; font-weight: 600; }
+.vin-confirm-si {
+    font-size: 11px; font-weight: 700; color: #fff; background: #dc2626;
+    border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer;
+}
+.vin-confirm-no {
+    font-size: 11px; font-weight: 600; color: #374151; background: #f1f5f9;
+    border: 1px solid #d1d5db; border-radius: 4px; padding: 2px 7px; cursor: pointer;
+}
+
+/* ── Access cards ── */
+.vin-access-card {
+    background: #fef7ff; border: 1px solid #e9d5ff; border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+}
+.vin-access-card-title-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+}
+.vin-access-card-title {
+    font-size: 13px; font-weight: 700; color: #7c3aed;
+    display: flex; align-items: center; gap: 6px;
+}
+.vin-access-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 7px 0; border-bottom: 1px solid #f3e8ff; font-size: 12px;
+}
+.vin-access-row:last-child { border-bottom: none; }
+.vin-access-label { color: #6b7280; font-weight: 600; min-width: 90px; flex-shrink: 0; }
+.vin-access-val   { color: #1e293b; font-weight: 500; }
+.vin-access-link  { color: #7c3aed; text-decoration: underline; word-break: break-all; }
+.vin-access-masked { letter-spacing: 3px; color: #9ca3af; font-weight: 500; }
+.vin-access-show-btn {
+    font-size: 11px; color: #7c3aed; background: transparent;
+    border: none; cursor: pointer; text-decoration: underline; padding: 0; flex-shrink: 0;
+}
+.vin-access-show-btn:hover { color: #5b21b6; }
+.vin-access-notes { color: #6b7280; font-size: 11px; line-height: 1.5; }
+
+/* ── Warning note ── */
+.vin-warn-note {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+    padding: 12px 14px; font-size: 11px; color: #991b1b; line-height: 1.6;
+    margin-top: 16px;
+}
+.vin-warn-note strong { color: #7f1d1d; }
+
+/* ── Empty related ── */
+.vin-empty-rel {
+    text-align: center; padding: 14px; color: #94a3b8; font-size: 12px; font-style: italic;
+}
+
+/* Legacy (kept for edit mode) */
+.vin-exec-name   { font-weight: 600; color: #6366f1; white-space: nowrap; }
+.vin-exec-puesto { font-weight: 500; color: #1e293b; font-size: 12px; }
+.vin-exec-area   { color: #6b7280; font-size: 10px; margin-top: 2px; }
+.vin-exec-email  { color: #2563eb; font-size: 11px; }
+.vin-exec-tel    { color: #374151; font-size: 11px; margin-top: 2px; }
+
+/* ── Edit actions ── */
+.vin-panel-edit-actions {
+    display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+.vin-panel-btn-cancel {
+    padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px;
+    background: #fff; font-size: 12px; font-weight: 600; color: #374151; cursor: pointer;
+}
+.vin-panel-btn-save {
+    padding: 6px 14px; border: none; border-radius: 6px;
+    background: #6366f1; font-size: 12px; font-weight: 600; color: #fff; cursor: pointer;
+}
+.vin-panel-btn-save:hover { background: #4f46e5; }

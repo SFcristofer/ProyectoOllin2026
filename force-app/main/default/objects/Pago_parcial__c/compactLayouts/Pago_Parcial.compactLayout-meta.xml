@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Pago_Parcial</fullName>
+    <fields>Name</fields>
+    <fields>Estado__c</fields>
+    <fields>Clave__c</fields>
+    <fields>Monto_programado__c</fields>
+    <fields>Monto_pagado__c</fields>
+    <fields>Numero_de_pago__c</fields>
+    <fields>Tipo_de_pago__c</fields>
+    <fields>Fecha_de_pago__c</fields>
+    <fields>Referencia_de_pago__c</fields>
+    <label>Pago Parcial</label>
+</CompactLayout>

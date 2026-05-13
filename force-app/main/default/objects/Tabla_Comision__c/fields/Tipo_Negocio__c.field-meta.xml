@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_Negocio__c</fullName>
+    <label>Tipo de Negocio</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Todos</fullName>
+                <default>true</default>
+                <label>Todos</label>
+            </value>
+            <value>
+                <fullName>Nuevo</fullName>
+                <default>false</default>
+                <label>Nuevo</label>
+            </value>
+            <value>
+                <fullName>2a Renovacion</fullName>
+                <default>false</default>
+                <label>2a Renovacion</label>
+            </value>
+            <value>
+                <fullName>3a Renovacion</fullName>
+                <default>false</default>
+                <label>3a Renovacion</label>
+            </value>
+            <value>
+                <fullName>4a Renovacion Plus</fullName>
+                <default>false</default>
+                <label>4a Renovacion Plus</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

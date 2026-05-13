@@ -1,0 +1,65 @@
+<template>
+    <template if:true={showModal}>
+        <section class="ecm-backdrop" onclick={handleBackdropClick}>
+            <div class="ecm-modal" onclick={handleModalClick}>
+
+                <div class="ecm-header">
+                    <div>
+                        <div class="ecm-title">Nuevo Ejecutivo de Contacto</div>
+                        <div class="ecm-subtitle">{institucionName}</div>
+                    </div>
+                    <button class="ecm-close" onclick={handleClose} title="Cerrar">
+                        <lightning-icon icon-name="utility:close" size="small"
+                                       alternative-text="Cerrar"></lightning-icon>
+                    </button>
+                </div>
+
+                <lightning-record-edit-form object-api-name="EjecutivoContacto__c"
+                                           onsuccess={handleSuccess}
+                                           onerror={handleError}>
+                    <div class="ecm-body">
+                        <lightning-messages></lightning-messages>
+                        <div class="ecm-grid">
+                            <!-- Columna izquierda -->
+                            <div class="ecm-col">
+                                <lightning-input-field field-name="Institucion__c"
+                                                       value={institucionId}
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Name"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Area__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Principal__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                            </div>
+                            <!-- Columna derecha -->
+                            <div class="ecm-col">
+                                <lightning-input-field field-name="Puesto__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Email__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Celular__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                                <lightning-input-field field-name="Telefono__c"
+                                                       class="ecm-field">
+                                </lightning-input-field>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ecm-footer">
+                        <button class="ecm-btn-cancel" type="button" onclick={handleClose}>Cancelar</button>
+                        <button class="ecm-btn-save" type="submit">Crear ejecutivo</button>
+                    </div>
+                </lightning-record-edit-form>
+
+            </div>
+        </section>
+    </template>
+</template>

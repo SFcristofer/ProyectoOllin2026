@@ -1,62 +1,306 @@
 <template>
-    <div class="airtable-container slds-bg-color_neutral-1">
-        <!-- Barra de Herramientas -->
-        <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
-            <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
-                <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
-                    <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                </lightning-button-menu>
-                <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-            </div>
-            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar Ampliaciones..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
-                <lightning-button label="Nueva Ampliación" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
+    <div class="at-container">
+        <template if:true={isLoading}>
+            <div class="at-loading-overlay"><lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner></div>
+        </template>
+
+        <div class="at-views-bar">
+            <div class="at-views-list">
+                <button class={gridTabClass} data-view="grid" onclick={handleViewChange}><lightning-icon icon-name="utility:table" size="xx-small" class="at-tab-icon" alternative-text="Grid"></lightning-icon>Grid</button>
+                <button class={galleryTabClass} data-view="gallery" onclick={handleViewChange}><lightning-icon icon-name="utility:image" size="xx-small" class="at-tab-icon" alternative-text="Gallery"></lightning-icon>Gallery</button>
+                <button class={kanbanTabClass} data-view="kanban" onclick={handleViewChange}><lightning-icon icon-name="utility:kanban" size="xx-small" class="at-tab-icon" alternative-text="Kanban"></lightning-icon>Kanban</button>
+                <button class="at-add-view-btn">+ Agregar vista</button>
             </div>
         </div>
 
-        <div class="airtable-grid-container slds-p-around_medium">
-            <template if:true={isLoading}>
-                <div class="slds-p-around_large slds-text-align_center">
-                    <lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner>
-                </div>
-            </template>
+        <div class="at-toolbar">
+            <div class="at-toolbar-right">
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="at-search" onchange={handleSearch}></lightning-input>
+                <lightning-button label="Nuevo Endoso" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
+            </div>
+        </div>
 
-            <template if:true={filteredData}>
-                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+        <!-- GRID VIEW -->
+        <template if:true={isGridView}>
+            <div class="at-grid-wrapper">
+                <table class="at-table">
                     <thead>
-                        <tr class="slds-line-height_reset">
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Folio Endoso</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:contract" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza(s) Relacionada(s)</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:money" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Monto</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
+                        <tr>
+                            <th class="at-th at-th-rownum"></th>
+                            <th class="at-th at-th-sticky at-th-sortable" data-field="name" onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name="utility:text" size="xx-small" alternative-text="Nombre"></lightning-icon></span>Nombre{nameSortArrow}</th>
+                            <template for:each={visibleColumnsWithSort} for:item="col">
+                                <th key={col.field} class={col.thClass} style={col.minWidthStyle} data-field={col.field} onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name={col.icon} size="xx-small" alternative-text={col.label}></lightning-icon></span>{col.label}{col.sortArrow}</th>
+                            </template>
+                            <th class="at-th at-th-addfield" onclick={handleToggleColumnPicker}>
+                                <template if:false={showColumnPicker}><span class="at-add-field-label">+ Campo</span></template>
+                                <template if:true={showColumnPicker}>
+                                    <div class="at-column-picker" onclick={stopPropagation}>
+                                        <div class="at-picker-header">Agregar campo</div>
+                                        <template if:false={hasAvailableColumns}><div class="at-picker-empty">No hay más campos</div></template>
+                                    </div>
+                                </template>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <template for:each={filteredData} for:item="item">
-                            <tr key={item.id}>
-                                <td class="airtable-cell">{item.name}</td>
-                                <td class="airtable-cell">
-                                    <template for:each={item.fianzas} for:item="f">
-                                        <span key={f} class="slds-badge slds-m-around_xx-small">{f}</span>
-                                    </template>
+                            <tr key={item.id} class="at-tr" data-id={item.id}>
+                                <td class="at-td at-td-rownum">
+                                    <span class="at-row-num">{item.rowNumber}</span>
+                                    <button class="at-expand-btn" data-id={item.id} onclick={handleExpandRow} title="Expandir"><lightning-icon icon-name="utility:expand_alt" size="xx-small" alternative-text="Expandir"></lightning-icon></button>
                                 </td>
-                                <td class="airtable-cell">
-                                    <lightning-formatted-number value={item.monto} format-style="currency" currency-code="MXN"></lightning-formatted-number>
+                                <td class="at-td at-td-sticky" data-id={item.id} data-field="name" onclick={handleCellClick}>
+                                    <template if:true={item.isEditingName}><input class="at-inline-input" type="text" value={item.name} data-id={item.id} data-field="name" onblur={handleCellBlur} onkeydown={handleCellKeydown}/></template>
+                                    <template if:false={item.isEditingName}><span class="at-cell-text">{item.name}</span></template>
                                 </td>
-                                <td class="airtable-cell"><span class={item.estatusClass}>{item.estatus}</span></td>
+                                <template for:each={visibleColumns} for:item="col">
+                                    <td key={col.field} class="at-td" data-id={item.id} data-field={col.field} onclick={handleCellClick}>
+                                        <template if:true={col.isFianzas}>
+                                            <div class="at-chips">
+                                                <template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-orange">{f}</span></template>
+                                            </div>
+                                        </template>
+                                        <template if:true={col.isTipo}><span class="at-cell-text">{item.tipo}</span></template>
+                                        <template if:true={col.isFecha}><span class="at-cell-text">{item.fecha}</span></template>
+                                        <template if:true={col.isEstatus}><span class={item.estatusClass}>{item.estatus}</span></template>
+                                    </td>
+                                </template>
+                                <td class="at-td at-td-filler"></td>
                             </tr>
                         </template>
+                        <tr class="at-tr-addrow" onclick={handleOpenCreateModal}><td colspan="99" class="at-td-addrow"><span class="at-addrow-label">+ Agregar registro</span></td></tr>
                     </tbody>
                 </table>
-            </template>
-        </div>
+            </div>
+        </template>
+
+        <!-- GALLERY VIEW -->
+        <template if:true={isGalleryView}>
+            <div class="at-gallery">
+                <template for:each={filteredData} for:item="item">
+                    <div key={item.id} class="at-gallery-card" data-id={item.id} onclick={handleExpandRow}>
+                        <div class="at-gallery-card-top"><span class={item.estatusClass}>{item.estatus}</span></div>
+                        <div class="at-gallery-title">{item.name}</div>
+                        <div class="at-gallery-field">
+                            <span class="at-gallery-label">Fianza(s)</span>
+                            <div class="at-chips"><template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-orange">{f}</span></template></div>
+                        </div>
+                    </div>
+                </template>
+                <div class="at-gallery-add" onclick={handleOpenCreateModal}><span class="at-gallery-add-icon">+</span><span>Nuevo registro</span></div>
+            </div>
+        </template>
+
+        <!-- KANBAN VIEW -->
+        <template if:true={isKanbanView}>
+            <div class="at-kanban">
+                <template for:each={kanbanColumns} for:item="col">
+                    <div key={col.status} class="at-kanban-col">
+                        <div class="at-kanban-col-header"><span class={col.badgeClass}>{col.status}</span><span class="at-kanban-count">{col.count}</span></div>
+                        <div class="at-kanban-cards">
+                            <template for:each={col.items} for:item="item">
+                                <div key={item.id} class="at-kanban-card" data-id={item.id} onclick={handleExpandRow}>
+                                    <div class="at-kanban-card-name">{item.name}</div>
+                                    <div class="at-chips at-chips-sm"><template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-orange">{f}</span></template></div>
+                                </div>
+                            </template>
+                            <button class="at-kanban-add-btn" onclick={handleOpenCreateModal}>+ Agregar</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={isCalendarView}>
+            <div class="at-calendar-placeholder">
+                <lightning-icon icon-name="utility:event" size="large" class="at-placeholder-icon" alternative-text="Calendario"></lightning-icon>
+                <p class="at-placeholder-title">Vista de Calendario</p>
+                <p class="at-placeholder-sub">Próximamente disponible</p>
+            </div>
+        </template>
     </div>
 
-    <!-- Modal de Creación Avanzada de Ampliaciones -->
-    <c-tech-ampliacion-create-modal 
-        show-modal={isCreateModalOpen}
-        onclose={handleCloseCreateModal}
-        onsuccess={handleCreateSuccess}>
-    </c-tech-ampliacion-create-modal>
+    <template if:true={isDetailPanelOpen}>
+        <div class="at-overlay" onclick={handleCloseDetailPanel}></div>
+        <div class="at-detail-panel">
+            <div class="at-detail-header">
+                <div class="at-detail-nav">
+                    <button class="at-detail-nav-btn" onclick={handlePrevRecord} disabled={isFirstRecord} title="Anterior" aria-label="Anterior">▲</button>
+                    <button class="at-detail-nav-btn" onclick={handleNextRecord} disabled={isLastRecord} title="Siguiente" aria-label="Siguiente">▼</button>
+                </div>
+                <div class="at-detail-header-info">
+                    <span class="at-detail-title">{selectedItem.name}</span>
+                    <span class="at-detail-subtitle">Registro</span>
+                </div>
+                <div class="at-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <lightning-button label="Editar" icon-name="utility:edit" size="small" variant="neutral" onclick={handleEditFromPanel}></lightning-button>
+                    </template>
+                    <template if:true={isEditingPanel}>
+                        <span class="at-panel-editing-badge">Editando...</span>
+                    </template>
+                    <button class="at-detail-close" onclick={handleCloseDetailPanel} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                </div>
+            </div>
+            <div class="at-detail-body">
+                <template if:true={selectedItem}>
+                    <!-- VIEW MODE -->
+                    <template if:false={isEditingPanel}>
+                        <lightning-record-view-form record-id={selectedItem.id} object-api-name="Tech_Endoso__c">
+                            <div class="at-detail-fields">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Folio</span>
+                                    <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Endoso</span>
+                                    <lightning-output-field field-name="Tipo_endoso__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Estado</span>
+                                    <lightning-output-field field-name="Estado__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Seguro</span>
+                                    <lightning-output-field field-name="Seguro__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha Efectiva</span>
+                                    <lightning-output-field field-name="Fecha_efectiva__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fin Vigencia</span>
+                                    <lightning-output-field field-name="Fin_Vigencia__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fin Contrato</span>
+                                    <lightning-output-field field-name="Fin_Contrato__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Diferencia Monto</span>
+                                    <lightning-output-field field-name="Diferencia_monto__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Nueva Prima</span>
+                                    <lightning-output-field field-name="Nueva_prima__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-check">✓</span>Afecta Prima</span>
+                                    <lightning-output-field field-name="Afecta_prima__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Motivo</span>
+                                    <lightning-output-field field-name="Motivo__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Observaciones</span>
+                                    <lightning-output-field field-name="Observaciones__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                            </div>
+                        </lightning-record-view-form>
+                    </template>
+
+                    <!-- EDIT MODE -->
+                    <template if:true={isEditingPanel}>
+                        <lightning-record-edit-form
+                            record-id={selectedItem.id}
+                            object-api-name="Tech_Endoso__c"
+                            onsuccess={handlePanelSaveSuccess}>
+                            <div class="at-detail-fields at-detail-fields-edit">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Endoso</span>
+                                    <lightning-input-field field-name="Tipo_endoso__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Estado</span>
+                                    <lightning-input-field field-name="Estado__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Fianza</span>
+                                    <lightning-input-field field-name="Fianza__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Seguro</span>
+                                    <lightning-input-field field-name="Seguro__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha Efectiva</span>
+                                    <lightning-input-field field-name="Fecha_efectiva__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fin Vigencia</span>
+                                    <lightning-input-field field-name="Fin_Vigencia__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fin Contrato</span>
+                                    <lightning-input-field field-name="Fin_Contrato__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Diferencia Monto</span>
+                                    <lightning-input-field field-name="Diferencia_monto__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Nueva Prima</span>
+                                    <lightning-input-field field-name="Nueva_prima__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-check">✓</span>Afecta Prima</span>
+                                    <lightning-input-field field-name="Afecta_prima__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Motivo</span>
+                                    <lightning-input-field field-name="Motivo__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Observaciones</span>
+                                    <lightning-input-field field-name="Observaciones__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="at-panel-edit-actions">
+                                <button class="at-panel-btn at-panel-btn-cancel" type="button" aria-label="Cancelar" onclick={handlePanelCancel}>Cancelar</button>
+                                <button class="at-panel-btn at-panel-btn-save" type="submit" aria-label="Guardar">Guardar cambios</button>
+                            </div>
+                        </lightning-record-edit-form>
+                    </template>
+                    <div class="at-detail-section">
+                        <div class="at-detail-section-title"><span class="at-ftype at-ftype-ref">≡</span>Fianza vinculada</div>
+                        <template if:true={selectedItem.fianzaId}>
+                            <div class="at-rel-card">
+                                <div class="at-rel-card-info">
+                                    <span class="at-chip at-chip-blue at-rel-card-name">{selectedItem.fianzaName}</span>
+                                    <span class="at-rel-card-sub">{selectedItem.fianzaEstatus} · {selectedItem.fianzaMontoFmt}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={selectedItem.fianzaId}>
+                            <p class="at-detail-empty">Sin fianza vinculada</p>
+                        </template>
+                        <template if:false={isAddingFianza}>
+                            <button class="at-linked-add" onclick={handleAddFianzaStart}>+ Vincular fianza</button>
+                        </template>
+                        <template if:true={isAddingFianza}>
+                            <div class="at-linked-search-wrap">
+                                <input class="at-linked-search-input" type="text" placeholder="Buscar fianza..." oninput={handleFianzaSearch}/>
+                                <button class="at-linked-cancel" onclick={handleCancelAddFianza}>✕</button>
+                            </div>
+                            <template if:true={hasFianzaResults}>
+                                <div class="at-linked-dropdown">
+                                    <template for:each={fianzaSearchResults} for:item="r">
+                                        <div key={r.id} class="at-linked-option" data-id={r.id} onclick={handleSelectFianza}>
+                                            <div class="at-rel-result-info">
+                                                <span class="at-rel-result-name">{r.name}</span>
+                                                <template if:true={r.sub}><span class="at-rel-result-sub">{r.sub}</span></template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <c-tech-ampliacion-create-modal show-modal={isCreateModalOpen} onclose={handleCloseCreateModal} onsuccess={handleCreateSuccess}></c-tech-ampliacion-create-modal>
 </template>

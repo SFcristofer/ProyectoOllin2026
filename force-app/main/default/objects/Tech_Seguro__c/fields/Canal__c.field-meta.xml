@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Canal__c</fullName>
+    <label>Canal</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Digital</fullName>
+                <default>false</default>
+                <label>Digital</label>
+            </value>
+            <value>
+                <fullName>Consultivo</fullName>
+                <default>false</default>
+                <label>Consultivo</label>
+            </value>
+            <value>
+                <fullName>Promotoría</fullName>
+                <default>false</default>
+                <label>Promotoría</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

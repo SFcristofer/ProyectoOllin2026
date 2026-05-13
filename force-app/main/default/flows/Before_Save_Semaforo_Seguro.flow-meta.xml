@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Set_Amarillo</name>
+        <label>Semáforo = Amarillo</label>
+        <locationX>440</locationX>
+        <locationY>504</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Semaforo_renovacion__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Amarillo</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Set_Rojo</name>
+        <label>Semáforo = Rojo</label>
+        <locationX>660</locationX>
+        <locationY>504</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Semaforo_renovacion__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Rojo</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Set_Verde</name>
+        <label>Semáforo = Verde</label>
+        <locationX>220</locationX>
+        <locationY>504</locationY>
+        <assignmentItems>
+            <assignToReference>$Record.Semaforo_renovacion__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Verde</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <decisions>
+        <name>Evaluar_Dias</name>
+        <label>Evaluar Días para Vencer</label>
+        <locationX>440</locationX>
+        <locationY>384</locationY>
+        <defaultConnector>
+            <targetReference>Set_Rojo</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>30 días o menos → Rojo</defaultConnectorLabel>
+        <rules>
+            <name>Mas_de_90_dias</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>frmDiasParaVencer</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <numberValue>90.0</numberValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Set_Verde</targetReference>
+            </connector>
+            <label>Más de 90 días → Verde</label>
+        </rules>
+        <rules>
+            <name>Entre_31_y_90_dias</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>frmDiasParaVencer</leftValueReference>
+                <operator>GreaterThan</operator>
+                <rightValue>
+                    <numberValue>30.0</numberValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>frmDiasParaVencer</leftValueReference>
+                <operator>LessThanOrEqualTo</operator>
+                <rightValue>
+                    <numberValue>90.0</numberValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Set_Amarillo</targetReference>
+            </connector>
+            <label>31–90 días → Amarillo</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Tiene_Fecha_Fin</name>
+        <label>¿Tiene Fin del seguro?</label>
+        <locationX>440</locationX>
+        <locationY>240</locationY>
+        <defaultConnectorLabel>Sin fecha, salir</defaultConnectorLabel>
+        <rules>
+            <name>Tiene_Fin</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Fin_del_seguro__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Evaluar_Dias</targetReference>
+            </connector>
+            <label>Sí, evaluar semáforo</label>
+        </rules>
+    </decisions>
+    <description>Pieza 2: Before Save en Tech_Seguro__c — calcula Semaforo_renovacion__c. Verde &gt;90 días, Amarillo 31-90, Rojo &lt;=30. Usa fórmula inline porque campos fórmula no están disponibles en Before Save.</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>frmDiasParaVencer</name>
+        <dataType>Number</dataType>
+        <expression>{!$Record.Fin_del_seguro__c} - TODAY()</expression>
+        <scale>0</scale>
+    </formulas>
+    <interviewLabel>Before Save Semaforo Seguro {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Before Save Semaforo Seguro</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <runInMode>SystemModeWithoutSharing</runInMode>
+    <start>
+        <locationX>316</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Tiene_Fecha_Fin</targetReference>
+        </connector>
+        <object>Tech_Seguro__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordBeforeSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>

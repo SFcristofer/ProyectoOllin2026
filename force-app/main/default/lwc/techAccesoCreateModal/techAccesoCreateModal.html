@@ -1,0 +1,89 @@
+<template>
+    <template if:true={showModal}>
+        <div class="acm-backdrop" onclick={handleBackdropClick}></div>
+        <div class="acm-modal">
+
+            <div class="acm-header">
+                <div>
+                    <div class="acm-header-title">Nuevo acceso al portal</div>
+                    <div class="acm-header-sub">{institucionName}</div>
+                </div>
+                <button class="acm-close" onclick={handleClose} title="Cerrar">×</button>
+            </div>
+
+            <lightning-record-edit-form
+                object-api-name="Acceso_al_portal__c"
+                onsuccess={handleSuccess}
+                onerror={handleError}>
+
+                <div class="acm-body">
+                    <div class="acm-grid">
+
+                        <!-- Columna izquierda -->
+                        <div class="acm-col">
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">Institución</span>
+                                <lightning-input-field field-name="Institucion__c"
+                                                       value={institucionId}
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">Nombre del acceso</span>
+                                <lightning-input-field field-name="Name"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">URL del portal</span>
+                                <lightning-input-field field-name="URL_del_portal__c"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">Tipo de portal</span>
+                                <lightning-input-field field-name="Tipo_de_portal__c"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha -->
+                        <div class="acm-col">
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">Usuario</span>
+                                <lightning-input-field field-name="Usuario__c"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                            <div class="acm-field-wrap">
+                                <span class="acm-field-label">Contraseña</span>
+                                <lightning-input-field field-name="Pass__c"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                            <div class="acm-field-wrap acm-field-wrap-full">
+                                <span class="acm-field-label">Notas</span>
+                                <lightning-input-field field-name="Notas__c"
+                                                       variant="label-hidden">
+                                </lightning-input-field>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <template if:true={errorMsg}>
+                        <div class="acm-error">{errorMsg}</div>
+                    </template>
+                </div>
+
+                <div class="acm-footer">
+                    <button class="acm-btn-cancel" type="button" onclick={handleClose}>Cancelar</button>
+                    <button class="acm-btn-save" type="submit">Crear acceso</button>
+                </div>
+
+            </lightning-record-edit-form>
+
+        </div>
+    </template>
+</template>

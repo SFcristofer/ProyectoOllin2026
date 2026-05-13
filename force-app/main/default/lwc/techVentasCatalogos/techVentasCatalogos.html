@@ -1,0 +1,52 @@
+<template>
+    <div class="vc-wrap">
+
+        <!-- ── Subtab bar ── -->
+        <div class="vc-subtabbar" role="tablist">
+            <button class={stClassContratista}       data-tab="contratista"       onclick={handleSubTab} role="tab">Contratista</button>
+            <button class={stClassPrecalificaciones} data-tab="precalificaciones" onclick={handleSubTab} role="tab">Precalificaciones</button>
+            <button class={stClassInstitucion}       data-tab="institucion"       onclick={handleSubTab} role="tab">Institución</button>
+            <button class={stClassBeneficiario}      data-tab="beneficiario"      onclick={handleSubTab} role="tab">Beneficiario</button>
+            <button class={stClassVendedor}          data-tab="vendedor"          onclick={handleSubTab} role="tab">Vendedor</button>
+            <button class={stClassCuentas}           data-tab="cuentas"           onclick={handleSubTab} role="tab">Cuentas</button>
+        </div>
+
+        <!-- ── Panels ── -->
+        <template if:true={isTabContratista}>
+            <div class="vc-panel">
+                <c-tech-ventas-contratistas></c-tech-ventas-contratistas>
+            </div>
+        </template>
+
+        <template if:true={isTabPrecalificaciones}>
+            <div class="vc-panel">
+                <c-tech-ventas-precalificaciones></c-tech-ventas-precalificaciones>
+            </div>
+        </template>
+
+        <template if:true={isTabInstitucion}>
+            <div class="vc-panel">
+                <c-tech-ventas-instituciones></c-tech-ventas-instituciones>
+            </div>
+        </template>
+
+        <template if:true={isTabBeneficiario}>
+            <div class="vc-panel">
+                <c-tech-ventas-beneficiarios></c-tech-ventas-beneficiarios>
+            </div>
+        </template>
+
+        <template if:true={isTabVendedor}>
+            <div class="vc-panel">
+                <c-tech-ventas-vendedores></c-tech-ventas-vendedores>
+            </div>
+        </template>
+
+        <template if:true={isTabCuentas}>
+            <div class="vc-panel">
+                <c-tech-ventas-cuentas></c-tech-ventas-cuentas>
+            </div>
+        </template>
+
+    </div>
+</template>

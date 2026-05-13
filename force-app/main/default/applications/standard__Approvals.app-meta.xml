@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Approvals</label>
+    <navType>Console</navType>
+    <tabs>standard-ApprovalsHome</tabs>
+    <tabs>Plan_de_Pagos__c</tabs>
+    <tabs>Recibo_de_Cobro__c</tabs>
+    <tabs>Tech_Seguro__c</tabs>
+    <tabs>Tech_Vendedor__c</tabs>
+    <uiType>Lightning</uiType>
+    <workspaceConfig>
+        <mappings>
+            <tab>Plan_de_Pagos__c</tab>
+        </mappings>
+        <mappings>
+            <tab>Recibo_de_Cobro__c</tab>
+        </mappings>
+        <mappings>
+            <tab>Tech_Seguro__c</tab>
+        </mappings>
+        <mappings>
+            <tab>Tech_Vendedor__c</tab>
+        </mappings>
+        <mappings>
+            <tab>standard-ApprovalsHome</tab>
+        </mappings>
+    </workspaceConfig>
+</CustomApplication>

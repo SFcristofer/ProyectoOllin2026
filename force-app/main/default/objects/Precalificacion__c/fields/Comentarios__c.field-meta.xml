@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Comentarios__c</fullName>
+    <label>Comentarios</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>El contratista  no cuenta con capacidad suficiente</fullName>
+                <default>false</default>
+                <label>El contratista  no cuenta con capacidad suficiente</label>
+            </value>
+            <value>
+                <fullName>El contratista cuenta con capacidad de Afianzamiento</fullName>
+                <default>false</default>
+                <label>El contratista cuenta con capacidad de Afianzamiento</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

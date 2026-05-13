@@ -1,65 +1,426 @@
 <template>
-    <div class="airtable-container slds-is-relative slds-bg-color_neutral-1">
+    <div class="at-container">
         <template if:true={isLoading}>
-            <lightning-spinner alternative-text="Cargando..." size="medium"></lightning-spinner>
+            <div class="at-loading-overlay"><lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner></div>
         </template>
 
-        <!-- Barra de Herramientas Estilo Airtable -->
-        <div class="airtable-toolbar slds-p-horizontal_medium slds-p-vertical_small slds-border_bottom slds-grid slds-grid_vertical-align-center">
-            <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_vertical-align-center">
-                <lightning-button-menu label="Vistas" variant="border-filled" icon-name="utility:table" class="slds-m-right_small">
-                    <lightning-menu-item value="grid" label="Cuadrícula"></lightning-menu-item>
-                </lightning-button-menu>
-                <lightning-button label="Filtrar" icon-name="utility:filterList" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Agrupar" icon-name="utility:groups" variant="border-all" class="slds-m-right_x-small"></lightning-button>
-                <lightning-button label="Ordenar" icon-name="utility:sort" variant="border-all" class="slds-m-right_x-small"></lightning-button>
+        <div class="at-views-bar">
+            <div class="at-views-list">
+                <button class={gridTabClass} data-view="grid" onclick={handleViewChange}><lightning-icon icon-name="utility:table" size="xx-small" class="at-tab-icon" alternative-text="Grid"></lightning-icon>Grid</button>
+                <button class={galleryTabClass} data-view="gallery" onclick={handleViewChange}><lightning-icon icon-name="utility:image" size="xx-small" class="at-tab-icon" alternative-text="Gallery"></lightning-icon>Gallery</button>
+                <button class={kanbanTabClass} data-view="kanban" onclick={handleViewChange}><lightning-icon icon-name="utility:kanban" size="xx-small" class="at-tab-icon" alternative-text="Kanban"></lightning-icon>Kanban</button>
+                <button class="at-add-view-btn">+ Agregar vista</button>
             </div>
-            <div class="slds-col slds-size_1-of-2 slds-text-align_right">
-                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="airtable-search-input slds-show_inline-block" onchange={handleSearch}></lightning-input>
+        </div>
+
+        <div class="at-toolbar">
+            <div class="at-toolbar-right">
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="at-search" onchange={handleSearch}></lightning-input>
                 <lightning-button label="Nuevo Contratista" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleOpenCreateModal}></lightning-button>
             </div>
         </div>
 
-        <!-- Tabla Estilo Airtable -->
-        <div class="airtable-grid-container slds-p-around_medium">
-            <template if:true={hasResults}>
-                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-no-row-hover airtable-table">
+        <!-- GRID VIEW -->
+        <template if:true={isGridView}>
+            <div class="at-grid-wrapper">
+                <table class="at-table">
                     <thead>
-                        <tr class="slds-line-height_reset">
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:text" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Nombre</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:identity" size="xx-small" class="slds-m-right_x-small"></lightning-icon>RFC</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:contract" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Fianza(s)</th>
-                            <th scope="col" class="airtable-header-cell"><lightning-icon icon-name="utility:record" size="xx-small" class="slds-m-right_x-small"></lightning-icon>Estado</th>
+                        <tr>
+                            <th class="at-th at-th-rownum"></th>
+                            <th class="at-th at-th-sticky at-th-sortable" data-field="name" onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name="utility:text" size="xx-small" alternative-text="Nombre"></lightning-icon></span>Nombre{nameSortArrow}</th>
+                            <template for:each={visibleColumnsWithSort} for:item="col">
+                                <th key={col.field} class={col.thClass} style={col.minWidthStyle} data-field={col.field} onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name={col.icon} size="xx-small" alternative-text={col.label}></lightning-icon></span>{col.label}{col.sortArrow}</th>
+                            </template>
+                            <th class="at-th at-th-addfield" onclick={handleToggleColumnPicker}>
+                                <template if:false={showColumnPicker}><span class="at-add-field-label">+ Campo</span></template>
+                                <template if:true={showColumnPicker}>
+                                    <div class="at-column-picker" onclick={stopPropagation}>
+                                        <div class="at-picker-header">Agregar campo</div>
+                                        <template for:each={availableColumns} for:item="ac">
+                                            <div key={ac.field} class="at-picker-item" data-field={ac.field} onclick={handleSelectColumn}><lightning-icon icon-name={ac.icon} size="xx-small" alternative-text={ac.label}></lightning-icon>&nbsp;{ac.label}</div>
+                                        </template>
+                                        <template if:false={hasAvailableColumns}><div class="at-picker-empty">No hay más campos</div></template>
+                                    </div>
+                                </template>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={filteredData} for:item="ctra">
-                            <tr key={ctra.id}>
-                                <td class="airtable-cell">{ctra.name}</td>
-                                <td class="airtable-cell">{ctra.rfc}</td>
-                                <td class="airtable-cell">
-                                    <template for:each={ctra.fianzas} for:item="f">
-                                        <span key={f} class="slds-badge slds-m-around_xx-small">{f}</span>
-                                    </template>
+                        <template for:each={filteredData} for:item="item">
+                            <tr key={item.id} class="at-tr" data-id={item.id}>
+                                <td class="at-td at-td-rownum">
+                                    <span class="at-row-num">{item.rowNumber}</span>
+                                    <button class="at-expand-btn" data-id={item.id} onclick={handleExpandRow} title="Expandir" aria-label="Expandir"><lightning-icon icon-name="utility:expand_alt" size="xx-small" alternative-text="Expandir"></lightning-icon></button>
+                                    <button class="at-expand-btn at-interfaces-row-btn" data-id={item.id} data-name={item.name} onclick={handleOpenInterfacesRow} title="Interfaces" aria-label="Interfaces"><lightning-icon icon-name="utility:metrics" size="xx-small" alternative-text="Interfaces"></lightning-icon></button>
                                 </td>
-                                <td class="airtable-cell">
-                                    <span class={ctra.estatusClass}>{ctra.estatus}</span>
+                                <td class="at-td at-td-sticky" data-id={item.id} data-field="name" onclick={handleCellClick}>
+                                    <template if:true={item.isEditingName}><input class="at-inline-input" type="text" value={item.name} data-id={item.id} data-field="name" onblur={handleCellBlur} onkeydown={handleCellKeydown}/></template>
+                                    <template if:false={item.isEditingName}><span class="at-cell-text">{item.name}</span></template>
                                 </td>
+                                <template for:each={visibleColumns} for:item="col">
+                                    <td key={col.field} class="at-td" data-id={item.id} data-field={col.field} onclick={handleCellClick}>
+                                        <template if:true={col.isRfc}><span class="at-cell-text">{item.rfc}</span></template>
+                                        <template if:true={col.isCliente}><span class="at-cell-text">{item.cliente}</span></template>
+                                        <template if:true={col.isFianzas}>
+                                            <div class="at-chips">
+                                                <template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-blue">{f}</span></template>
+                                            </div>
+                                        </template>
+                                        <template if:true={col.isContratos}>
+                                            <div class="at-chips">
+                                                <template for:each={item.contratos} for:item="c"><span key={c} class="at-chip at-chip-teal">{c}</span></template>
+                                            </div>
+                                        </template>
+                                        <template if:true={col.isPrecalificaciones}>
+                                            <div class="at-chips">
+                                                <template for:each={item.precalificacionChips} for:item="p">
+                                                    <span key={p.id} class="at-chip at-chip-purple">{p.name}</span>
+                                                </template>
+                                                <template if:true={item.precalificacionExtra}>
+                                                    <span class="at-chip at-chip-gray">+{item.precalificacionExtra}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template if:true={col.isEstatus}><span class={item.estatusClass}>{item.estatus}</span></template>
+                                    </td>
+                                </template>
+                                <td class="at-td at-td-filler"></td>
                             </tr>
                         </template>
+                        <tr class="at-tr-addrow" onclick={handleOpenCreateModal}><td colspan="99" class="at-td-addrow"><span class="at-addrow-label">+ Agregar registro</span></td></tr>
                     </tbody>
                 </table>
-            </template>
-            <template if:false={hasResults}>
-                <div class="slds-text-align_center slds-p-around_large slds-text-color_weak">No se encontraron resultados</div>
-            </template>
-        </div>
+            </div>
+        </template>
+
+        <!-- GALLERY VIEW -->
+        <template if:true={isGalleryView}>
+            <div class="at-gallery">
+                <template for:each={filteredData} for:item="item">
+                    <div key={item.id} class="at-gallery-card" data-id={item.id} onclick={handleExpandRow}>
+                        <div class="at-gallery-card-top"><span class={item.estatusClass}>{item.estatus}</span></div>
+                        <div class="at-gallery-title">{item.name}</div>
+                        <div class="at-gallery-field"><span class="at-gallery-label">RFC</span><span>{item.rfc}</span></div>
+                        <div class="at-gallery-field"><span class="at-gallery-label">Cliente</span><span>{item.cliente}</span></div>
+                        <div class="at-gallery-field">
+                            <span class="at-gallery-label">Fianza(s)</span>
+                            <div class="at-chips"><template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-blue">{f}</span></template></div>
+                        </div>
+                    </div>
+                </template>
+                <div class="at-gallery-add" onclick={handleOpenCreateModal}><span class="at-gallery-add-icon">+</span><span>Nuevo registro</span></div>
+            </div>
+        </template>
+
+        <!-- KANBAN VIEW -->
+        <template if:true={isKanbanView}>
+            <div class="at-kanban">
+                <template for:each={kanbanColumns} for:item="col">
+                    <div key={col.status} class="at-kanban-col">
+                        <div class="at-kanban-col-header"><span class={col.badgeClass}>{col.status}</span><span class="at-kanban-count">{col.count}</span></div>
+                        <div class="at-kanban-cards">
+                            <template for:each={col.items} for:item="item">
+                                <div key={item.id} class="at-kanban-card" data-id={item.id} onclick={handleExpandRow}>
+                                    <div class="at-kanban-card-name">{item.name}</div>
+                                    <div class="at-kanban-card-meta">{item.rfc}</div>
+                                    <div class="at-chips at-chips-sm"><template for:each={item.fianzas} for:item="f"><span key={f} class="at-chip at-chip-blue">{f}</span></template></div>
+                                </div>
+                            </template>
+                            <button class="at-kanban-add-btn" onclick={handleOpenCreateModal}>+ Agregar</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={isCalendarView}>
+            <div class="at-calendar-placeholder">
+                <lightning-icon icon-name="utility:event" size="large" class="at-placeholder-icon" alternative-text="Calendario"></lightning-icon>
+                <p class="at-placeholder-title">Vista de Calendario</p>
+                <p class="at-placeholder-sub">Próximamente disponible</p>
+            </div>
+        </template>
     </div>
 
-    <!-- Modal de Creación -->
-    <c-tech-contratista-create-modal 
-        show-modal={isCreateModalOpen}
-        onclose={handleCloseCreateModal}
-        onsuccess={handleCreateSuccess}>
-    </c-tech-contratista-create-modal>
+    <template if:true={isDetailPanelOpen}>
+        <div class="at-overlay" onclick={handleCloseAll}></div>
+        <div class={panelsWrapperClass}>
+        <div class={detailPanelClass}>
+            <div class="at-detail-header">
+                <div class="at-detail-nav">
+                    <button class="at-detail-nav-btn" onclick={handlePrevRecord} disabled={isFirstRecord} title="Anterior" aria-label="Anterior">▲</button>
+                    <button class="at-detail-nav-btn" onclick={handleNextRecord} disabled={isLastRecord} title="Siguiente" aria-label="Siguiente">▼</button>
+                </div>
+                <div class="at-detail-header-info">
+                    <span class="at-detail-title">{selectedItem.name}</span>
+                    <span class="at-detail-subtitle">Registro</span>
+                </div>
+                <div class="at-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <lightning-button label="Editar" icon-name="utility:edit" size="small" variant="neutral" onclick={handleEditFromPanel}></lightning-button>
+                    </template>
+                    <template if:true={isEditingPanel}>
+                        <span class="at-panel-editing-badge">Editando...</span>
+                    </template>
+                    <button class="at-interfaces-btn" onclick={handleOpenInterfaces} title="Ver Interfaces" aria-label="Interfaces">
+                        <lightning-icon icon-name="utility:metrics" size="x-small" alternative-text="Interfaces"></lightning-icon>
+                    </button>
+                    <button class="at-detail-close" onclick={handleCloseDetailPanel} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                </div>
+            </div>
+            <div class="at-detail-body">
+                <template if:true={selectedItem}>
+                    <!-- VIEW MODE -->
+                    <template if:false={isEditingPanel}>
+                        <lightning-record-view-form record-id={selectedItem.id} object-api-name="Account">
+                            <div class="at-detail-fields">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Nombre</span>
+                                    <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>RFC</span>
+                                    <lightning-output-field field-name="RFC__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-phone">☎</span>Teléfono</span>
+                                    <lightning-output-field field-name="Phone" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-url">🔗</span>Sitio Web</span>
+                                    <lightning-output-field field-name="Website" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Ciudad</span>
+                                    <lightning-output-field field-name="BillingCity" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Estado</span>
+                                    <lightning-output-field field-name="BillingState" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>País</span>
+                                    <lightning-output-field field-name="BillingCountry" variant="label-hidden"></lightning-output-field>
+                                </div>
+                            </div>
+                        </lightning-record-view-form>
+                    </template>
+
+                    <!-- EDIT MODE -->
+                    <template if:true={isEditingPanel}>
+                        <lightning-record-edit-form
+                            record-id={selectedItem.id}
+                            object-api-name="Account"
+                            onsuccess={handlePanelSaveSuccess}>
+                            <div class="at-detail-fields at-detail-fields-edit">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Nombre</span>
+                                    <lightning-input-field field-name="Name" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>RFC</span>
+                                    <lightning-input-field field-name="RFC__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-phone">☎</span>Teléfono</span>
+                                    <lightning-input-field field-name="Phone" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-url">🔗</span>Sitio Web</span>
+                                    <lightning-input-field field-name="Website" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Ciudad</span>
+                                    <lightning-input-field field-name="BillingCity" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Estado / Provincia</span>
+                                    <lightning-input-field field-name="BillingState" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>País</span>
+                                    <lightning-input-field field-name="BillingCountry" variant="label-hidden"></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="at-panel-edit-actions">
+                                <button class="at-panel-btn at-panel-btn-cancel" type="button" aria-label="Cancelar" onclick={handlePanelCancel}>Cancelar</button>
+                                <button class="at-panel-btn at-panel-btn-save" type="submit" aria-label="Guardar">Guardar cambios</button>
+                            </div>
+                        </lightning-record-edit-form>
+                    </template>
+                    <div class="at-detail-section">
+                        <div class="at-detail-section-title"><span class="at-ftype at-ftype-ref">≡</span>Fianzas vinculadas</div>
+                        <table class="at-linked-table">
+                            <template if:true={selectedItem.hasFianzas}>
+                                <thead><tr><th class="at-linked-th">Folio</th><th class="at-linked-th">Estatus</th><th class="at-linked-th">Monto</th><th class="at-linked-th">Vencimiento</th></tr></thead>
+                                <tbody>
+                                    <template for:each={selectedItem.fianzasData} for:item="f">
+                                        <tr key={f.id} class="at-linked-row">
+                                            <td class="at-linked-cell"><span class="at-chip at-chip-blue">{f.name}</span></td>
+                                            <td class="at-linked-cell"><span class={f.estatusClass}>{f.estatus}</span></td>
+                                            <td class="at-linked-cell at-linked-num">{f.montoFmt}</td>
+                                            <td class="at-linked-cell at-linked-date">{f.vencimiento}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </template>
+                            <template if:false={selectedItem.hasFianzas}><tr><td class="at-detail-empty">Sin fianzas vinculadas</td></tr></template>
+                        </table>
+                        <template if:false={isAddingFianza}>
+                            <button class="at-linked-add" onclick={handleAddFianzaStart}>+ Agregar</button>
+                        </template>
+                        <template if:true={isAddingFianza}>
+                            <div class="at-linked-search-wrap">
+                                <input class="at-linked-search-input" type="text" placeholder="Buscar fianza..." oninput={handleFianzaSearch}/>
+                                <button class="at-linked-cancel" onclick={handleCancelAddFianza}>✕</button>
+                            </div>
+                            <template if:true={hasFianzaResults}>
+                                <div class="at-linked-dropdown">
+                                    <template for:each={fianzaSearchResults} for:item="r">
+                                        <div key={r.id} class="at-linked-option" data-id={r.id} onclick={handleSelectFianza}>
+                                            <div class="at-rel-result-info">
+                                                <span class="at-rel-result-name">{r.name}</span>
+                                                <template if:true={r.sub}><span class="at-rel-result-sub">{r.sub}</span></template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="at-detail-section">
+                        <div class="at-detail-section-title"><span class="at-ftype at-ftype-ref">≡</span>Contratos vinculados</div>
+                        <table class="at-linked-table">
+                            <template if:true={selectedItem.hasContratos}>
+                                <thead><tr><th class="at-linked-th">Número</th><th class="at-linked-th">Estatus</th><th class="at-linked-th">Suma Fianzas</th></tr></thead>
+                                <tbody>
+                                    <template for:each={selectedItem.contratosData} for:item="c">
+                                        <tr key={c.id} class="at-linked-row">
+                                            <td class="at-linked-cell"><span class="at-chip at-chip-teal">{c.name}</span></td>
+                                            <td class="at-linked-cell"><span class={c.estatusClass}>{c.estatus}</span></td>
+                                            <td class="at-linked-cell at-linked-num">{c.montoFmt}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </template>
+                            <template if:false={selectedItem.hasContratos}><tr><td class="at-detail-empty">Sin contratos vinculados</td></tr></template>
+                        </table>
+                        <template if:false={isAddingContrato}>
+                            <button class="at-linked-add" onclick={handleAddContratoStart}>+ Agregar</button>
+                        </template>
+                        <template if:true={isAddingContrato}>
+                            <div class="at-linked-search-wrap">
+                                <input class="at-linked-search-input" type="text" placeholder="Buscar contrato..." oninput={handleContratoSearch}/>
+                                <button class="at-linked-cancel" onclick={handleCancelAddContrato}>✕</button>
+                            </div>
+                            <template if:true={hasContratoResults}>
+                                <div class="at-linked-dropdown">
+                                    <template for:each={contratoSearchResults} for:item="r">
+                                        <div key={r.id} class="at-linked-option" data-id={r.id} onclick={handleSelectContrato}>
+                                            <div class="at-rel-result-info">
+                                                <span class="at-rel-result-name">{r.name}</span>
+                                                <template if:true={r.sub}><span class="at-rel-result-sub">{r.sub}</span></template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+
+                    <!-- PRECALIFICACIONES -->
+                    <div class="at-detail-section">
+                        <div class="at-detail-section-title">
+                            <span class="at-ftype at-ftype-ref">%</span>Precalificaciones
+                            <template if:true={isLoadingPrecalificaciones}>
+                                <lightning-spinner size="xx-small" alternative-text="Cargando..."></lightning-spinner>
+                            </template>
+                        </div>
+                        <template if:true={hasPrecalificaciones}>
+                            <table class="at-linked-table at-prec-table">
+                                <thead>
+                                    <tr>
+                                        <th class="at-prec-th">Nombre</th>
+                                        <th class="at-prec-th">Estado</th>
+                                        <th class="at-prec-th">Línea Afianz.</th>
+                                        <th class="at-prec-th">Fecha EF</th>
+                                        <th class="at-prec-th at-prec-th-pdf">PDF</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={precalificaciones} for:item="p">
+                                        <tr key={p.id} class="at-linked-row at-prec-row" data-id={p.id}>
+                                            <td class="at-linked-cell at-prec-name">{p.name}</td>
+                                            <td class="at-linked-cell"><span class={p.estatusClass}>{p.estadoLabel}</span></td>
+                                            <td class="at-linked-cell at-prec-currency">{p.lineaAfianzamientoFmt}</td>
+                                            <td class="at-linked-cell at-prec-date">{p.fechaFmt}</td>
+                                            <td class="at-linked-cell at-prec-pdf-btn">
+                                                <button class="at-pdf-icon-btn" data-id={p.id} onclick={handlePrecalificacionClick} title="Ver PDF" aria-label="Ver PDF">
+                                                    <lightning-icon icon-name="doctype:pdf" size="xx-small" alternative-text="PDF"></lightning-icon>
+                                                    <span>Ver PDF</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template if:false={hasPrecalificaciones}>
+                            <template if:false={isLoadingPrecalificaciones}>
+                                <p class="at-detail-empty">Sin precalificaciones vinculadas</p>
+                            </template>
+                        </template>
+
+                        <!-- NUEVA PRECALIFICACIÓN -->
+                        <button class="at-linked-add" onclick={handleAddPrecalificacionStart}>+ Nueva precalificación</button>
+                    </div>
+                </template>
+            </div>
+        </div><!-- /at-detail-panel -->
+
+        <!-- PANEL PDF PRECALIFICACIÓN -->
+        <template if:true={isPdfPanelOpen}>
+            <div class="at-pdf-panel">
+                <div class="at-pdf-panel-header">
+                    <button class="at-pdf-back-btn" onclick={handleClosePdfPanel} title="Volver al contratista" aria-label="Volver">
+                        <lightning-icon icon-name="utility:chevronleft" size="xx-small" alternative-text="Volver"></lightning-icon>
+                        <span>Volver</span>
+                    </button>
+                    <div class="at-pdf-panel-title">
+                        <lightning-icon icon-name="doctype:pdf" size="small" alternative-text="PDF" class="at-pdf-panel-icon"></lightning-icon>
+                        <span>{selectedPrecalificacion.name}</span>
+                    </div>
+                    <button class="at-pdf-panel-close" onclick={handleCloseAll} title="Cerrar" aria-label="Cerrar">
+                        <lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon>
+                    </button>
+                </div>
+                <div class="at-pdf-panel-body">
+                    <iframe src={pdfUrl} class="at-pdf-iframe" title="Precalificación PDF" frameborder="0"></iframe>
+                </div>
+            </div>
+        </template>
+
+        <!-- PANEL NUEVA PRECALIFICACIÓN -->
+        <template if:true={isAddingPrecalificacion}>
+            <div class="at-pdf-panel">
+                <c-tech-precalificacion-panel
+                    contratista-id={selectedItem.id}
+                    onsuccess={handlePrecalificacionSaved}
+                    oncancel={handleCancelPrecalificacion}>
+                </c-tech-precalificacion-panel>
+            </div>
+        </template>
+
+        </div><!-- /at-panels-wrapper -->
+    </template>
+
+    <c-tech-contratista-create-modal show-modal={isCreateModalOpen} onclose={handleCloseCreateModal} onsuccess={handleCreateSuccess}></c-tech-contratista-create-modal>
+
+    <template if:true={isInterfacesOpen}>
+        <c-tech-contratista-interfaces
+            contratista-id={interfacesContratistaId}
+            contratista-name={interfacesContratistaName}
+            onclose={handleCloseInterfaces}>
+        </c-tech-contratista-interfaces>
+    </template>
 </template>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Requiere_medio_de_contacto</fullName>
+    <active>true</active>
+    <description>El ejecutivo debe tener al menos un medio de contacto registrado: email, teléfono directo o celular.</description>
+    <errorConditionFormula>AND(ISBLANK(Email__c), ISBLANK(Telefono__c), ISBLANK(Celular__c))</errorConditionFormula>
+    <errorMessage>El ejecutivo debe tener al menos un medio de contacto: email, teléfono directo o celular.</errorMessage>
+</ValidationRule>

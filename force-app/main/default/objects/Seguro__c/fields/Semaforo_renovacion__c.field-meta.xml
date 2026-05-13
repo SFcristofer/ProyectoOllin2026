@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Semaforo_renovacion__c</fullName>
+    <description>Semaforo visual de proximidad a renovacion. Verde=vigente (mas de 60 dias), Amarillo=proximo (30-60), Naranja=urgente (7-30), Rojo=critico (menos de 7).</description>
+    <externalId>false</externalId>
+    <formula>IF(
+  OR(ISBLANK(Fin_del_seguro__c), Dias_para_vencer__c &lt; 0),
+  &quot;⚪ Sin vigencia&quot;,
+  IF(
+    Dias_para_vencer__c &lt;= 7,
+    &quot;🔴 Critico&quot;,
+    IF(
+      Dias_para_vencer__c &lt;= 30,
+      &quot;🟠 Urgente&quot;,
+      IF(
+        Dias_para_vencer__c &lt;= 60,
+        &quot;🟡 Proximo&quot;,
+        &quot;🟢 Vigente&quot;
+      )
+    )
+  )
+)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Semaforo renovacion</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

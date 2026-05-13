@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>No_cerrar_Perdida_sin_actividad</fullName>
+    <active>true</active>
+    <description>No permite cerrar una Oportunidad como Perdida sin al menos una actividad registrada. Forza documentar el motivo del cierre.</description>
+    <errorConditionFormula>AND(
+    ISPICKVAL(StageName, &quot;Closed Lost&quot;),
+    ISBLANK(LastActivityDate)
+)</errorConditionFormula>
+    <errorDisplayField>StageName</errorDisplayField>
+    <errorMessage>No se puede cerrar la Oportunidad como Perdida sin al menos una actividad registrada (llamada, email o reunion). Documenta el contacto antes de cerrar.</errorMessage>
+</ValidationRule>

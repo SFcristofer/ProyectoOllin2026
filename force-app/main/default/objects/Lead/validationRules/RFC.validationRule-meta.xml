@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>RFC</fullName>
+    <active>true</active>
+    <description>Valida RFC</description>
+    <errorConditionFormula>AND(
+    NOT(ISBLANK(RFC__c)),
+    OR(
+        AND(
+            ISPICKVAL(tipos_de_contribuyentes__c, &quot;Persona Física&quot;),
+            NOT(
+                REGEX(
+                    RFC__c,
+                    &quot;^[A-ZÑ&amp;]{4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{3}$&quot;
+                )
+            )
+        ),
+        AND(
+            ISPICKVAL(tipos_de_contribuyentes__c, &quot;Persona Moral&quot;),
+            NOT(
+                REGEX(
+                    RFC__c,
+                    &quot;^[A-ZÑ&amp;]{3}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{3}$&quot;
+                )
+            )
+        )
+    )
+)</errorConditionFormula>
+    <errorMessage>El RFC capturado no tiene un formato válido</errorMessage>
+</ValidationRule>

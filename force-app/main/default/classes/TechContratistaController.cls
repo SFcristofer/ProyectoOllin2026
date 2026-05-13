@@ -12,8 +12,12 @@ public with sharing class TechContratistaController {
     public static List<Map<String,String>> searchFianzas(String term) {
         String q = '%' + String.escapeSingleQuotes(term) + '%';
         List<Map<String,String>> results = new List<Map<String,String>>();
-        for (Tech_Fianza__c f : [SELECT Id, Name FROM Tech_Fianza__c WHERE Name LIKE :q ORDER BY Name LIMIT 10]) {
-            results.add(new Map<String,String>{ 'id' => f.Id, 'name' => f.Name });
+        for (Tech_Fianza__c f : [SELECT Id, Name, Estatus__c, Monto_Afianzado__c, Fecha_de_Vencimiento__c
+                                  FROM Tech_Fianza__c WHERE Name LIKE :q ORDER BY Name LIMIT 10]) {
+            String sub = '';
+            if (f.Estatus__c          != null) sub += f.Estatus__c;
+            if (f.Monto_Afianzado__c  != null) sub += (sub.length() > 0 ? ' · ' : '') + '$' + f.Monto_Afianzado__c.format();
+            results.add(new Map<String,String>{ 'id' => f.Id, 'name' => f.Name, 'sub' => sub });
         }
         return results;
     }
@@ -22,8 +26,12 @@ public with sharing class TechContratistaController {
     public static List<Map<String,String>> searchContratos(String term) {
         String q = '%' + String.escapeSingleQuotes(term) + '%';
         List<Map<String,String>> results = new List<Map<String,String>>();
-        for (Contract c : [SELECT Id, ContractNumber FROM Contract WHERE ContractNumber LIKE :q ORDER BY ContractNumber LIMIT 10]) {
-            results.add(new Map<String,String>{ 'id' => c.Id, 'name' => c.ContractNumber });
+        for (Contract c : [SELECT Id, ContractNumber, Status, Suma_Fianzas__c
+                           FROM Contract WHERE ContractNumber LIKE :q ORDER BY ContractNumber LIMIT 10]) {
+            String sub = '';
+            if (c.Status          != null) sub += c.Status;
+            if (c.Suma_Fianzas__c != null) sub += (sub.length() > 0 ? ' · ' : '') + '$' + c.Suma_Fianzas__c.format();
+            results.add(new Map<String,String>{ 'id' => c.Id, 'name' => c.ContractNumber, 'sub' => sub });
         }
         return results;
     }
@@ -53,7 +61,7 @@ public with sharing class TechContratistaController {
             SELECT Id, Name, Monto_Afianzado__c, Estatus__c,
                    Fecha_de_Emision__c, Fecha_de_Vencimiento__c,
                    DiasReclamaci_n__c,
-                   Contrato__c, Contrato__r.Name, Contrato__r.Valor_Contrato_Vigente__c
+                   Contrato__c, Contrato__r.ContractNumber, Contrato__r.Valor_Contrato_Vigente__c
             FROM Tech_Fianza__c
             WHERE Contratistas__c = :contratistaId
             ORDER BY CreatedDate DESC
@@ -72,7 +80,7 @@ public with sharing class TechContratistaController {
                 contratoIdsSeen.add(f.Contrato__c);
                 TechContratistaInterfacesWrapper.ContratoItem ci = new TechContratistaInterfacesWrapper.ContratoItem();
                 ci.id          = f.Contrato__c;
-                ci.name        = f.Contrato__r != null ? f.Contrato__r.Name : '—';
+                ci.name        = f.Contrato__r != null ? f.Contrato__r.ContractNumber : '—';
                 ci.contratista = ct.Name;
                 ci.monto       = f.Contrato__r != null ? f.Contrato__r.Valor_Contrato_Vigente__c : 0;
                 ci.proyecto    = '—';
@@ -83,6 +91,7 @@ public with sharing class TechContratistaController {
             fi.id          = f.Id;
             fi.name        = f.Name;
             fi.contratista = ct.Name;
+            fi.contrato    = f.Contrato__r != null ? f.Contrato__r.ContractNumber : null;
             fi.monto       = monto;
             fi.estatus     = estatus;
             wrap.fianzas.add(fi);
@@ -93,6 +102,7 @@ public with sharing class TechContratistaController {
                 fv.id             = f.Id;
                 fv.name           = f.Name;
                 fv.contratista    = ct.Name;
+                fv.contrato       = f.Contrato__r != null ? f.Contrato__r.ContractNumber : null;
                 fv.montoAfianzado = monto;
                 fv.estatus        = estatus;
                 Date vencimiento  = f.Fecha_de_Vencimiento__c;
@@ -113,6 +123,10 @@ public with sharing class TechContratistaController {
     @AuraEnabled
     public static String saveContratistaWithRelations(Account contratista, Map<String, List<String>> relationsMap) {
         try {
+            if (contratista.Id == null && contratista.RecordTypeId == null) {
+                RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND DeveloperName = 'Contratista' LIMIT 1];
+                contratista.RecordTypeId = rt.Id;
+            }
             upsert contratista;
             if (relationsMap != null) {
                 for (String tipo : relationsMap.keySet()) {

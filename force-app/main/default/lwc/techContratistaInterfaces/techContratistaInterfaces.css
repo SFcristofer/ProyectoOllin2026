@@ -1,0 +1,462 @@
+:host {
+    --if-green: #2a2a2a;
+    --if-border: #e0e0e0;
+    --if-bg: #f7f8fa;
+    --if-card-bg: #fff;
+    --if-header-bg: #2a2a2a;
+    --if-text: #2a2a2a;
+    --if-muted: #6b7280;
+    --if-hover: #f0f4ff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Overlay & Modal ──────────────────────────────────────── */
+.if-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.if-modal {
+    width: 90vw;
+    max-width: 1300px;
+    height: 85vh;
+    background: var(--if-bg);
+    border-radius: 10px;
+    box-shadow: 0 40px 100px rgba(0,0,0,.32);
+    display: flex;
+    flex-direction: column;
+    animation: if-in .22s cubic-bezier(.16,1,.3,1);
+    overflow: hidden;
+}
+
+@keyframes if-in {
+    from { opacity: 0; transform: scale(.96); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Header ── */
+.if-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 50px;
+    background: var(--if-header-bg);
+    flex-shrink: 0;
+}
+
+.if-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.if-header-icon { --lwc-colorTextIconDefault: #fff; }
+
+.if-header-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.if-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.if-btn-pdf {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    --lwc-colorTextIconDefault: #fff;
+    transition: background .12s;
+}
+.if-btn-pdf:hover { background: rgba(255,255,255,.28); }
+.if-btn-pdf-icon { --lwc-colorTextIconDefault: #fff; }
+
+.if-header-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: rgba(255,255,255,.15);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.if-header-close:hover { background: rgba(255,255,255,.28); }
+
+/* ── Body ── */
+.if-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.if-body::-webkit-scrollbar {
+    width: 6px;
+}
+.if-body::-webkit-scrollbar-track {
+    background: #e8e8e8;
+    border-radius: 3px;
+}
+.if-body::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 3px;
+}
+
+.if-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+/* ── KPI Cards ── */
+.if-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.if-kpi-card {
+    border: 1.5px solid var(--if-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: var(--if-card-bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.if-kpi-contracts { border-color: #c7d2fe; background: #eef2ff; }
+.if-kpi-afianzado { border-color: #bfdbfe; background: #eff6ff; }
+.if-kpi-count     { border-color: #d1d5db; background: #f9fafb; }
+.if-kpi-vencidas  { border-color: #fca5a5; background: #fff1f2; }
+
+.if-kpi-label {
+    font-size: 10px;
+    color: var(--if-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.if-kpi-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--if-text);
+}
+
+.if-kpi-num { font-size: 28px; font-weight: 700; }
+
+/* ── Charts ── */
+.if-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.if-chart-card {
+    border: 1px solid var(--if-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: var(--if-card-bg);
+}
+
+.if-chart-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--if-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.if-chart-body { display: flex; justify-content: center; }
+
+.if-bar-svg { width: 100%; max-height: 160px; }
+
+.if-donut-body {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.if-donut-svg { width: 100px; height: 100px; }
+
+.if-donut-pct {
+    font-size: 16px;
+    font-weight: 700;
+    fill: var(--if-text);
+}
+
+.if-donut-sub {
+    font-size: 8px;
+    fill: var(--if-muted);
+}
+
+.if-donut-section-lbl {
+    font-size: 8px;
+    text-transform: uppercase;
+    color: var(--if-muted);
+    font-weight: 600;
+}
+
+.if-donut-legend { display: flex; gap: 10px; }
+
+.if-legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+
+.if-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.if-legend-dot-blue { background: #3b82f6; }
+.if-legend-dot-red  { background: #ef4444; }
+
+/* SVG chart elements */
+.if-axis-label   { font-size: 7px; fill: #999; }
+.if-axis-label-x { font-size: 8px; fill: #666; }
+.if-grid-line    { stroke: #eeeeee; stroke-width: 0.5; }
+.if-legend-text  { font-size: 8px; fill: #555; }
+.if-section-label { font-size: 7px; fill: #aaa; }
+
+/* ── Report sections ── */
+.if-report-section {
+    border: 1px solid var(--if-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--if-card-bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.if-report-header {
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid var(--if-border);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.if-report-header:hover { background: #f0f2f5; }
+
+.if-report-label  { color: var(--if-muted); }
+.if-report-name   { color: var(--if-text); font-weight: 700; }
+.if-report-name-editable {
+    color: var(--if-text);
+    font-weight: 700;
+    border: 1.5px solid #1a56db;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 11px;
+}
+.if-report-count {
+    color: var(--if-muted);
+    font-size: 10px;
+    margin-left: auto;
+}
+
+/* ── Grid Styles ── */
+.if-grid-wrap {
+    overflow-x: auto;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.if-grid-wrap::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.if-grid-wrap::-webkit-scrollbar-track {
+    background: #e8e8e8;
+    border-radius: 3px;
+}
+.if-grid-wrap::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 3px;
+}
+
+/* Grid Header */
+.if-grid-header {
+    background: #f3f4f6;
+    border-bottom: 2px solid #d1d5db;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.if-grid-header .if-grid-cell {
+    font-size: 10px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+/* Grid Row */
+.if-grid-row {
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+.if-grid-row:hover { background: var(--if-hover); }
+
+/* Grid Cell */
+.if-grid-cell {
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--if-text);
+    border-right: 1px solid #e5e7eb;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+.if-grid-cell:last-child { border-right: none; }
+
+/* Column layout — CSS Grid para alineación perfecta */
+/* Contratos: # | No Contrato | Valor Contrato | Contratista | Proyectos */
+.if-grid-contratos {
+    display: grid;
+    grid-template-columns: 44px 150px 150px 1fr 130px;
+    width: 100%;
+}
+.if-grid-contratos .if-grid-cell:nth-child(3) { text-align: right; }
+
+/* Fianzas: # | Referencia | Contratista | Contrato | Afianzado | Estatus */
+.if-grid-fianzas {
+    display: grid;
+    grid-template-columns: 44px 120px 1fr 120px 150px 100px;
+    width: 100%;
+}
+.if-grid-fianzas .if-grid-cell:nth-child(5) { text-align: right; }
+
+/* Vencidas: # | Referencia | Afianzado | Fin venc. | Días vig. | Días reclamo | Fin Reclamo | Estatus */
+.if-grid-vencidas {
+    display: grid;
+    grid-template-columns: 44px 130px 150px 110px 90px 90px 110px 100px;
+    width: 100%;
+}
+.if-grid-vencidas .if-grid-cell:nth-child(3) { text-align: right; }
+.if-grid-vencidas .if-grid-cell:nth-child(5) { text-align: right; }
+.if-grid-vencidas .if-grid-cell:nth-child(6) { text-align: right; }
+
+/* Cell variations */
+.if-grid-cell-num {
+    text-align: center;
+    color: var(--if-muted);
+    background: #fafbfc;
+}
+.if-grid-cell-name {
+    font-weight: 500;
+    color: #1a56db;
+}
+.if-grid-cell-right {
+    text-align: right;
+}
+.if-grid-cell-money {
+    font-weight: 600;
+    color: #065f46;
+}
+.if-grid-cell-date {
+    color: var(--if-muted);
+}
+.if-grid-cell-neg {
+    text-align: right;
+    color: #991b1b;
+}
+.if-grid-cell-muted {
+    color: var(--if-muted);
+}
+
+/* Grid Footer */
+.if-grid-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--if-muted);
+    background: #f9fafb;
+    border-top: 1px solid var(--if-border);
+    flex-shrink: 0;
+}
+
+.if-grid-empty {
+    text-align: center;
+    color: #bbb;
+    font-style: italic;
+    font-size: 11px;
+    padding: 20px;
+}
+
+/* Group Row */
+.if-grid-group {
+    padding: 5px 10px;
+    background: #f4f6fb;
+    border-bottom: 1px solid var(--if-border);
+    font-size: 9px;
+    color: var(--if-muted);
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.if-group-toggle {
+    font-size: 8px;
+    margin-right: 4px;
+}
+.if-group-label {
+    font-weight: 700;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #374151;
+}
+.if-group-sub {
+    font-weight: 400;
+    font-size: 8px;
+}
+
+/* ── Chips & Badges ── */
+.if-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.if-chip-blue  { background: #dbeafe; color: #1a56db; }
+.if-chip-teal  { background: #ccfbf1; color: #0f766e; }
+
+.if-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.if-badge-green  { background: #d1fae5; color: #065f46; }
+.if-badge-orange { background: #fef3c7; color: #92400e; }
+.if-badge-red    { background: #fee2e2; color: #991b1b; }
+.if-badge-gray   { background: #f3f4f6; color: #374151; }

@@ -1,0 +1,985 @@
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+:host { display: flex; flex: 1; overflow: hidden; width: 100%; }
+
+.pp-wrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: #f9fafb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: #2a2a2a;
+}
+
+/* ── Sub-tab bar ─────────────────────────────────────────────────────────── */
+.pp-subtabbar {
+    display: flex;
+    gap: 4px;
+    padding: 10px 16px 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.pp-subtab {
+    padding: 7px 16px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    border-radius: 4px 4px 0 0;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.pp-subtab:hover { color: #2a2a2a; }
+
+.pp-subtab-active {
+    color: #1a56db;
+    border-bottom-color: #1a56db;
+}
+
+.pp-inst-wrap { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Filter toolbar ─────────────────────────────────────────────────────── */
+.pp-filter-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-bottom: 1px solid #e5e7eb;
+    background: #fff; flex-shrink: 0;
+}
+.pp-btn-filters {
+    display: flex; align-items: center; gap: 5px;
+    height: 28px; padding: 0 12px; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 6px; color: #374151;
+    font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    --lwc-colorTextIconDefault: #6b7280;
+}
+.pp-btn-filters:hover { border-color: #6b7280; }
+.pp-btn-filters-active { border-color: #1a56db; color: #1a56db; background: #eff6ff; --lwc-colorTextIconDefault: #1a56db; }
+.pp-btn-filters-open   { border-color: #2a2a2a; background: #f3f4f6; }
+
+/* ── Filter panel ─────────────────────────────────────────────────────────── */
+.pp-filter-panel {
+    padding: 10px 16px; border-bottom: 1px solid #e0e0e0;
+    background: #f9fafb; flex-shrink: 0;
+}
+.pp-filter-panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.pp-filter-panel-title { font-size: 12px; font-weight: 600; color: #374151; }
+.pp-filter-panel-actions { display: flex; gap: 6px; }
+.pp-flt-btn-add {
+    font-size: 11px; font-weight: 600; color: #1a56db; background: #eff6ff;
+    border: 1px solid #bfdbfe; border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.pp-flt-btn-add:hover { background: #dbeafe; }
+.pp-flt-btn-clear {
+    font-size: 11px; color: #6b7280; background: #fff; border: 1px solid #d1d5db;
+    border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.pp-flt-btn-clear:hover { background: #f3f4f6; }
+.pp-filter-rules { display: flex; flex-direction: column; gap: 6px; }
+.pp-filter-rule  { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pp-flt-campo, .pp-flt-op {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; background: #fff; color: #374151; cursor: pointer;
+}
+.pp-flt-campo { min-width: 120px; }
+.pp-flt-op    { min-width: 130px; }
+.pp-flt-value {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; color: #374151; min-width: 140px; background: #fff;
+}
+.pp-flt-remove {
+    width: 24px; height: 24px; border: none; background: transparent;
+    color: #9ca3af; font-size: 16px; cursor: pointer; border-radius: 4px; flex-shrink: 0;
+}
+.pp-flt-remove:hover { background: #fee2e2; color: #dc2626; }
+.pp-filter-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 4px 0; }
+
+/* ── Content area (table + panel side by side) ───────────────────────────── */
+.pp-content {
+    position: relative;
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* ── Spinner / error / empty ─────────────────────────────────────────────── */
+.pp-spinner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 40px;
+}
+
+.pp-error-msg,
+.pp-empty-msg {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-size: 14px;
+    padding: 40px;
+}
+
+.pp-error-msg { color: #dc2626; }
+
+/* ── Table scroll ────────────────────────────────────────────────────────── */
+.pp-table-scroll {
+    flex: 1;
+    overflow: auto;
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────── */
+.pp-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.pp-table thead tr {
+    background: #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.pp-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.pp-th-name  { min-width: 260px; }
+.pp-th-num   { text-align: right; }
+.pp-th-dias  { text-align: right; }
+.pp-th-act   { width: 32px; }
+.pp-th-sort  { cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; }
+.pp-th-sort:hover { color: #1a56db; background: #f0f4ff; }
+.pp-th-sorted { color: #1a56db; }
+.pp-sort-icon { font-size: 10px; color: #9ca3af; margin-left: 3px; }
+.pp-th-sorted .pp-sort-icon { color: #1a56db; }
+
+/* ── Rows ────────────────────────────────────────────────────────────────── */
+.pp-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    color: #2a2a2a;
+}
+
+.pp-row { transition: background 0.1s; }
+
+.pp-row-poliza:hover { background: #f9fafb; cursor: pointer; }
+.pp-row-poliza.pp-row-selected { background: #eff6ff; }
+
+.pp-row-section-hdr td {
+    background: #f8fafc;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    padding: 4px 12px 4px 48px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pp-row-endoso td { background: #fafafa; }
+.pp-row-plan td   { background: #f8fafc; }
+.pp-row-recibo td { background: #fcfcfc; }
+
+/* ── Cell types ──────────────────────────────────────────────────────────── */
+.pp-td-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.pp-td-child {
+    white-space: nowrap;
+}
+
+.pp-td-num   { text-align: right; font-variant-numeric: tabular-nums; }
+.pp-td-dias  { text-align: right; font-size: 12px; color: #6b7280; }
+.pp-td-act   { padding: 4px 8px; }
+
+/* ── Indent markers ──────────────────────────────────────────────────────── */
+.pp-indent  { display: inline-block; width: 28px; flex-shrink: 0; }
+.pp-indent2 { display: inline-block; width: 52px; flex-shrink: 0; }
+
+/* ── Expand button ───────────────────────────────────────────────────────── */
+.pp-expand-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 0;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: background 0.1s, color 0.1s;
+}
+
+.pp-expand-btn:hover { background: #e5e7eb; color: #374151; }
+
+/* ── Row icon ────────────────────────────────────────────────────────────── */
+.pp-row-icon { color: #9ca3af; flex-shrink: 0; }
+
+/* ── Póliza name ─────────────────────────────────────────────────────────── */
+.pp-poliza-name {
+    font-weight: 500;
+    color: #1a56db;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.pp-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pp-badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.pp-badge-green  { background: #dcfce7; color: #16a34a; }
+.pp-badge-amber  { background: #fef9c3; color: #ca8a04; }
+.pp-badge-red    { background: #fee2e2; color: #dc2626; }
+.pp-badge-gray   { background: #f3f4f6; color: #6b7280; }
+
+/* ── Renovación badge (inline in table row) ──────────────────────────────── */
+.pp-renov-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+}
+
+.pp-renov-red   { background: #fee2e2; color: #dc2626; }
+.pp-renov-amber { background: #fef9c3; color: #ca8a04; }
+
+/* ── Mark-paid buttons ───────────────────────────────────────────────────── */
+.pp-btn-pagado {
+    padding: 3px 10px;
+    border: 1px solid #16a34a;
+    border-radius: 5px;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.1s;
+}
+
+.pp-btn-pagado:hover { background: #dcfce7; }
+
+/* ── Detail panel ────────────────────────────────────────────────────────── */
+.pp-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background: #fff;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.10);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    border-left: 1px solid #e5e7eb;
+}
+
+.pp-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+.pp-panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+.pp-panel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #6b7280;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background 0.1s;
+}
+
+.pp-panel-close:hover { background: #f1f5f9; color: #374151; }
+
+/* ── Panel sub-tabs ──────────────────────────────────────────────────────── */
+.pp-panel-tabbar {
+    display: flex;
+    border-bottom: 2px solid #e5e7eb;
+    background: #fff;
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+
+.pp-panel-tabbar::-webkit-scrollbar { display: none; }
+
+.pp-ptab {
+    flex-shrink: 0;
+    padding: 9px 12px;
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.pp-ptab:hover { color: #2a2a2a; }
+.pp-ptab-active { color: #1a56db; border-bottom-color: #1a56db; }
+
+/* ── Panel body ──────────────────────────────────────────────────────────── */
+.pp-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+}
+
+.pp-panel-empty {
+    color: #9ca3af;
+    font-size: 13px;
+    text-align: center;
+    padding: 24px 0;
+}
+
+/* ── Detail rows ─────────────────────────────────────────────────────────── */
+.pp-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 8px;
+}
+
+.pp-detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.pp-detail-money {
+    font-weight: 600;
+    color: #1a56db;
+}
+
+.pp-detail-row-editable { cursor: default; }
+.pp-detail-row-editable .pp-pencil { opacity: 0; transition: opacity 0.12s; }
+.pp-detail-row-editable:hover .pp-pencil { opacity: 1; }
+
+.pp-detail-val-grow {
+    flex: 1;
+    text-align: right;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Section labels inside panel body ────────────────────────────────────── */
+.pp-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #1a56db;
+    background: #eff6ff;
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin: 12px -14px 4px;
+    display: block;
+}
+
+.pp-section-label:first-child { margin-top: 0; }
+
+/* ── Endosos / Convenios / Comisiones cards ──────────────────────────────── */
+.pp-endoso-card,
+.pp-comision-card {
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #fafafa;
+}
+
+.pp-endoso-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pp-endoso-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 12px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pp-endoso-fecha { color: #6b7280; }
+.pp-endoso-diff  { font-weight: 600; color: #374151; }
+
+.pp-endoso-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.pp-endoso-actions .pp-pencil { opacity: 1; }
+
+.pp-pencil-danger:hover { background: #fef2f2 !important; color: #dc2626 !important; }
+
+/* ── Endoso toolbar ───────────────────────────────────────────────────────── */
+.pp-endoso-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.pp-btn-new-endoso {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.pp-btn-new-endoso:hover { background: #6d28d9; }
+
+/* ── Endoso form ──────────────────────────────────────────────────────────── */
+.pp-endoso-form {
+    background: #f8faff;
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.pp-ef-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1e293b;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e0e7ff;
+}
+
+.pp-ef-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 8px;
+}
+
+.pp-ef-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.pp-ef-input,
+.pp-ef-select,
+.pp-ef-textarea {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #1e293b;
+    background: #fff;
+    box-sizing: border-box;
+}
+.pp-ef-input:focus, .pp-ef-select:focus, .pp-ef-textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.12);
+}
+.pp-ef-textarea { resize: vertical; min-height: 54px; }
+
+.pp-ef-check-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.pp-ef-checkbox { width: 14px; height: 14px; accent-color: #7c3aed; cursor: pointer; }
+.pp-ef-check-label { font-size: 12px; color: #374151; cursor: pointer; }
+
+.pp-ef-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #e0e7ff;
+}
+
+.pp-ef-btn-cancel {
+    padding: 5px 12px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #374151;
+    cursor: pointer;
+}
+.pp-ef-btn-cancel:hover { background: #f3f4f6; }
+
+.pp-ef-btn-save {
+    padding: 5px 14px;
+    background: #7c3aed;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+}
+.pp-ef-btn-save:hover    { background: #6d28d9; }
+.pp-ef-btn-save:disabled,
+.pp-ef-btn-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Plan panel ──────────────────────────────────────────────────────────── */
+.pp-plan-info {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pp-recibos-list { display: flex; flex-direction: column; gap: 8px; }
+
+.pp-recibo-card {
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.pp-recibo-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pp-recibo-num { font-size: 12px; font-weight: 700; color: #374151; flex: 1; }
+
+/* ── pp-rf-row inside panel body ─────────────────────────────────────────── */
+.pp-panel-body .pp-rf-row {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* ── Inline-edit field rows ──────────────────────────────────────────────── */
+.pp-rf-row {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 3px 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 6px;
+}
+
+.pp-rf-row-last { border-bottom: none; }
+
+.pp-rf-label {
+    width: 108px;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #9ca3af;
+}
+
+.pp-rf-val {
+    flex: 1;
+    font-size: 12px;
+    color: #1e293b;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pp-rf-money  { font-weight: 600; color: #1a56db; }
+.pp-rf-cobrado { font-weight: 700; color: #16a34a; }
+.pp-rf-green  { color: #16a34a; font-weight: 500; }
+.pp-rf-saldo  { color: #d97706; font-weight: 600; }
+
+/* Pencil icon — hidden until row hovered */
+.pp-pencil {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #d1d5db;
+    border-radius: 4px;
+    padding: 0;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s, background 0.1s, color 0.1s;
+}
+
+.pp-rf-row:hover .pp-pencil { opacity: 1; }
+.pp-pencil:hover { background: #eff6ff; color: #1a56db; }
+
+/* Edit mode container */
+.pp-rf-edit-col {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+.pp-rf-edit-btns {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+}
+.pp-rf-edit {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.pp-rf-edit lightning-input,
+.pp-rf-edit lightning-combobox {
+    flex: 1;
+    min-width: 0;
+}
+
+.pp-rf-save,
+.pp-rf-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    border: 1px solid;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.1s;
+}
+
+.pp-rf-save {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.pp-rf-save:hover:not(:disabled) { background: #dcfce7; }
+.pp-rf-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pp-rf-cancel {
+    border-color: #d1d5db;
+    background: #fff;
+    color: #6b7280;
+}
+
+.pp-rf-cancel:hover { background: #f3f4f6; }
+
+/* ── Monto cobrado en tabla ──────────────────────────────────────────────── */
+.pp-recibo-monto-cobrado {
+    font-weight: 700;
+    color: #16a34a;
+    display: block;
+}
+
+.pp-recibo-monto-prog {
+    font-size: 11px;
+    color: #9ca3af;
+    display: block;
+}
+
+.pp-fecha-cobro {
+    font-size: 12px;
+    color: #16a34a;
+    font-weight: 500;
+}
+
+/* ── Relation sections (Contratistas, Beneficiarios, Vendedor, Contrato) ─── */
+.pp-rel-section {
+    margin: 12px -14px 0;
+    border-top: 1px solid #f3f4f6;
+    padding: 0 14px;
+}
+
+.pp-rel-hdr {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0 4px;
+}
+
+.pp-rel-hdr-icon {
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.pp-rel-hdr-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    text-transform: uppercase;
+    flex: 1;
+}
+
+/* Relation card */
+.pp-rel-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    background: #fff;
+    transition: background 0.1s;
+}
+
+.pp-rel-card:hover { background: #f9fafb; }
+
+.pp-rel-card-icon {
+    flex-shrink: 0;
+    color: #6b7280;
+}
+
+.pp-rel-card-icon-vendor   { color: #7c3aed; }
+.pp-rel-card-icon-contract { color: #0284c7; }
+
+.pp-rel-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.pp-rel-card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pp-rel-card-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pp-rel-card-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s, color 0.1s;
+    padding: 0;
+}
+
+.pp-rel-card:hover .pp-rel-card-del { opacity: 1; }
+.pp-rel-card-del:hover { color: #ef4444; background: #fee2e2; }
+
+.pp-rel-card-edit {
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+.pp-rel-card:hover .pp-rel-card-edit { opacity: 1; }
+
+/* Add button */
+.pp-rel-add-btn {
+    display: block;
+    width: 100%;
+    padding: 6px 0;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    transition: border-color 0.15s, color 0.15s, background 0.1s;
+}
+
+.pp-rel-add-btn:hover {
+    border-color: #1a56db;
+    color: #1a56db;
+    background: #eff6ff;
+}
+
+/* Inline search */
+.pp-rel-search-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.pp-rel-search-input {
+    flex: 1;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 12px;
+    outline: none;
+    color: #1e293b;
+}
+
+.pp-rel-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #6b7280;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.pp-rel-cancel-btn:hover { background: #f3f4f6; }
+
+.pp-rel-searching {
+    font-size: 11px;
+    color: #9ca3af;
+    padding: 4px 2px;
+}
+
+.pp-rel-results {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.pp-rel-result {
+    display: flex;
+    flex-direction: column;
+    padding: 7px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fff;
+    transition: background 0.1s;
+}
+
+.pp-rel-result:last-child { border-bottom: none; }
+.pp-rel-result:hover { background: #eff6ff; }
+
+.pp-rel-result-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.pp-rel-result-sub {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* Indented contract sub-rows */
+.pp-detail-row-indented {
+    padding-left: 28px;
+    border-bottom-color: transparent;
+}
+

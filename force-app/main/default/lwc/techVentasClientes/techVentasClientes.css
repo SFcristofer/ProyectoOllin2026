@@ -1,0 +1,217 @@
+:host { display: flex; flex: 1; width: 100%; overflow: hidden; }
+
+.vc-container { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
+
+/* ── Loading ── */
+.vc-loading {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; background: rgba(255,255,255,.7); z-index: 10;
+}
+
+/* ── Toolbar ── */
+.vc-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0; background: #fff;
+}
+.vc-title { font-size: 13px; font-weight: 700; color: #2a2a2a; }
+.vc-toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+.vc-filter-select {
+    height: 30px; padding: 0 8px; border: 1px solid #d1d5db;
+    border-radius: 6px; font-size: 12px; color: #374151; outline: none;
+    background: #fff; cursor: pointer;
+}
+.vc-filter-select:focus { border-color: #2a2a2a; }
+
+.vc-search {
+    height: 30px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 12px; color: #374151; outline: none; width: 200px;
+}
+.vc-search:focus { border-color: #2a2a2a; }
+
+.vc-btn-new {
+    display: flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 12px; background: #2a2a2a;
+    border: none; border-radius: 6px; color: #fff;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.vc-btn-new:hover { background: #404040; }
+
+/* Filter button */
+.vc-btn-filters {
+    display: flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 12px; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 6px; color: #374151;
+    font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    --lwc-colorTextIconDefault: #6b7280;
+}
+.vc-btn-filters:hover { border-color: #6b7280; }
+.vc-btn-filters-active { border-color: #1a56db; color: #1a56db; background: #eff6ff; --lwc-colorTextIconDefault: #1a56db; }
+.vc-btn-filters-open   { border-color: #2a2a2a; background: #f3f4f6; }
+
+/* Filter panel */
+.vc-filter-panel {
+    padding: 10px 16px; border-bottom: 1px solid #e0e0e0;
+    background: #f9fafb; flex-shrink: 0;
+}
+.vc-filter-panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.vc-filter-panel-title { font-size: 12px; font-weight: 600; color: #374151; }
+.vc-filter-panel-actions { display: flex; gap: 6px; }
+.vc-flt-btn-add {
+    font-size: 11px; font-weight: 600; color: #1a56db; background: #eff6ff;
+    border: 1px solid #bfdbfe; border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.vc-flt-btn-add:hover { background: #dbeafe; }
+.vc-flt-btn-clear {
+    font-size: 11px; color: #6b7280; background: #fff; border: 1px solid #d1d5db;
+    border-radius: 5px; padding: 3px 10px; cursor: pointer;
+}
+.vc-flt-btn-clear:hover { background: #f3f4f6; }
+.vc-filter-rules { display: flex; flex-direction: column; gap: 6px; }
+.vc-filter-rule  { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vc-flt-campo, .vc-flt-op {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; background: #fff; color: #374151; cursor: pointer;
+}
+.vc-flt-campo { min-width: 130px; }
+.vc-flt-op    { min-width: 140px; }
+.vc-flt-value {
+    height: 28px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 5px;
+    font-size: 12px; color: #374151; min-width: 140px; background: #fff;
+}
+.vc-flt-remove {
+    width: 24px; height: 24px; border: none; background: transparent;
+    color: #9ca3af; font-size: 16px; cursor: pointer; border-radius: 4px; flex-shrink: 0;
+}
+.vc-flt-remove:hover { background: #fee2e2; color: #dc2626; }
+.vc-filter-empty { font-size: 12px; color: #9ca3af; font-style: italic; padding: 4px 0; }
+
+/* ── View toggle ── */
+.vc-view-toggle { display: flex; border: 1.5px solid #d1d5db; border-radius: 6px; overflow: hidden; }
+.vc-view-btn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 10px; height: 30px; border: none; background: #fff;
+    font-size: 11px; font-weight: 600; color: #6b7280; cursor: pointer;
+    --lwc-colorTextIconDefault: #9ca3af; transition: background .1s, color .1s;
+}
+.vc-view-btn:first-child { border-right: 1.5px solid #d1d5db; }
+.vc-view-active { background: #2a2a2a; color: #fff; --lwc-colorTextIconDefault: #fff; }
+
+/* ── Grid ── */
+.vc-grid-wrap { overflow-x: auto; overflow-y: auto; flex: 1; }
+
+.vc-grid-row {
+    display: grid;
+    /* #  Nombre  Tipo  Email/Tel  Ciudad  Pólizas  Oports  Registrado */
+    grid-template-columns: 36px minmax(180px,2fr) 130px minmax(150px,1.5fr) minmax(100px,1fr) 70px 70px 100px;
+    border-bottom: 1px solid #e5e7eb;
+    min-width: 890px;
+    width: 100%;
+}
+.vc-grid-data { cursor: pointer; }
+.vc-grid-data:hover { background: #f0f4ff; }
+
+.vc-grid-header { background: #f3f4f6; border-bottom: 2px solid #d1d5db; position: sticky; top: 0; z-index: 2; }
+.vc-grid-header .vc-grid-cell { font-size: 10px; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: .03em; }
+
+.vc-grid-cell {
+    padding: 7px 9px; font-size: 11px; color: #2a2a2a;
+    border-right: 1px solid #e5e7eb;
+    overflow: hidden; white-space: nowrap;
+    display: flex; align-items: center; min-width: 0;
+}
+.vc-grid-cell:last-child { border-right: none; }
+
+.vc-grid-hdr  { }
+.vc-hdr-sort  { cursor: pointer; gap: 4px; -webkit-user-select: none; user-select: none; }
+.vc-hdr-sort:hover { background: #e9eaec; }
+.vc-sorted    { color: #2a2a2a; }
+.vc-sort-icon { font-size: 9px; color: #c4c8cc; flex-shrink: 0; }
+.vc-sorted .vc-sort-icon { color: #2a2a2a; }
+
+.vc-cell-num    { text-align: center; color: #9ca3af; font-size: 10px; background: #fafbfc; justify-content: center; flex-shrink: 0; }
+.vc-cell-2line  { flex-direction: column; align-items: flex-start; overflow: hidden; white-space: normal; }
+.vc-cell-name   { font-weight: 600; color: #1a56db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.vc-cell-sub    { font-size: 10px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; margin-top: 1px; }
+.vc-cell-contact { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.vc-cell-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.vc-cell-center { justify-content: center; }
+.vc-cell-date   { color: #6b7280; }
+
+/* Type badges */
+.vc-type-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.vc-badge-purple { background: #f3e8ff; color: #6d28d9; }
+.vc-badge-blue   { background: #dbeafe; color: #1a56db; }
+.vc-badge-teal   { background: #d1fae5; color: #065f46; }
+.vc-badge-orange { background: #fef3c7; color: #92400e; }
+.vc-badge-gray   { background: #f3f4f6; color: #374151; }
+
+/* Count badges */
+.vc-badge-count { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 10px; background: #f3f4f6; color: #374151; }
+.vc-badge-count.vc-badge-blue { background: #dbeafe; color: #1a56db; }
+
+.vc-empty { padding: 24px; text-align: center; font-size: 13px; color: #9ca3af; font-style: italic; }
+
+/* ── Kanban ── */
+.vc-board { display: flex; gap: 10px; padding: 14px 16px; overflow-x: auto; flex: 1; align-items: flex-start; background: #f7f8fa; }
+
+.vc-kol { min-width: 220px; max-width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+
+.vc-kol-header { display: flex; align-items: center; gap: 6px; padding: 4px 2px; }
+.vc-kol-badge  { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; }
+.vc-kol-count  { font-size: 11px; font-weight: 700; color: #6b7280; }
+
+.vc-kol-cards { display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+.vc-kol-empty { font-size: 11px; color: #d1d5db; font-style: italic; text-align: center; padding: 12px 0; }
+
+.vc-kcard {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 10px 12px; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    transition: box-shadow .12s, border-color .12s;
+}
+.vc-kcard:hover { box-shadow: 0 3px 8px rgba(0,0,0,.1); border-color: #2a2a2a; }
+.vc-kcard-name    { font-size: 12px; font-weight: 600; color: #2a2a2a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-kcard-company { font-size: 10px; color: #9ca3af; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vc-kcard-row     { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.vc-kcard-chip    { display: inline-flex; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 600; background: #f3f4f6; color: #374151; }
+.vc-kcard-footer  { }
+.vc-kcard-email   { font-size: 10px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+/* ── Detail Panel ── */
+.vc-overlay { position: fixed; inset: 0; z-index: 8000; }
+
+.vc-detail-panel {
+    position: fixed; top: 0; right: 0; width: 340px; max-width: 95vw; height: 100vh;
+    background: #fff; box-shadow: -4px 0 28px rgba(0,0,0,.14); z-index: 8001;
+    display: flex; flex-direction: column; animation: vc-in .2s ease-out;
+}
+@keyframes vc-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.vc-detail-header {
+    display: flex; align-items: center; padding: 14px 16px;
+    border-bottom: 1px solid #e0e0e0; gap: 10px; flex-shrink: 0; background: #2a2a2a;
+}
+.vc-detail-title { flex: 1; font-size: 14px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-detail-close {
+    display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    background: rgba(255,255,255,.15); border: none; border-radius: 6px; cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.vc-detail-close:hover { background: rgba(255,255,255,.28); }
+
+.vc-detail-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; }
+
+.vc-detail-row {
+    display: grid; grid-template-columns: 130px 1fr; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid #f3f3f3; align-items: center;
+}
+.vc-detail-label { font-size: 11px; color: #9ca3af; font-weight: 500; }
+.vc-detail-val   { font-size: 12px; color: #2a2a2a; font-weight: 500; }
+
+.vc-detail-section {
+    font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase;
+    letter-spacing: .05em; margin-top: 14px; margin-bottom: 6px;
+}

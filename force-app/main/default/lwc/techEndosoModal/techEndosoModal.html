@@ -1,0 +1,71 @@
+<template>
+    <div class="em-overlay"></div>
+    <div class="em-wrap">
+        <div class="em-modal">
+
+            <div class="em-header">
+                <div class="em-header-info">
+                    <span class="em-title">{modalTitle}</span>
+                    <template if:true={contextLabel}>
+                        <span class="em-subtitle">{contextLabel}</span>
+                    </template>
+                </div>
+                <button class="em-close" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                </button>
+            </div>
+
+            <div class="em-body">
+                <lightning-record-edit-form
+                    object-api-name="Tech_Endoso__c"
+                    record-id={recordId}
+                    onsubmit={handleSubmit}
+                    onsuccess={handleSuccess}
+                    onerror={handleError}>
+
+                    <!-- Identificación -->
+                    <div class="em-section-hdr">Identificación</div>
+                    <div class="em-grid">
+                        <lightning-input-field field-name="Tipo_endoso__c"></lightning-input-field>
+                        <lightning-input-field field-name="Estado__c"></lightning-input-field>
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="em-section-hdr">Fechas</div>
+                    <div class="em-grid">
+                        <lightning-input-field field-name="Fecha_efectiva__c"></lightning-input-field>
+                        <lightning-input-field field-name="Fin_Vigencia__c"></lightning-input-field>
+                        <lightning-input-field field-name="Fin_Contrato__c"></lightning-input-field>
+                    </div>
+
+                    <!-- Importes -->
+                    <div class="em-section-hdr">Importes</div>
+                    <div class="em-grid">
+                        <template if:false={isFianza}>
+                            <lightning-input-field field-name="Nueva_prima__c"></lightning-input-field>
+                            <lightning-input-field field-name="Nueva_modalidad__c"></lightning-input-field>
+                            <lightning-input-field field-name="Afecta_prima__c"></lightning-input-field>
+                        </template>
+                        <template if:true={isFianza}>
+                            <lightning-input-field field-name="Nuevo_Monto_Afianzado__c" class="em-full"></lightning-input-field>
+                        </template>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="em-section-hdr">Notas</div>
+                    <lightning-input-field field-name="Motivo__c"></lightning-input-field>
+                    <lightning-input-field field-name="Observaciones__c"></lightning-input-field>
+
+                    <div class="em-footer">
+                        <template if:true={isSaving}>
+                            <lightning-spinner size="small" alternative-text="Guardando..."></lightning-spinner>
+                        </template>
+                        <button type="button" class="em-btn-cancel" onclick={handleClose} disabled={isSaving}>Cancelar</button>
+                        <lightning-button type="submit" label={saveLabel} disabled={isSaving} variant="brand"></lightning-button>
+                    </div>
+                </lightning-record-edit-form>
+            </div>
+
+        </div>
+    </div>
+</template>

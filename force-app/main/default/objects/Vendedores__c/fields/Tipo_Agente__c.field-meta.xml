@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tipo_Agente__c</fullName>
+    <description>Clasifica el tipo de vendedor. Humano = persona con licencia Salesforce. Agente AI = record sin User. Agente Externo = agente de promotoría (Allianz u otra) que no es empleado Ollin.</description>
+    <label>Tipo de Agente</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Agente AI</fullName>
+                <default>false</default>
+                <label>Agente AI</label>
+            </value>
+            <value>
+                <fullName>Agente Externo</fullName>
+                <default>false</default>
+                <label>Agente Externo</label>
+            </value>
+            <value>
+                <fullName>Humano</fullName>
+                <default>true</default>
+                <label>Humano</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

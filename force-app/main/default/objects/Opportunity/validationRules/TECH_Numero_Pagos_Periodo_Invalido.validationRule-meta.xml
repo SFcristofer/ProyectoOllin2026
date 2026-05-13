@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>TECH_Numero_Pagos_Periodo_Invalido</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    NOT(ISBLANK(TEXT(Periodo_Pago__c))),
+    NOT(ISBLANK(Numero_Pagos__c)),
+    OR(
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Contado&quot;),
+            Numero_Pagos__c &lt;&gt; 1
+        ),
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Mensual&quot;),
+            Numero_Pagos__c &lt; 1
+        ),
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Bimestral&quot;),
+            Numero_Pagos__c &lt; 1
+        ),
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Trimestral&quot;),
+            Numero_Pagos__c &lt; 1
+        ),
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Semestral&quot;),
+            Numero_Pagos__c &lt; 1
+        ),
+        AND(
+            ISPICKVAL(Periodo_Pago__c, &quot;Anual&quot;),
+            Numero_Pagos__c &lt; 1
+        )
+    )
+)</errorConditionFormula>
+    <errorMessage>El Número de Pagos no corresponde con el Periodo de Pago seleccionado.</errorMessage>
+</ValidationRule>

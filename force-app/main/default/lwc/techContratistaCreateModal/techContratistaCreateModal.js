@@ -1,45 +1,21 @@
-import { LightningElement, api, track, wire } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
+import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getContratistaFields from '@salesforce/apex/TechContratistaFieldsController.getContratistaFields';
 import saveContratistaWithRelations from '@salesforce/apex/TechContratistaController.saveContratistaWithRelations';
 
-const TYPE_ICONS = { STRING: 'utility:text', CURRENCY: 'utility:currency', DATE: 'utility:event', DATETIME: 'utility:event', PICKLIST: 'utility:record', REFERENCE: 'utility:search', BOOLEAN: 'utility:check', DOUBLE: 'utility:number_input', INTEGER: 'utility:number_input', PERCENT: 'utility:percent', PHONE: 'utility:call', EMAIL: 'utility:email', URL: 'utility:link', TEXTAREA: 'utility:textbox' };
-
-export default class TechContratistaCreateModal extends NavigationMixin(LightningElement) {
+export default class TechContratistaCreateModal extends LightningElement {
     @api showModal = false;
-    @track fields = [];
     @track isLoading = false;
-    selectedFianzaIds = [];
-
-    @wire(getContratistaFields)
-    wiredFields({ data }) {
-        if (data) {
-            this.fields = data.map(f => ({
-                ...f,
-                typeIcon:  TYPE_ICONS[f.type] || 'utility:text',
-                isFianza:  f.apiName === 'Fianza__c',
-                isSpecial: f.apiName === 'Fianza__c'
-            }));
-        }
-    }
-
-    handleFianzaChange(event) { this.selectedFianzaIds = event.detail.selectedIds; }
-
-    handleQuickCreate(event) {
-        this[NavigationMixin.Navigate]({ type: 'standard__objectPage', attributes: { objectApiName: event.detail.objectApiName, actionName: 'new' } });
-    }
 
     handleOverlayClick(event) { if (event.target === event.currentTarget) this.closeModal(); }
 
     handleSubmit(event) {
         event.preventDefault();
         this.isLoading = true;
-        const fields = { ...event.detail.fields };
-        saveContratistaWithRelations({ contratista: { ...fields, sobjectType: 'Account' }, relationsMap: { 'Fianza': this.selectedFianzaIds } })
+        const fields = event.detail.fields;
+        saveContratistaWithRelations({ contratista: { ...fields, sobjectType: 'Account' }, relationsMap: {} })
             .then(() => {
-                this.dispatchEvent(new ShowToastEvent({ title: 'Éxito', message: 'Contratista guardado correctamente', variant: 'success' }));
-                this._reset();
+                this.dispatchEvent(new ShowToastEvent({ title: 'Éxito', message: 'Contratista creado correctamente', variant: 'success' }));
+                this.isLoading = false;
                 this.dispatchEvent(new CustomEvent('success'));
             })
             .catch(err => {
@@ -48,6 +24,10 @@ export default class TechContratistaCreateModal extends NavigationMixin(Lightnin
             });
     }
 
-    _reset() { this.isLoading = false; this.selectedFianzaIds = []; }
-    closeModal() { this._reset(); this.dispatchEvent(new CustomEvent('close')); }
+    handleError(event) {
+        this.isLoading = false;
+        this.dispatchEvent(new ShowToastEvent({ title: 'Error de validación', message: event.detail.message, variant: 'error' }));
+    }
+
+    closeModal() { this.isLoading = false; this.dispatchEvent(new CustomEvent('close')); }
 }

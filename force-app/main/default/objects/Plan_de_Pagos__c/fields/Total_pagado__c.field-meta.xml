@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Total_pagado__c</fullName>
+    <description>Roll-Up Summary: suma de Monto_pagado de todos los recibos (sin filtro de Estado, para incluir pagos parciales). Dinero efectivamente cobrado del plan.</description>
+    <label>Total pagado</label>
+    <summarizedField>Recibo_de_Cobro__c.Monto_pagado__c</summarizedField>
+    <summaryForeignKey>Recibo_de_Cobro__c.Plan_de_Pagos__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

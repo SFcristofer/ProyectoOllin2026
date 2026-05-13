@@ -1,0 +1,8 @@
+Querying Data... done
+Error (1): 
+Id, Name, Tipo__c, Fianza__c, Contratista__c, Beneficiario__c
+                              ^
+ERROR at Row:1:Column:38
+No such column 'Contratista__c' on entity 'Tech_Relacion__c'. If you are attempting to use a custom field, be sure to append the '__c' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.
+
+

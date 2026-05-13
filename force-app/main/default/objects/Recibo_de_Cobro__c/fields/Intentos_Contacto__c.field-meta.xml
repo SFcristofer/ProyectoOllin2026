@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Intentos_Contacto__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>Número de intentos de contacto (llamadas + mensajes) realizados para cobrar este recibo. Se incrementa desde VoiceCall y Messaging. Driver de escalamiento.</description>
+    <externalId>false</externalId>
+    <label>Intentos de Contacto</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Total_a_Afianzar__c</fullName>
+    <description>Suma de todas las fianzas requeridas</description>
+    <formula>Importe_Anticipo__c +  Importe_Cumplimiento__c+ Importe_Pasivos_Contingentes__c</formula>
+    <label>Importe Total por Afianzar</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+</CustomField>

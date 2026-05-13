@@ -1,0 +1,59 @@
+<template>
+    <template if:true={showModal}>
+        <div class="at-overlay" onclick={handleOverlayClick}></div>
+        <div class="at-modal-panel">
+            <div class="at-modal-header">
+                <button class="at-modal-close" onclick={closeModal} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                <span class="at-modal-title">Nuevo Convenio Modificatorio</span>
+                <span class="at-modal-object-badge">Tech_Convenio_Modificatorio__c</span>
+            </div>
+            <div class="at-modal-body">
+                <template if:true={isLoading}><div class="at-modal-loading"><lightning-spinner alternative-text="Guardando..." size="small"></lightning-spinner></div></template>
+                <lightning-record-edit-form object-api-name="Tech_Convenio_Modificatorio__c" onsuccess={handleSuccess} onerror={handleError}>
+                    <div class="at-modal-fields">
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:contract"       size="xx-small" alternative-text="Contrato"            class="at-modal-field-icon"></lightning-icon><span>Contrato</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Contract__c"              variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:record"         size="xx-small" alternative-text="Tipo"                 class="at-modal-field-icon"></lightning-icon><span>Tipo de Modificación</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Tipo_de_Modificacion__c"  variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:event"          size="xx-small" alternative-text="Fecha"                class="at-modal-field-icon"></lightning-icon><span>Fecha del Convenio</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Fecha_del_Convenio__c"    variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:currency"       size="xx-small" alternative-text="Nuevo Valor"          class="at-modal-field-icon"></lightning-icon><span>Nuevo Valor Contrato</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Nuevo_Valor_Contrato__c"  variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:currency"       size="xx-small" alternative-text="Diferencia"           class="at-modal-field-icon"></lightning-icon><span>Diferencia Monto</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Diferencia_Monto__c"      variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:event"          size="xx-small" alternative-text="Nueva Fecha Fin"      class="at-modal-field-icon"></lightning-icon><span>Nueva Fecha Fin</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Nueva_Fecha_Fin__c"       variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:event"          size="xx-small" alternative-text="Nueva Fecha Contrato" class="at-modal-field-icon"></lightning-icon><span>Nueva Fecha Fin Contrato</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Nueva_Fecha_Fin_Contrato__c" variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:textbox"        size="xx-small" alternative-text="Motivo"               class="at-modal-field-icon"></lightning-icon><span>Motivo</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Motivo__c"                variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                        <div class="at-modal-field-row">
+                            <div class="at-modal-field-label"><lightning-icon icon-name="utility:textbox"        size="xx-small" alternative-text="Descripción"          class="at-modal-field-icon"></lightning-icon><span>Descripción</span></div>
+                            <div class="at-modal-field-input"><lightning-input-field field-name="Descripcion__c"           variant="label-hidden"></lightning-input-field></div>
+                        </div>
+                    </div>
+                    <div class="at-modal-footer">
+                        <lightning-button label="Cancelar" onclick={closeModal} disabled={isLoading}></lightning-button>
+                        <lightning-button type="submit"    label="Guardar"      variant="brand" disabled={isLoading}></lightning-button>
+                    </div>
+                </lightning-record-edit-form>
+            </div>
+        </div>
+    </template>
+</template>

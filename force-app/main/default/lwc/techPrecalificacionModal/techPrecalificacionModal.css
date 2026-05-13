@@ -1,0 +1,74 @@
+:host { display: contents; }
+
+.pm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 9000;
+}
+
+.pm-wrap {
+    position: fixed; inset: 0; z-index: 9001;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 28px 16px 16px;
+    pointer-events: none;
+}
+
+.pm-modal {
+    pointer-events: all;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    width: 740px; max-width: 96vw;
+    max-height: calc(100vh - 44px);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Header ── */
+.pm-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: #2a2a2a; flex-shrink: 0; gap: 12px;
+}
+.pm-header-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pm-title    { font-size: 14px; font-weight: 700; color: #fff; }
+.pm-subtitle { font-size: 11px; color: rgba(255,255,255,.65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.pm-close {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border: none; border-radius: 6px; flex-shrink: 0;
+    background: rgba(255,255,255,.15); cursor: pointer;
+    --lwc-colorTextIconDefault: #fff;
+}
+.pm-close:hover { background: rgba(255,255,255,.28); }
+
+/* ── Body ── */
+.pm-body { flex: 1; overflow-y: auto; padding: 20px; }
+.pm-body::-webkit-scrollbar { width: 4px; }
+.pm-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+/* ── Section headers ── */
+.pm-section-hdr {
+    font-size: 10px; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 12px 0 4px; border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 0;
+}
+
+/* ── Field grid ── */
+.pm-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0 20px; margin-bottom: 0;
+}
+
+/* ── Footer ── */
+.pm-footer {
+    display: flex; justify-content: flex-end; align-items: center;
+    gap: 10px; margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.pm-btn-cancel {
+    height: 32px; padding: 0 18px;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    background: #fff; color: #374151; font-size: 12px; cursor: pointer;
+}
+.pm-btn-cancel:hover:not(:disabled) { background: #f3f4f6; }
+.pm-btn-cancel:disabled { opacity: .5; cursor: not-allowed; }

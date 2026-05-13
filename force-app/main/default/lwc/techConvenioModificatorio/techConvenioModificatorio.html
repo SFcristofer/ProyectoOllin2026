@@ -1,0 +1,244 @@
+<template>
+    <div class="at-container">
+        <template if:true={isLoading}>
+            <div class="at-loading-overlay"><lightning-spinner alternative-text="Cargando..." size="small"></lightning-spinner></div>
+        </template>
+
+        <div class="at-views-bar">
+            <div class="at-views-list">
+                <button class={gridTabClass}    data-view="grid"    onclick={handleViewChange}><lightning-icon icon-name="utility:table"  size="xx-small" class="at-tab-icon" alternative-text="Grid"></lightning-icon>Grid</button>
+                <button class={galleryTabClass} data-view="gallery" onclick={handleViewChange}><lightning-icon icon-name="utility:image"  size="xx-small" class="at-tab-icon" alternative-text="Gallery"></lightning-icon>Gallery</button>
+                <button class={kanbanTabClass}  data-view="kanban"  onclick={handleViewChange}><lightning-icon icon-name="utility:kanban" size="xx-small" class="at-tab-icon" alternative-text="Kanban"></lightning-icon>Kanban</button>
+                <button class="at-add-view-btn">+ Agregar vista</button>
+            </div>
+        </div>
+
+        <div class="at-toolbar">
+            <div class="at-toolbar-right">
+                <lightning-input type="search" variant="label-hidden" placeholder="Buscar..." class="at-search" onchange={handleSearch}></lightning-input>
+                <lightning-button label="Nuevo Convenio" variant="brand" icon-name="utility:add" class="slds-m-left_small" onclick={handleNew}></lightning-button>
+            </div>
+        </div>
+
+        <!-- GRID VIEW -->
+        <template if:true={isGridView}>
+            <div class="at-grid-wrapper">
+                <table class="at-table">
+                    <thead>
+                        <tr>
+                            <th class="at-th at-th-rownum"></th>
+                            <th class="at-th at-th-sticky at-th-sortable" data-field="name" onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name="utility:text" size="xx-small" alternative-text="Nombre"></lightning-icon></span>Nombre{nameSortArrow}</th>
+                            <template for:each={visibleColumnsWithSort} for:item="col">
+                                <th key={col.field} class={col.thClass} style={col.minWidthStyle} data-field={col.field} onclick={handleSort}><span class="at-field-icon"><lightning-icon icon-name={col.icon} size="xx-small" alternative-text={col.label}></lightning-icon></span>{col.label}{col.sortArrow}</th>
+                            </template>
+                            <th class="at-th at-th-addfield" onclick={handleToggleColumnPicker}>
+                                <template if:false={showColumnPicker}><span class="at-add-field-label">+ Campo</span></template>
+                                <template if:true={showColumnPicker}>
+                                    <div class="at-column-picker" onclick={stopPropagation}>
+                                        <div class="at-picker-header">Agregar campo</div>
+                                        <template for:each={availableColumns} for:item="ac">
+                                            <div key={ac.field} class="at-picker-item" data-field={ac.field} onclick={handleSelectColumn}><lightning-icon icon-name={ac.icon} size="xx-small" alternative-text={ac.label}></lightning-icon>&nbsp;{ac.label}</div>
+                                        </template>
+                                        <template if:false={hasAvailableColumns}><div class="at-picker-empty">No hay más campos</div></template>
+                                    </div>
+                                </template>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredData} for:item="item">
+                            <tr key={item.id} class="at-tr" data-id={item.id}>
+                                <td class="at-td at-td-rownum">
+                                    <span class="at-row-num">{item.rowNumber}</span>
+                                    <button class="at-expand-btn" data-id={item.id} onclick={handleExpandRow} title="Expandir" aria-label="Expandir"><lightning-icon icon-name="utility:expand_alt" size="xx-small" alternative-text="Expandir"></lightning-icon></button>
+                                </td>
+                                <td class="at-td at-td-sticky" data-id={item.id} onclick={handleCellClick}>
+                                    <span class="at-cell-text">{item.name}</span>
+                                </td>
+                                <template for:each={visibleColumns} for:item="col">
+                                    <td key={col.field} class="at-td" data-id={item.id} onclick={handleCellClick}>
+                                        <template if:true={col.isContrato}><span class="at-chip at-chip-teal">{item.contrato}</span></template>
+                                        <template if:true={col.isTipo}><span class={item.estatusClass}>{item.tipo}</span></template>
+                                        <template if:true={col.isFecha}><span class="at-cell-text">{item.fecha}</span></template>
+                                        <template if:true={col.isNuevoValor}><span class="at-cell-text">{item.nuevoValorFmt}</span></template>
+                                        <template if:true={col.isDiferencia}><span class="at-cell-text">{item.diferenciaFmt}</span></template>
+                                    </td>
+                                </template>
+                                <td class="at-td at-td-filler"></td>
+                            </tr>
+                        </template>
+                        <tr class="at-tr-addrow" onclick={handleNew}><td colspan="99" class="at-td-addrow"><span class="at-addrow-label">+ Agregar registro</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- GALLERY VIEW -->
+        <template if:true={isGalleryView}>
+            <div class="at-gallery">
+                <template for:each={filteredData} for:item="item">
+                    <div key={item.id} class="at-gallery-card" data-id={item.id} onclick={handleExpandRow}>
+                        <div class="at-gallery-card-top"><span class={item.estatusClass}>{item.tipo}</span></div>
+                        <div class="at-gallery-title">{item.name}</div>
+                        <div class="at-gallery-field"><span class="at-gallery-label">Contrato</span><span>{item.contrato}</span></div>
+                        <div class="at-gallery-field"><span class="at-gallery-label">Nuevo Valor</span><span>{item.nuevoValorFmt}</span></div>
+                        <div class="at-gallery-footer">{item.fecha}</div>
+                    </div>
+                </template>
+                <div class="at-gallery-add" onclick={handleNew}><span class="at-gallery-add-icon">+</span><span>Nuevo registro</span></div>
+            </div>
+        </template>
+
+        <!-- KANBAN VIEW -->
+        <template if:true={isKanbanView}>
+            <div class="at-kanban">
+                <template for:each={kanbanColumns} for:item="col">
+                    <div key={col.status} class="at-kanban-col">
+                        <div class="at-kanban-col-header"><span class="at-badge at-badge-gray">{col.status}</span><span class="at-kanban-count">{col.count}</span></div>
+                        <div class="at-kanban-cards">
+                            <template for:each={col.items} for:item="item">
+                                <div key={item.id} class="at-kanban-card" data-id={item.id} onclick={handleExpandRow}>
+                                    <div class="at-kanban-card-name">{item.name}</div>
+                                    <div class="at-kanban-card-meta">{item.contrato}</div>
+                                    <div class="at-kanban-card-meta">{item.nuevoValorFmt}</div>
+                                </div>
+                            </template>
+                            <button class="at-kanban-add-btn" onclick={handleNew}>+ Agregar</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <!-- DETAIL PANEL -->
+    <template if:true={isDetailPanelOpen}>
+        <div class="at-overlay" onclick={handleCloseDetailPanel}></div>
+        <div class="at-detail-panel">
+            <div class="at-detail-header">
+                <div class="at-detail-nav">
+                    <button class="at-detail-nav-btn" onclick={handlePrevRecord} disabled={isFirstRecord} title="Anterior" aria-label="Anterior">▲</button>
+                    <button class="at-detail-nav-btn" onclick={handleNextRecord} disabled={isLastRecord}  title="Siguiente" aria-label="Siguiente">▼</button>
+                </div>
+                <div class="at-detail-header-info">
+                    <span class="at-detail-title">{selectedItem.name}</span>
+                    <span class="at-detail-subtitle">Convenio Modificatorio</span>
+                </div>
+                <div class="at-detail-header-actions">
+                    <template if:false={isEditingPanel}>
+                        <lightning-button label="Editar" icon-name="utility:edit" size="small" variant="neutral" onclick={handleEditFromPanel}></lightning-button>
+                    </template>
+                    <template if:true={isEditingPanel}>
+                        <span class="at-panel-editing-badge">Editando...</span>
+                    </template>
+                    <button class="at-detail-close" onclick={handleCloseDetailPanel} title="Cerrar" aria-label="Cerrar"><lightning-icon icon-name="utility:close" size="small" alternative-text="Cerrar"></lightning-icon></button>
+                </div>
+            </div>
+            <div class="at-detail-body">
+                <template if:true={selectedItem}>
+                    <!-- VIEW MODE -->
+                    <template if:false={isEditingPanel}>
+                        <lightning-record-view-form record-id={selectedItem.id} object-api-name="Tech_Convenio_Modificatorio__c">
+                            <div class="at-detail-fields">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Nombre</span>
+                                    <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Número Convenio</span>
+                                    <lightning-output-field field-name="Numero_Convenio__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contrato</span>
+                                    <lightning-output-field field-name="Contract__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Modificación</span>
+                                    <lightning-output-field field-name="Tipo_de_Modificacion__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha del Convenio</span>
+                                    <lightning-output-field field-name="Fecha_del_Convenio__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Nuevo Valor Contrato</span>
+                                    <lightning-output-field field-name="Nuevo_Valor_Contrato__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Diferencia Monto</span>
+                                    <lightning-output-field field-name="Diferencia_Monto__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Nueva Fecha Fin</span>
+                                    <lightning-output-field field-name="Nueva_Fecha_Fin__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Nueva Fecha Fin Contrato</span>
+                                    <lightning-output-field field-name="Nueva_Fecha_Fin_Contrato__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Motivo</span>
+                                    <lightning-output-field field-name="Motivo__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Descripción</span>
+                                    <lightning-output-field field-name="Descripcion__c" variant="label-hidden"></lightning-output-field>
+                                </div>
+                            </div>
+                        </lightning-record-view-form>
+                    </template>
+
+                    <!-- EDIT MODE -->
+                    <template if:true={isEditingPanel}>
+                        <lightning-record-edit-form record-id={selectedItem.id} object-api-name="Tech_Convenio_Modificatorio__c" onsuccess={handlePanelSaveSuccess}>
+                            <div class="at-detail-fields at-detail-fields-edit">
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-ref">≡</span>Contrato</span>
+                                    <lightning-input-field field-name="Contract__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-list">▼</span>Tipo de Modificación</span>
+                                    <lightning-input-field field-name="Tipo_de_Modificacion__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Fecha del Convenio</span>
+                                    <lightning-input-field field-name="Fecha_del_Convenio__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Nuevo Valor Contrato</span>
+                                    <lightning-input-field field-name="Nuevo_Valor_Contrato__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-currency">$</span>Diferencia Monto</span>
+                                    <lightning-input-field field-name="Diferencia_Monto__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Nueva Fecha Fin</span>
+                                    <lightning-input-field field-name="Nueva_Fecha_Fin__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-date">▦</span>Nueva Fecha Fin Contrato</span>
+                                    <lightning-input-field field-name="Nueva_Fecha_Fin_Contrato__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Motivo</span>
+                                    <lightning-input-field field-name="Motivo__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                                <div class="at-detail-field-row">
+                                    <span class="at-detail-field-label"><span class="at-ftype at-ftype-text">A</span>Descripción</span>
+                                    <lightning-input-field field-name="Descripcion__c" variant="label-hidden"></lightning-input-field>
+                                </div>
+                            </div>
+                            <div class="at-panel-edit-actions">
+                                <button class="at-panel-btn at-panel-btn-cancel" type="button" aria-label="Cancelar" onclick={handlePanelCancel}>Cancelar</button>
+                                <button class="at-panel-btn at-panel-btn-save"   type="submit" aria-label="Guardar">Guardar cambios</button>
+                            </div>
+                        </lightning-record-edit-form>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <c-tech-convenio-create-modal show-modal={isCreateModalOpen} onclose={handleCloseCreateModal} onsuccess={handleCreateSuccess}></c-tech-convenio-create-modal>
+</template>
